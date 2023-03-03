@@ -1,0 +1,17 @@
+{
+  "name": "osrs-tracker-aws",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "prettier": "./.prettierrc.json",
+  "devDependencies": {
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "prettier": "^2.8.4"
+  }
+}
