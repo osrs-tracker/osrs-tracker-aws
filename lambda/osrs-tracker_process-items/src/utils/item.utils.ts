@@ -28,5 +28,5 @@ async function fetchItems(agent: Agent, { letter, page }: ItemPage): Promise<Ite
     { agent, headers: { 'cache-control': 'no-cache' } },
   ).then((res) => res.json());
 
-  return (itemPageResponse as { items: ItemResponse[] }).items;
+  return (itemPageResponse as { items: ItemResponse[] }).items.map(({ type, typeIcon, ...item }) => item);
 }

@@ -26,6 +26,7 @@ export class ItemResponse {
   icon: string;
   icon_large: string;
 
-  type: string;
-  typeIcon: string;
+  // optional section so we can exclude them from the bulk write
+  type?: string;
+  typeIcon?: string;
 }
