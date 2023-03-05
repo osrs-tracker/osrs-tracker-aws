@@ -28,6 +28,9 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
   // Check if username is provided
   if (!username) return { statusCode: 400, body: 'No username provided' };
 
+  // create index on id (if not exists)
+  await MU.col(client).createIndex({ username: 1 }, { unique: true });
+
   // Check if player is in database
   let player = await MU.getPlayer(client, username);
 
