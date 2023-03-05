@@ -26,10 +26,10 @@ When sending a `GET /:id` request, this function returns item details from Mongo
 - `osrs-tracker_item-search`
 
 When sending a `GET /:query` request, this function returns items from MongoDB where the name partially matches the
-provided query. It also adds a confidence `score` property.
+provided query. It also adds a confidence score property.
 
 - `osrs-tracker_player-info`
 
 When sending a `GET /:username` request, this function returns player information for the provided username in MongoDB.
-It includes player `type`, `status`, and `diedAsHardcore`. The function automatically refreshes when information from
+It includes player type, status, and diedAsHardcore. The function automatically refreshes when information from
 MongoDB is older than 2 hours.
