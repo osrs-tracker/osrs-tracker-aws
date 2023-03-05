@@ -1,0 +1,41 @@
+{
+  "name": "osrs-tracker_item-info",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node ./build/esbuild.js --dev",
+    "prebuild:prod": "rm -rf ./dist",
+    "build:prod": "node ./build/esbuild.js",
+    "cz": "git cz",
+    "lint": "eslint . --ext .ts,.js",
+    "prettier": "prettier --write .",
+    "prettier:ci": "prettier --check .",
+    "start": "node ./build/esbuild.js --dev --watch --run"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "prettier": "./.prettierrc.json",
+  "dependencies": {
+    "aws4": "^1.12.0",
+    "mongodb": "^5.1.0"
+  },
+  "devDependencies": {
+    "@es-exec/esbuild-plugin-start": "^0.0.4",
+    "@types/aws-lambda": "^8.10.111",
+    "@types/node": "^18.14.1",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "esbuild": "^0.17.10",
+    "eslint": "^8.34.0",
+    "eslint-config-prettier": "^8.6.0",
+    "minimist": "^1.2.8",
+    "prettier": "^2.8.4",
+    "typescript": "^4.9.5"
+  }
+}
