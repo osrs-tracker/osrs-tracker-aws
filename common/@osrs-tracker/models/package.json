@@ -1,0 +1,12 @@
+{
+  "name": "@type/osrs-tracker",
+  "description": "Typings for OSRS Tracker API",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  }
+}

@@ -1,5 +1,5 @@
+import { Player } from '@osrs-tracker/models';
 import { Collection, Db, MongoClient, UpdateResult } from 'mongodb';
-import { Player } from '../models/player.model';
 
 /**
  * Short for MongoUtils.
@@ -16,7 +16,10 @@ export class MU {
   }
 
   static getPlayer(mongo: MongoClient, username: string): Promise<Player | null> {
-    return this.col(mongo).findOne<Player>({ username: username }, { hint: { username: 1 }, projection: { _id: 0 } });
+    return this.col(mongo).findOne<Player>(
+      { username: username },
+      { hint: { username: 1 }, projection: { _id: 0, hiscoreEntries: 0, scrapingOffsets: 0 } },
+    );
   }
 
   static upsertPlayer(mongo: MongoClient, player: Player): Promise<UpdateResult> {

@@ -1,8 +1,12 @@
+import { Player, PlayerStatus, PlayerType } from '@osrs-tracker/models';
 import { Agent } from 'https';
 import { MongoClient } from 'mongodb';
 import fetch from 'node-fetch';
-import { Hiscores, Player, PlayerStatus, PlayerType } from '../models/player.model';
 import { MU } from './mongo.utils';
+
+/** Format: `rank,level,xp` */
+export type HiscoreLine = string;
+export type Hiscores = HiscoreLine[];
 
 export async function refreshPlayerInfo(
   client: MongoClient,

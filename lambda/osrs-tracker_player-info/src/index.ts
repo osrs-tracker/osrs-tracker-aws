@@ -1,8 +1,8 @@
+import { PlayerType } from '@osrs-tracker/models';
 import { APIGatewayEvent, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { differenceInHours } from 'date-fns';
 import { Agent } from 'https';
 import { AuthMechanism, MongoClient } from 'mongodb';
-import { PlayerType } from './models/player.model';
 import { MU } from './utils/mongo.utils';
 import { refreshPlayerInfo } from './utils/player.utils';
 
@@ -22,7 +22,7 @@ const agent = new Agent({
   timeout: 30000,
 });
 
-export const handler = async (event: APIGatewayEvent, context: Context): Promise<APIGatewayProxyResultV2> => {
+export const handler = async (event: APIGatewayEvent, _context: Context): Promise<APIGatewayProxyResultV2> => {
   const username = event.pathParameters?.username;
 
   // Check if username is provided

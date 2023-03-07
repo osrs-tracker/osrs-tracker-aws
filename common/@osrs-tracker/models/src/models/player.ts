@@ -1,11 +1,13 @@
-export const enum PlayerType {
+import { HiscoreEntry } from './hiscores';
+
+export enum PlayerType {
   Normal = 'normal',
   Ironman = 'ironman',
   Ultimate = 'ultimate',
   Hardcore = 'hardcore_ironman',
 }
 
-export const enum PlayerStatus {
+export enum PlayerStatus {
   Default = 'default',
   DeIroned = 'de_ironed',
   DeUltimated = 'de_ultimated',
@@ -18,10 +20,8 @@ export class Player {
     public status: PlayerStatus = PlayerStatus.Default,
     public diedAsHardcore: boolean = false,
     public lastModified: Date = new Date(),
+    public hiscoreEntries?: HiscoreEntry[],
+    /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11 */
+    public scrapingOffsets?: number[],
   ) {}
 }
-
-export type Hiscores = HiscoreLine[];
-
-/** Format: `rank,level,xp` */
-export type HiscoreLine = string;
