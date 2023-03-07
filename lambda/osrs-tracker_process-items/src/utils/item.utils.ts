@@ -1,22 +1,15 @@
+import { Item } from '@osrs-tracker/models';
 import { Agent } from 'https';
-import { MongoClient } from 'mongodb';
 import fetch from 'node-fetch';
-import { ItemPage, ItemResponse as Item } from '../models/item.model';
-import { MU } from './mongo.utils';
 
-export async function upsertItems(mongo: MongoClient, itemResponse: Item[]): Promise<number> {
-  const bulkWrite = await MU.col(mongo).bulkWrite(
-    itemResponse.map((item) => ({
-      updateOne: {
-        filter: { id: item.id },
-        hint: { id: 1 },
-        update: { $set: item },
-        upsert: true,
-      },
-    })),
-  );
+type ItemPage = {
+  letter: string;
+  page: number;
+};
 
-  return (bulkWrite.matchedCount || 0) + (bulkWrite.upsertedCount || 0);
+export class ItemResponse extends Item {
+  type?: string;
+  typeIcon?: string;
 }
 
 export async function fetchItemsFromPage(agent: Agent, { letter, page }: ItemPage): Promise<Item[]> {
@@ -26,5 +19,5 @@ export async function fetchItemsFromPage(agent: Agent, { letter, page }: ItemPag
     { agent, headers: { 'cache-control': 'no-cache' } },
   ).then((res) => res.json());
 
-  return (itemPageResponse as { items: Item[] }).items.map(({ type, typeIcon, ...item }) => item);
+  return (itemPageResponse as { items: ItemResponse[] }).items.map(({ type, typeIcon, ...item }) => item);
 }

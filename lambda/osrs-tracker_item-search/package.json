@@ -20,6 +20,7 @@
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
+    "@osrs-tracker/models": "file:../../common/@osrs-tracker/models",
     "aws4": "^1.12.0",
     "mongodb": "^5.1.0"
   },

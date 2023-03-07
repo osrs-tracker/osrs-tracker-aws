@@ -1,3 +1,4 @@
+import { Item } from '@osrs-tracker/models';
 import { Collection, Db, MongoClient } from 'mongodb';
 
 /**
@@ -12,5 +13,20 @@ export class MU {
 
   static col(mongo: MongoClient): Collection {
     return this.db(mongo).collection(process.env.MONGODB_COLLECTION!);
+  }
+
+  static upsertItems(mongo: MongoClient, itemResponse: Item[]): Promise<number> {
+    return MU.col(mongo)
+      .bulkWrite(
+        itemResponse.map((item) => ({
+          updateOne: {
+            filter: { id: item.id },
+            hint: { id: 1 },
+            update: { $set: item },
+            upsert: true,
+          },
+        })),
+      )
+      .then(({ matchedCount, upsertedCount }) => (matchedCount || 0) + (upsertedCount || 0));
   }
 }

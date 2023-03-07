@@ -1,5 +1,5 @@
+import { Item } from '@osrs-tracker/models';
 import { Collection, Db, MongoClient } from 'mongodb';
-import { Item } from '../models/item.model';
 
 /**
  * Short for MongoUtils.

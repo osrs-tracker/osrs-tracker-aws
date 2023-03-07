@@ -1,5 +1,5 @@
+import { Item } from '@osrs-tracker/models';
 import { Collection, Db, MongoClient } from 'mongodb';
-import { Item } from '../models/item.model';
 
 /**
  * Short for MongoUtils.
@@ -20,7 +20,7 @@ export class MU {
       .aggregate<Item>([
         { $search: { index: 'default', text: { query: query, path: 'name' } } },
         { $addFields: { score: { $meta: 'searchScore' } } },
-        { $project: { _id: 0, description: 0, members: 0, today: 0, current: 0, icon_large: 0 } },
+        { $project: { _id: 0, id: 1, icon: 1, name: 1, score: 1 } },
         { $limit: 20 },
       ])
       .toArray();

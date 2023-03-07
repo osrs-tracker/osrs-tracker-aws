@@ -1,7 +1,7 @@
-import { SQSEvent } from 'aws-lambda';
+import { Context, SQSEvent } from 'aws-lambda';
 import { Agent } from 'https';
 import { AuthMechanism, MongoClient } from 'mongodb';
-import { fetchItemsFromPage, upsertItems } from './utils/item.utils';
+import { fetchItemsFromPage } from './utils/item.utils';
 import { MU } from './utils/mongo.utils';
 
 const client = new MongoClient(process.env.MONGODB_URI!, {
@@ -21,7 +21,7 @@ const agent = new Agent({
 });
 
 // receive message event sqs
-export const handler = async (event: SQSEvent, context: any) => {
+export const handler = async (event: SQSEvent, context: Context) => {
   const pages = event.Records.flatMap((record) => JSON.parse(record.body!));
 
   // Ensure index is created before processing items, together with fetching items from pages
@@ -31,7 +31,7 @@ export const handler = async (event: SQSEvent, context: any) => {
   ]);
 
   // Process items in parallel and wait for all to finish
-  const upsertItemsPerPageJobs = itemsFromPages.map((itemsFromPage) => upsertItems(client, itemsFromPage));
+  const upsertItemsPerPageJobs = itemsFromPages.map((itemsFromPage) => MU.upsertItems(client, itemsFromPage));
   const upsertedItemCount = await Promise.all(upsertItemsPerPageJobs).then((results) =>
     results.reduce((acc, val) => (acc += val), 0),
   );
