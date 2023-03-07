@@ -17,6 +17,14 @@ will wait to be processed.
 This function fetches all OSRS item categories, splits them up into pages, and pushes them to a SQS queue where they
 will wait to be processed.
 
+- `osrs-tracker_queue-players`
+
+This function fetches all players that have opted in for tracking at a particular UTC offset, and pushes them to a SQS
+queue where they will wait to be processed.
+
+Calculates current offset from the `ScheduledEvent` and queries MongoDB for players that have opted in for tracking at
+that specific offset.
+
 ### API Gateway driven
 
 - `osrs-tracker_item-info`
@@ -31,5 +39,5 @@ provided query. It also adds a confidence score property.
 - `osrs-tracker_player-info`
 
 When sending a `GET /:username` request, this function returns player information for the provided username in MongoDB.
-It includes player type, status, and diedAsHardcore. The function automatically refreshes when information from
-MongoDB is older than 2 hours.
+It includes player type, status, and diedAsHardcore. The function automatically refreshes when information from MongoDB
+is older than 2 hours.

@@ -9,6 +9,10 @@
     }
   },
   "prettier": "./.prettierrc.json",
+  "scripts": {
+    "prettier": "prettier --write .",
+    "prettier:ci": "prettier --check ."
+  },
   "devDependencies": {
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
