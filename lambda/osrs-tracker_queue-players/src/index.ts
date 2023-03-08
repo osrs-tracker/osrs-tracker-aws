@@ -1,6 +1,5 @@
 import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
-import { parseISO } from 'date-fns';
 import { AuthMechanism, MongoClient } from 'mongodb';
 import { MU } from './utils/mongo.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
@@ -20,7 +19,7 @@ const client = new MongoClient(process.env.MONGODB_URI!, {
 
 export const handler = async (event: ScheduledEvent, context: Context) => {
   // current scrapeOffset, -12 to 11
-  const scrapingOffset = ((12 + parseISO(event.time).getUTCHours()) % 24) - 12;
+  const scrapingOffset = ((12 + new Date(event.time).getUTCHours()) % 24) - 12;
 
   // create index on scrapingOffsets (if not exists)
   await MU.col(client).createIndex({ scrapingOffsets: 1 }, { sparse: true });
@@ -39,12 +38,12 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   const messagesInFlight: any[] = [];
 
   for await (const username of usernameCursor) {
-    // if usernames array is smaller then PLAYERS_PER_SQS_MESSAGE, add username to array
-    if (usernames.length < parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)) {
-      usernames.push(username);
-      usernamesProcessed++;
-      continue;
-    }
+    // add username to usernames array
+    usernames.push(username);
+    usernamesProcessed++;
+
+    // if usernames array is smaller then PLAYERS_PER_SQS_MESSAGE,
+    if (usernames.length < parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)) continue;
 
     // if usernames array is full, add message to batch
     messageBatch.push(createMessage(usernames, scrapingOffset));
