@@ -26,7 +26,7 @@ that specific offset.
 
 - `osrs-tracker_process-players`
 
-This function fetches OSRS hiscores for the provided usernames, and prepends the hiscore to the `player.hischoreEntries`
+This function fetches OSRS hiscores for the provided usernames, and prepends the hiscore to the `player.hiscoreEntries`
 array.
 
 ### API Gateway driven
