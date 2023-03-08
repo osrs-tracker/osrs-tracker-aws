@@ -14,8 +14,7 @@ will wait to be processed.
 
 - `osrs-tracker_process-items`
 
-This function fetches all OSRS item categories, splits them up into pages, and pushes them to a SQS queue where they
-will wait to be processed.
+This function fetches all OSRS items for the provided item pages, and upserts them in MongoDB.
 
 - `osrs-tracker_queue-players`
 
@@ -24,6 +23,11 @@ queue where they will wait to be processed.
 
 Calculates current offset from the `ScheduledEvent` and queries MongoDB for players that have opted in for tracking at
 that specific offset.
+
+- `osrs-tracker_process-players`
+
+This function fetches OSRS hiscores for the provided usernames, and prepends the hiscore to the `player.hischoreEntries`
+array.
 
 ### API Gateway driven
 
