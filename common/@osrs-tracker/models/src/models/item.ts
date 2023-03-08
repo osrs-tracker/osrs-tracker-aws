@@ -9,6 +9,11 @@ export class Price {
   trend: Trend;
 }
 
+export class ItemPage {
+  letter: string;
+  page: number;
+}
+
 export class Item {
   id: number;
   name: string;

@@ -1,7 +1,7 @@
 import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { parseISO } from 'date-fns';
-import { AuthMechanism, MongoClient } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import { MU } from './utils/mongo.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
 
@@ -9,13 +9,20 @@ const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
+// const client = new MongoClient(process.env.MONGODB_URI!, {
+//   auth: {
+//     username: process.env.AWS_ACCESS_KEY_ID,
+//     password: process.env.AWS_SECRET_ACCESS_KEY,
+//   },
+//   authMechanism: AuthMechanism.MONGODB_AWS,
+//   authSource: '$external',
+// });
+
 const client = new MongoClient(process.env.MONGODB_URI!, {
   auth: {
-    username: process.env.AWS_ACCESS_KEY_ID,
-    password: process.env.AWS_SECRET_ACCESS_KEY,
+    username: process.env.MONGODB_USERNAME,
+    password: process.env.MONGODB_PASSWORD,
   },
-  authMechanism: AuthMechanism.MONGODB_AWS,
-  authSource: '$external',
 });
 
 export const handler = async (event: ScheduledEvent, context: Context) => {

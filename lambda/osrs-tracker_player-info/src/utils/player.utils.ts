@@ -39,7 +39,13 @@ async function determinePlayerStatusAndType(agent: Agent, username: string): Pro
   const status = determineStatus(normal, ironman, ultimate);
   const diedAsHardcore = getTotalXp(hardcore) < getTotalXp(ironman);
 
-  return new Player(username, type, status, diedAsHardcore);
+  return {
+    username,
+    type,
+    status,
+    diedAsHardcore,
+    lastModified: new Date(),
+  };
 }
 
 function getHiscore(agent: Agent, username: string, type: PlayerType): Promise<Hiscores | null> {

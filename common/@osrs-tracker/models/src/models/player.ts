@@ -14,14 +14,15 @@ export enum PlayerStatus {
 }
 
 export class Player {
-  constructor(
-    public username: string,
-    public type: PlayerType = PlayerType.Normal,
-    public status: PlayerStatus = PlayerStatus.Default,
-    public diedAsHardcore: boolean = false,
-    public lastModified: Date = new Date(),
-    public hiscoreEntries?: HiscoreEntry[],
-    /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11 */
-    public scrapingOffsets?: number[],
-  ) {}
+  public username: string;
+  public type: PlayerType;
+  public status: PlayerStatus;
+  public diedAsHardcore: boolean;
+  public lastModified: Date;
+}
+
+export class PlayerWithHiscores extends Player {
+  public hiscoreEntries: HiscoreEntry[];
+  /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11 */
+  public scrapingOffsets: number[];
 }
