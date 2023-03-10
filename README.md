@@ -1,8 +1,4 @@
-[![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/master/LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/issues)
-[![Lambda CI](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/lambda-ci.yml/badge.svg?branch=main)](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/lambda-ci.yml)
-
-# OSRS Tracker AWS
+# OSRS Tracker AWS &middot; [![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/master/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/issues) &middot; [![Lambda CI](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/lambda-ci.yml/badge.svg?branch=main)](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/lambda-ci.yml)
 
 This repository contains the AWS code and configuration for OSRS Tracker, an application designed to track item prices
 and player information in the game Old School RuneScape.
