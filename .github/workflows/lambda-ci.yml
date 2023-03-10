@@ -53,7 +53,7 @@ jobs:
 
       - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
         name: ESlint
-        run: npm run prettier:ci
+        run: npm run lint
         working-directory: lambda/${{ matrix.lambda_function }}
 
       - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
