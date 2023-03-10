@@ -30,16 +30,15 @@ jobs:
           - osrs-tracker_queue-players
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - uses: dorny/paths-filter@v2.2.1
         id: filter
         with:
           filters: |
             lambda_function: 
               - ${{ matrix.lambda_function }}
-
-      - if: steps.changes.outputs.lambda_function == 'true'
-        name: Checkout
-        uses: actions/checkout@v2
 
       - if: steps.changes.outputs.lambda_function == 'true'
         name: Use Node.js
