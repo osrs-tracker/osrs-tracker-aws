@@ -1,4 +1,4 @@
-name: lambda-ci
+name: Lambda CI
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   lint:
-    name: Lint
+    name: CI
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,9 +29,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - uses: dorny/paths-filter@v2.2.1
+      - name: Path filter
+        uses: dorny/paths-filter@v2.2.1
         id: filter
         with:
           filters: |
@@ -46,9 +47,21 @@ jobs:
           cache: 'npm'
 
       - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
+        name: Install
         run: npm ci
         working-directory: lambda/${{ matrix.lambda_function }}
 
       - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
+        name: ESlint
         run: npm run prettier:ci
+        working-directory: lambda/${{ matrix.lambda_function }}
+
+      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
+        name: Prettier
+        run: npm run prettier:ci
+        working-directory: lambda/${{ matrix.lambda_function }}
+
+      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
+        name: Build
+        run: npm run build:prod
         working-directory: lambda/${{ matrix.lambda_function }}
