@@ -38,7 +38,7 @@ jobs:
         with:
           filters: |
             lambda_function: 
-              - ${{ matrix.lambda_function }}
+              - ${{ matrix.lambda_function }}/**
 
       - if: steps.changes.outputs.lambda_function == 'true'
         name: Use Node.js
