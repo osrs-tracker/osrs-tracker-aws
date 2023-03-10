@@ -1,4 +1,4 @@
-name: CI
+name: lambda-ci
 
 on:
   push:
@@ -10,15 +10,13 @@ on:
     paths:
       - 'lambda/**'
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         lambda_function:
           - osrs-tracker_item-info
@@ -49,6 +47,8 @@ jobs:
 
       - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
         run: npm ci
+        working-directory: lambda/${{ matrix.lambda_function }}
 
       - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
         run: npm run prettier:ci
+        working-directory: lambda/${{ matrix.lambda_function }}
