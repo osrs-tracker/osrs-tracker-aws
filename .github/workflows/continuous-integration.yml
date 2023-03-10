@@ -40,15 +40,15 @@ jobs:
             lambda_function: 
               - lambda/${{ matrix.lambda_function }}/**
 
-      - if: ${{ steps.changes.outputs.lambda_function == 'true' }}
+      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
         name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           cache: 'npm'
 
-      - if: ${{ steps.changes.outputs.lambda_function == 'true' }}
+      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
         run: npm ci
 
-      - if: ${{ steps.changes.outputs.lambda_function == 'true' }}
+      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
         run: npm run prettier:ci
