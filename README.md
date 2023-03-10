@@ -1,3 +1,6 @@
+[![GitHub issues](https://img.shields.io/github/issues/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/issues)
+[![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/master/LICENSE)
+
 # OSRS Tracker AWS
 
 This repository contains the AWS code and configuration for OSRS Tracker, an application designed to track item prices
@@ -12,7 +15,9 @@ and player information in the game Old School RuneScape.
 This function fetches all OSRS item categories, splits them up into pages, and pushes them to a SQS queue where they
 will wait to be processed.
 
-- `osrs-tracker_process-items`
+-
+
+* `osrs-tracker_process-items`
 
 This function fetches all OSRS items for the provided item pages, and upserts them in MongoDB.
 
