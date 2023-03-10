@@ -14,38 +14,42 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        lambda_function:
+          - osrs-tracker_item-info
+          - osrs-tracker_item-search
+          - osrs-tracker_player-info
+          - osrs-tracker_process-items
+          - osrs-tracker_process-players
+          - osrs-tracker_queue-items
+          - osrs-tracker_queue-players
+
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github.event) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
+      - uses: dorny/paths-filter@v2.2.1
+        id: filter
+        with:
+          filters: |
+            lambda_function: 
+              - ${{ matrix.lambda_function }}
 
-  # lint:
-  #   runs-on: ubuntu-latest
+      - if: steps.changes.outputs.lambda_function = true
+        name: Checkout
+        uses: actions/checkout@v2
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Use Node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: '18.x'
-  #         cache: 'npm'
-  #     - run: npm ci
-  #     - run: npm run prettier:ci
+      - if: steps.changes.outputs.lambda_function = true
+        name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
 
-  # build:
-  #   runs-on: ubuntu-latest
+      - if: steps.changes.outputs.lambda_function = true
+        run: npm ci
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Use Node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: '18.x'
-  #         cache: 'npm'
-  #     - run: npm ci
-  #     - run: npm run build
+      - if: steps.changes.outputs.lambda_function = true
+        run: npm run prettier:ci
