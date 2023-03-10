@@ -1,5 +1,6 @@
-[![GitHub issues](https://img.shields.io/github/issues/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/issues)
 [![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/master/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/issues)
+[![Lambda CI](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/lambda-ci.yml/badge.svg?branch=main)](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/lambda-ci.yml)
 
 # OSRS Tracker AWS
 
