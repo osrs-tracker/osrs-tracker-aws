@@ -18,8 +18,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - run: echo ${{ toJSON(github.event) }}
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github.event) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
 
   # lint:
   #   runs-on: ubuntu-latest
