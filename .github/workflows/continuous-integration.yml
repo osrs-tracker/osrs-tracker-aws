@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - run: echo ${{ toJson(github.event) }}
+      - run: echo ${{ toJSON(github.event) }}
 
   # lint:
   #   runs-on: ubuntu-latest
