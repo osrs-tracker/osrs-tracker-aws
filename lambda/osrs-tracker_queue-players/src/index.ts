@@ -21,10 +21,11 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   // current scrapeOffset, -12 to 11
   const scrapingOffset = ((12 + new Date(event.time).getUTCHours()) % 24) - 12;
 
-  // create index on scrapingOffsets (if not exists)
+  // ensure index on scrapingOffsets
   await MU.col(client).createIndex({ scrapingOffsets: 1 }, { sparse: true });
 
-  const usernameCursor = await MU.getAllUsernamesForOffset(client, scrapingOffset);
+  // get usernames for scrapingOffset as cursor
+  const usernameCursor = MU.getAllUsernamesForOffset(client, scrapingOffset);
 
   // statistics
   let usernamesProcessed = 0;

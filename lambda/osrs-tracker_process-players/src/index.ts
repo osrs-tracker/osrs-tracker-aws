@@ -3,7 +3,8 @@ import { HiscoreEntry, PlayerScrapeMessageBody, PlayerWithHiscores } from '@osrs
 import { Context, SQSEvent } from 'aws-lambda';
 import { Agent } from 'https';
 import chunk from 'lodash.chunk';
-import { AnyBulkWriteOperation, AuthMechanism, MongoClient } from 'mongodb';
+import { AnyBulkWriteOperation, AuthMechanism, BulkWriteResult, MongoClient } from 'mongodb';
+import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
 import { getHiscore } from './utils/player.utils';
 import { createMessage } from './utils/sqs.utils';
@@ -31,62 +32,51 @@ const agent = new Agent({
 export const handler = async (event: SQSEvent, context: Context) => {
   const messageBodies: PlayerScrapeMessageBody[] = event.Records.map((record) => JSON.parse(record.body));
 
-  let updatedPlayerCount = 0;
-  const failedUsernameMap: Map<number, string[]> = new Map();
+  // map of failed usernames by scrapingOffset
+  const failedMap: Map<number, string[]> = new Map();
+
+  // array of promises for bulk writes
+  const bulkWrites: Promise<BulkWriteResult>[] = [];
+
+  // ensure index is created
+  await MU.col(client).createIndex({ username: 1 }, { unique: true });
 
   // scrape each message body sequentially
   for (const messageBody of messageBodies) {
     const { usernames, scrapingOffset } = messageBody;
-
     const scrapeTime = new Date();
     const bulkUpdateOps: AnyBulkWriteOperation<PlayerWithHiscores>[] = [];
 
     // scrape each username from body in parallel and wait for all to finish
     await Promise.allSettled(
       usernames.map(async (username) => {
-        // fetch hiscores
         const hiscore = await getHiscore(agent, username);
-        if (!hiscore)
-          return failedUsernameMap.set(scrapingOffset, [...(failedUsernameMap.get(scrapingOffset) ?? []), username]);
+        if (!hiscore) return mapArrayPush(failedMap, scrapingOffset, username);
 
-        // add prepend hiscoreEntry to player.hiscoreEntries
-        bulkUpdateOps.push({
-          updateOne: {
-            filter: { username },
-            hint: { username: 1 },
-            update: {
-              $push: {
-                hiscoreEntries: {
-                  $each: [new HiscoreEntry(hiscore, scrapeTime, scrapingOffset)],
-                  $position: 0,
-                },
-              },
-            },
-          },
-        });
+        // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
+        bulkUpdateOps.push(MU.hiscoreEntryBulkWriteOp(username, new HiscoreEntry(hiscore, scrapeTime, scrapingOffset)));
       }),
     );
 
     // Only bulk update if there are any updates, can be empty if all usernames failed
-    if (bulkUpdateOps.length) {
-      const { modifiedCount } = await MU.col(client).bulkWrite(bulkUpdateOps);
-      updatedPlayerCount += modifiedCount;
-    }
+    if (bulkUpdateOps.length) bulkWrites.push(MU.col(client).bulkWrite(bulkUpdateOps));
   }
+
+  // wait for all bulk writes to finish
+  const bulkWriteResults = await Promise.all(bulkWrites);
+  const updatedPlayerCount = bulkWriteResults.reduce((acc, result) => acc + result.modifiedCount, 0);
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
   if (updatedPlayerCount === 0) {
-    throw new Error(
-      `No players were updated. Failed to update ${[...failedUsernameMap.values()].flat().length} players.`,
-    );
+    throw new Error(`No players were updated. Failed to update ${[...failedMap.values()].flat().length} players.`);
   }
 
   // If some usernames updated successfully and some failed, send new SQS messages for the failed usernames
-  if (failedUsernameMap.size > 0) {
+  if (failedMap.size > 0) {
     const failedMessages: SendMessageBatchRequestEntry[] = [];
 
     // create messages from failed usernames
-    failedUsernameMap.forEach((usernames, scrapingOffset) =>
+    failedMap.forEach((usernames, scrapingOffset) =>
       failedMessages.push(
         ...chunk(usernames, parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)).map((usernameBatch) =>
           createMessage(usernameBatch, scrapingOffset),
@@ -95,16 +85,16 @@ export const handler = async (event: SQSEvent, context: Context) => {
     );
 
     // send failed messages in batches
-    const failedBatches = chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) =>
-      sqsClient.send(new SendMessageBatchCommand({ QueueUrl: process.env.SQS_QUEUE_URL!, Entries: messageBatch })),
+    await Promise.all(
+      chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) =>
+        sqsClient.send(new SendMessageBatchCommand({ QueueUrl: process.env.SQS_QUEUE_URL!, Entries: messageBatch })),
+      ),
     );
-
-    await Promise.all(failedBatches);
   }
 
   console.log(
     `Updated ${updatedPlayerCount} players successfully.`,
-    `Failed to update ${[...failedUsernameMap.values()].flat().length} players.`,
+    `Failed to update ${[...failedMap.values()].flat().length} players.`,
   );
 
   return context.logStreamName;
