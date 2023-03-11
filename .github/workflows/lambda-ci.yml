@@ -1,18 +1,35 @@
-name: Lambda CI
+name: CI
 
 on:
   push:
     branches: ['main']
-    paths:
-      - 'lambda/**'
   pull_request:
     branches: ['main']
-    paths:
-      - 'lambda/**'
 
 jobs:
-  lint:
-    name: CI
+  root:
+    name: Root Prettier
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+        working-directory: lambda/${{ matrix.lambda_function }}
+
+      - name: Prettier
+        run: npm run prettier:ci
+
+  lambda:
+    name: Lambda CI
     runs-on: ubuntu-latest
 
     strategy:
@@ -32,37 +49,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Path filter
-        uses: dorny/paths-filter@v2.2.1
-        id: filter
-        with:
-          filters: |
-            lambda_function: 
-              - lambda/${{ matrix.lambda_function }}/**
-
-      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
-        name: Use Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           cache: 'npm'
 
-      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
-        name: Install
+      - name: Install
         run: npm ci
         working-directory: lambda/${{ matrix.lambda_function }}
 
-      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
-        name: ESlint
+      - name: ESlint
         run: npm run lint
         working-directory: lambda/${{ matrix.lambda_function }}
 
-      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
-        name: Prettier
+      - name: Prettier
         run: npm run prettier:ci
         working-directory: lambda/${{ matrix.lambda_function }}
 
-      - if: ${{ steps.filter.outputs.lambda_function == 'true' }}
-        name: Build
+      - name: Build
         run: npm run build:prod
         working-directory: lambda/${{ matrix.lambda_function }}
