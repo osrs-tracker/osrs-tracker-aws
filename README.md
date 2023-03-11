@@ -40,8 +40,13 @@ and player information in the game Old School RuneScape.
   When sending a `GET /:query` request, this function returns items from MongoDB where the name partially matches the
   provided query. It also adds a confidence score property.
 
+- `osrs-tracker_player-hiscores`
+
+  When sending a `GET /:username(?skip=0&scrapingOffset=0)` request, this function returns scraped player
+  `hiscoreEntries` for the provided username from MongoDB.
+
 - `osrs-tracker_player-info`
 
-  When sending a `GET /:username` request, this function returns player information for the provided username in
+  When sending a `GET /:username` request, this function returns player information for the provided username from
   MongoDB. It includes player type, status, and diedAsHardcore. The function automatically refreshes when information
   from MongoDB is older than 2 hours.
