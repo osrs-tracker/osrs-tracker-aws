@@ -1,0 +1,20 @@
+{
+  "name": "@osrs-tracker/models",
+  "version": "0.0.1",
+  "description": "Typings for OSRS Tracker API",
+  "license": "MIT",
+  "author": "Freek Mencke",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "github:osrs-tracker/osrs-tracker-aws",
+    "directory": "@osrs-tracker/models"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  }
+}

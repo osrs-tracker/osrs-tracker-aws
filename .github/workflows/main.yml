@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: ['main']
 
+  workflow_dispatch:
+
 jobs:
   root:
     name: Global Prettier
@@ -68,5 +70,5 @@ jobs:
         working-directory: lambda/${{ matrix.lambda_function }}
 
       - name: Build
-        run: npm run build:prod
+        run: npm run build
         working-directory: lambda/${{ matrix.lambda_function }}
