@@ -8,7 +8,7 @@ on:
 
 jobs:
   root:
-    name: Root Prettier
+    name: Global Prettier
     runs-on: ubuntu-latest
 
     steps:
