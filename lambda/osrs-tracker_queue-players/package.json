@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rm -rf ./dist",
     "build": "node ./build/esbuild.js",
-    "predeploy": "npm run build:prod && cd dist && bestzip ../dist.zip * && cd ..",
+    "predeploy": "npm run build && cd dist && bestzip ../dist.zip * && cd ..",
     "deploy": "aws lambda update-function-code --function-name osrs-tracker_queue-players --zip-file fileb://dist.zip --publish --no-cli-pager",
     "postdeploy": "rm ./dist.zip",
     "lint": "eslint . --ext .ts,.js",
