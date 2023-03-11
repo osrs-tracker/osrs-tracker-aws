@@ -25,7 +25,10 @@ export const handler = async (event: APIGatewayEvent): Promise<APIGatewayProxyRe
   // Return player info
   return {
     statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Cache-Control': 'max-age=86400',
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(items),
   };
 };

@@ -1,6 +1,6 @@
 import { PlayerType } from '@osrs-tracker/models';
 import { APIGatewayEvent, APIGatewayProxyResultV2, Context } from 'aws-lambda';
-import { differenceInHours } from 'date-fns';
+import { addHours, differenceInHours, differenceInSeconds } from 'date-fns';
 import { Agent } from 'https';
 import { AuthMechanism, MongoClient } from 'mongodb';
 import { MU } from './utils/mongo.utils';
@@ -45,7 +45,10 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
   // Return player info
   return {
     statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Cache-Control': 'max-age=' + differenceInSeconds(addHours(player.lastModified, 2), new Date()),
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(player),
   };
 };
