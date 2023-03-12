@@ -46,7 +46,10 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
   return {
     statusCode: 200,
     headers: {
-      'Cache-Control': 'max-age=' + differenceInSeconds(addHours(player.lastModified, 2), new Date()),
+      'Cache-Control':
+        player.type === PlayerType.Normal
+          ? 'max-age=2628000' // cache for a month if player is a normal player, since they will not change
+          : 'max-age=' + differenceInSeconds(addHours(player.lastModified, 2), new Date()),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(player),
