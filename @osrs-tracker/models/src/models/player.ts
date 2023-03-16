@@ -20,9 +20,9 @@ export class Player {
   public diedAsHardcore: boolean;
   public lastModified: Date;
   /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11 */
-  public scrapingOffsets: number[];
+  public scrapingOffsets?: number[]; // optional because it only exists when the player is tracked
 }
 
 export class PlayerWithHiscores extends Player {
-  public hiscoreEntries: HiscoreEntry[];
+  public hiscoreEntries?: HiscoreEntry[]; // optional because it only exists when the player is tracked
 }
