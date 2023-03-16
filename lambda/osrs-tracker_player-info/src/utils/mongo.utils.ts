@@ -18,7 +18,7 @@ export class MU {
   static getPlayer(mongo: MongoClient, username: string): Promise<Player | null> {
     return this.col(mongo).findOne<Player>(
       { username: username },
-      { hint: { username: 1 }, projection: { _id: 0, hiscoreEntries: 0, scrapingOffsets: 0 } },
+      { hint: { username: 1 }, projection: { _id: 0, hiscoreEntries: 0 } },
     );
   }
 
