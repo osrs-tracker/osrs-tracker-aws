@@ -16,8 +16,8 @@ export declare class Player {
     status: PlayerStatus;
     diedAsHardcore: boolean;
     lastModified: Date;
+    scrapingOffsets: number[];
 }
 export declare class PlayerWithHiscores extends Player {
     hiscoreEntries: HiscoreEntry[];
-    scrapingOffsets: number[];
 }
