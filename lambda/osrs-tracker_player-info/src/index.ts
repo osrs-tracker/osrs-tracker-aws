@@ -36,20 +36,23 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
 
   // Refresh player info if player is not found or if player is not a normal player and has not been refreshed in the last 2 hours
   if (!player || (player.type !== PlayerType.Normal && differenceInHours(new Date(), player.lastModified) > 2)) {
-    player = await refreshPlayerInfo(client, agent, username);
+    const refreshed = await refreshPlayerInfo(client, agent, username);
 
     // Player does not exist or is not in the hiscores yet
-    if (!player) return { statusCode: 404, body: `Player "${username}" not found` };
+    if (!refreshed) return { statusCode: 404, body: `Player "${username}" not found` };
   }
+
+  // fetch player from database again to get all fields except for hiscores
+  player = await MU.getPlayer(client, username);
 
   // Return player info
   return {
     statusCode: 200,
     headers: {
       'Cache-Control':
-        player.type === PlayerType.Normal
+        player!.type === PlayerType.Normal
           ? 'max-age=2628000' // cache for a month if player is a normal player, since they will not change
-          : 'max-age=' + differenceInSeconds(addHours(player.lastModified, 2), new Date()),
+          : 'max-age=' + differenceInSeconds(addHours(player!.lastModified, 2), new Date()),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(player),

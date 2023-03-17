@@ -13,16 +13,16 @@ export async function refreshPlayerInfo(
   agent: Agent,
   username: string,
   savedPlayer?: Player,
-): Promise<Player | null> {
+): Promise<boolean> {
   if (savedPlayer?.type === PlayerType.Normal) throw new Error('Normal players should not be refreshed');
 
   const player = await determinePlayerStatusAndType(agent, username);
-  if (player === null) return null;
+  if (player === null) return false;
 
   const { upsertedCount, modifiedCount } = await MU.upsertPlayer(client, player);
   if (!upsertedCount && !modifiedCount) throw new Error('Player failed to be upserted');
 
-  return player;
+  return true;
 }
 
 async function determinePlayerStatusAndType(agent: Agent, username: string): Promise<Player | null> {
