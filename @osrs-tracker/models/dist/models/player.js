@@ -13,5 +13,3 @@ export var PlayerStatus;
 })(PlayerStatus || (PlayerStatus = {}));
 export class Player {
 }
-export class PlayerWithHiscores extends Player {
-}

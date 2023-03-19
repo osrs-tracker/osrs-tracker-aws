@@ -47,6 +47,10 @@ and player information in the game Old School RuneScape.
 
 - `osrs-tracker_player-info`
 
-  When sending a `GET /:username` request, this function returns player information for the provided username from
-  MongoDB. It includes player type, status, and diedAsHardcore. The function automatically refreshes when information
-  from MongoDB is older than 2 hours.
+  When sending a `GET /:username(?hiscore=false)` request, this function returns player information for the provided
+  username from MongoDB, or attempts to scrape it if not found in MongoDB.
+
+  By default, the returned player does not include `hiscoreEntries`. However, if the query parameter `hiscore=true` is
+  included in the request, the function will also include the player's most recent hiscore entry.
+
+  The function automatically refreshes when information from MongoDB is older than 2 hours.

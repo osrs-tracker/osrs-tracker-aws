@@ -14,15 +14,14 @@ export enum PlayerStatus {
 }
 
 export class Player {
-  public username: string;
-  public type: PlayerType;
-  public status: PlayerStatus;
-  public diedAsHardcore: boolean;
-  public lastModified: Date;
-  /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11 */
-  public scrapingOffsets?: number[]; // optional because it only exists when the player is tracked
-}
+  username: string;
+  combatLevel: number;
+  type: PlayerType;
+  status: PlayerStatus;
+  diedAsHardcore: boolean;
+  lastModified: Date;
 
-export class PlayerWithHiscores extends Player {
-  public hiscoreEntries?: HiscoreEntry[]; // optional because it only exists when the player is tracked
+  /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11 */
+  scrapingOffsets?: number[]; // optional because it only exists when the player is tracked
+  hiscoreEntries?: HiscoreEntry[]; // optional because it only exists when the player is tracked
 }

@@ -15,10 +15,13 @@ export class MU {
     return this.db(mongo).collection(process.env.MONGODB_COLLECTION!);
   }
 
-  static getPlayer(mongo: MongoClient, username: string): Promise<Player | null> {
+  static getPlayer(mongo: MongoClient, username: string, includeLatestHiscoreEntry?: boolean): Promise<Player | null> {
     return this.col(mongo).findOne<Player>(
       { username: username },
-      { hint: { username: 1 }, projection: { _id: 0, hiscoreEntries: 0 } },
+      {
+        hint: { username: 1 },
+        projection: { _id: 0, hiscoreEntries: includeLatestHiscoreEntry ? { $slice: 1 } : 0 },
+      },
     );
   }
 

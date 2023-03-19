@@ -41,11 +41,30 @@ async function determinePlayerStatusAndType(agent: Agent, username: string): Pro
 
   return {
     username,
+    combatLevel: getCombatLevel(normal),
     type,
     status,
     diedAsHardcore,
     lastModified: new Date(),
   };
+}
+
+function getCombatLevel(hiscoreLines: Hiscores): number {
+  // default to level 1 when not found (-1)
+  const attack = Math.max(1, parseInt(hiscoreLines[1].split(',')[1]));
+  const defence = Math.max(1, parseInt(hiscoreLines[2].split(',')[1]));
+  const strength = Math.max(1, parseInt(hiscoreLines[3].split(',')[1]));
+  const hitpoints = Math.max(1, parseInt(hiscoreLines[4].split(',')[1]));
+  const ranged = Math.max(1, parseInt(hiscoreLines[6].split(',')[1]));
+  const prayer = Math.max(1, parseInt(hiscoreLines[5].split(',')[1]));
+  const magic = Math.max(1, parseInt(hiscoreLines[7].split(',')[1]));
+
+  const base = 0.25 * (defence + hitpoints + Math.floor(prayer / 2));
+  const melee = 0.325 * (attack + strength);
+  const range = 0.325 * (Math.floor(ranged / 2) + ranged);
+  const mage = 0.325 * (Math.floor(magic / 2) + magic);
+
+  return Math.floor(base + Math.max(melee, range, mage));
 }
 
 function getHiscore(agent: Agent, username: string, type: PlayerType): Promise<Hiscores | null> {
