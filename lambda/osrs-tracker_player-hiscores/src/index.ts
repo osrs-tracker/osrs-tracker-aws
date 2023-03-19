@@ -18,13 +18,14 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
 
   // Get scraping offset and skip from query params (default to 0)
   const scrapingOffset = parseInt(event.queryStringParameters?.scrapingOffset ?? '0');
+  const size = parseInt(event.queryStringParameters?.size ?? '7');
   const skip = parseInt(event.queryStringParameters?.skip ?? '0');
 
   // ensure index exists on username and scrapingOffset
   await MU.col(client).createIndex({ 'username': 1, 'hiscoreEntries.scrapingOffset': 1 }, { sparse: true });
 
   // Get player hiscores
-  const hiscores = await MU.getPlayerHiscores(client, username, scrapingOffset, skip);
+  const hiscores = await MU.getPlayerHiscores(client, username, scrapingOffset, size, skip);
 
   // Return hiscore info
   return {

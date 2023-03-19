@@ -19,13 +19,14 @@ export class MU {
     mongo: MongoClient,
     username: string,
     scrapingOffset: number,
+    size: number,
     skip: number,
   ): Promise<HiscoreEntry[] | null> {
     const player = await this.col(mongo).findOne<PlayerWithHiscores>(
       { 'username': username, 'hiscoreEntries.scrapingOffset': scrapingOffset },
       {
         hint: { 'username': 1, 'hiscoreEntries.scrapingOffset': 1 },
-        projection: { _id: 0, username: 1, hiscoreEntries: { $slice: [skip, 7] } },
+        projection: { _id: 0, username: 1, hiscoreEntries: { $slice: [skip, size] } }, // project username to trigger inclusion, and thus exclude all other fields
       },
     );
 
