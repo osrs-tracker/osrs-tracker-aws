@@ -42,7 +42,7 @@ and player information in the game Old School RuneScape.
 
 - `osrs-tracker_player-hiscores`
 
-  When sending a `GET /:username(?skip=0&scrapingOffset=0)` request, this function returns scraped player
+  When sending a `GET /:username(?size=7&skip=0&scrapingOffset=0)` request, this function returns scraped player
   `hiscoreEntries` for the provided username from MongoDB.
 
 - `osrs-tracker_player-info`
