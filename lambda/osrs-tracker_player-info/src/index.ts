@@ -37,7 +37,7 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
   let player = await MU.getPlayer(client, username, includeLatestHiscoreEntry);
 
   // Refresh player info if player is not found or if player has not been refreshed in the last 2 hours
-  if (!player || differenceInHours(new Date(), player.lastModified) > 2) {
+  if (!player || differenceInHours(new Date(), player.lastModified) >= 2) {
     const refreshed = await refreshPlayerInfo(client, agent, username);
 
     // Player does not exist or is not in the hiscores yet
