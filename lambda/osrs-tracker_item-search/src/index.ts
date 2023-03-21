@@ -15,7 +15,11 @@ export const handler = async (event: APIGatewayEvent): Promise<APIGatewayProxyRe
   const query = event.pathParameters?.query;
 
   // Check if query is provided
-  if (!query) return { statusCode: 400, body: 'No id provided' };
+  if (!query) return { statusCode: 400, body: 'No query provided.' };
+  if (query.length > 64) return { statusCode: 400, body: 'Query too long.' };
+
+  // Ensure index is created before fetching item
+  await MU.col(client).createIndex({ name: 'text' });
 
   // Search for item
   const items = await MU.searchItems(client, query);

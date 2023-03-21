@@ -17,12 +17,12 @@ export class MU {
 
   static searchItems(mongo: MongoClient, query: string): Promise<Item[]> {
     return this.col(mongo)
-      .aggregate<Item>([
-        { $search: { index: 'default', text: { query: query, path: 'name' } } },
-        { $addFields: { score: { $meta: 'searchScore' } } },
-        { $project: { _id: 0, id: 1, icon: 1, name: 1, score: 1 } },
-        { $limit: 20 },
-      ])
+      .find<Item>(
+        { $text: { $search: query } },
+        { projection: { _id: 0, id: 1, icon: 1, name: 1, score: { $meta: 'textScore' } } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .limit(20)
       .toArray();
   }
 }
