@@ -42,10 +42,9 @@ jobs:
           - osrs-tracker_item-search
           - osrs-tracker_player-hiscores
           - osrs-tracker_player-info
-          - osrs-tracker_process-items
           - osrs-tracker_process-players
-          - osrs-tracker_queue-items
           - osrs-tracker_queue-players
+          - osrs-tracker_refresh-items
 
     steps:
       - name: Checkout

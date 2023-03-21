@@ -1,5 +1,5 @@
 {
-  "name": "osrs-tracker_queue-items",
+  "name": "osrs-tracker_refresh-items",
   "version": "0.0.1",
   "private": true,
   "license": "MIT",
@@ -7,7 +7,7 @@
     "prebuild": "rm -rf ./dist",
     "build": "node ./build/esbuild.js",
     "predeploy": "npm run build && cd dist && bestzip ../dist.zip * && cd ..",
-    "deploy": "aws lambda update-function-code --function-name osrs-tracker_queue-items --zip-file fileb://dist.zip --publish --no-cli-pager",
+    "deploy": "aws lambda update-function-code --function-name osrs-tracker_refresh-items --zip-file fileb://dist.zip --publish --no-cli-pager",
     "postdeploy": "rm ./dist.zip",
     "lint": "eslint . --ext .ts,.js",
     "prettier": "prettier --write .",
@@ -21,14 +21,14 @@
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.282.0",
-    "@osrs-tracker/models": "^0.0.1",
-    "lodash.chunk": "^4.2.0"
+    "@osrs-tracker/models": "^0.2.0",
+    "aws4": "^1.12.0",
+    "mongodb": "^5.1.0",
+    "node-fetch": "^3.3.0"
   },
   "devDependencies": {
     "@es-exec/esbuild-plugin-start": "^0.0.4",
     "@types/aws-lambda": "^8.10.111",
-    "@types/lodash.chunk": "^4.2.7",
     "@types/node": "^18.14.1",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",

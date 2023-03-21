@@ -7,14 +7,10 @@ and player information in the game Old School RuneScape.
 
 ### Schedule Driven
 
-- `osrs-tracker_queue-items`
+- `osrs-tracker_refresh-items`
 
-  This function fetches all OSRS item categories, splits them up into pages, and pushes them to a SQS queue where they
-  will wait to be processed.
-
-- `osrs-tracker_process-items`
-
-  This function fetches all OSRS items for the provided item pages, and upserts them in MongoDB.
+  This function fetches all items and latest prices from `prices.runescape.wiki/api/v1/osrs`, merges them into an `Item`
+  object and upserts all items to MongoDB every hour.
 
 - `osrs-tracker_queue-players`
 

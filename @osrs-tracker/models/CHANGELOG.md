@@ -1,3 +1,7 @@
+## v0.2.0 - 2023/03/19
+
+- Update `Item` to `prices.runescape.wiki/api` models.
+
 ## v0.1.0 - 2023/03/19
 
 - Added `combatLevel: number` to `Player`

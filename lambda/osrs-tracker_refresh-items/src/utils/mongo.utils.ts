@@ -15,10 +15,10 @@ export class MU {
     return this.db(mongo).collection(process.env.MONGODB_COLLECTION!);
   }
 
-  static upsertItems(mongo: MongoClient, itemResponse: Item[]): Promise<number> {
+  static upsertItems(mongo: MongoClient, item: Item[]): Promise<number> {
     return MU.col(mongo)
       .bulkWrite(
-        itemResponse.map((item) => ({
+        item.map((item) => ({
           updateOne: {
             filter: { id: item.id },
             hint: { id: 1 },

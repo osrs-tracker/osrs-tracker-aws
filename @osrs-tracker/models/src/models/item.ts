@@ -1,28 +1,27 @@
-export enum Trend {
-  Negative = 'negative',
-  Neutral = 'neutral',
-  Positive = 'positive',
-}
+export class LatestPrice {
+  high: number;
+  /** Unix timestamp. */
+  highTime: number;
 
-export class Price {
-  price: string;
-  trend: Trend;
-}
-
-export class ItemPage {
-  letter: string;
-  page: number;
+  low: number;
+  /** Unix timestamp. */
+  lowTime: number;
 }
 
 export class Item {
   id: number;
+
   name: string;
-  description: string;
-  members: boolean;
-
-  current: Price;
-  today: Price;
-
+  examine: string;
   icon: string;
-  icon_large: string;
+
+  members: true;
+
+  value: number;
+  limit: number;
+
+  lowalch: number;
+  highalch: number;
+
+  latest: LatestPrice;
 }

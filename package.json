@@ -9,6 +9,10 @@
     }
   },
   "prettier": "./.prettierrc.json",
+  "repository": {
+    "type": "git",
+    "url": "github:osrs-tracker/osrs-tracker-aws"
+  },
   "scripts": {
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check ."
