@@ -40,6 +40,7 @@ jobs:
         lambda_function:
           - osrs-tracker_item-info
           - osrs-tracker_item-search
+          - osrs-tracker_latest-news
           - osrs-tracker_player-hiscores
           - osrs-tracker_player-info
           - osrs-tracker_process-players
