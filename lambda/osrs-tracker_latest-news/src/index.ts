@@ -24,17 +24,20 @@ export const handler = async (event: APIGatewayEvent): Promise<APIGatewayProxyRe
 
   const parsedRss = xml.parse(rss);
 
-  const osrsNewsItems: OsrsNewsItem[] = parsedRss.rss.channel.item.map((val: any) => ({
-    title: val.title,
-    date: new Date(val.pubDate),
-    category: val.category,
-    link: val.link,
-    description: val.description,
-    enclosure: {
-      url: val.enclosure.url,
-      type: val.enclosure.type,
-    },
-  }));
+  const osrsNewsItems = parsedRss.rss.channel.item.map(
+    (val: any) =>
+      ({
+        title: val.title,
+        pubDate: new Date(val.pubDate),
+        category: val.category,
+        link: val.link,
+        description: val.description,
+        enclosure: {
+          url: val.enclosure.url,
+          type: val.enclosure.type,
+        },
+      } as OsrsNewsItem),
+  );
 
   return {
     statusCode: 200,
