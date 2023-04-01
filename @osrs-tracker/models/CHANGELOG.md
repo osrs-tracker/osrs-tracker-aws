@@ -1,3 +1,7 @@
+## v0.3.0 - 2023/04/01
+
+- Added `OsrsNewsItem` to models.
+
 ## v0.2.0 - 2023/03/19
 
 - Update `Item` to `prices.runescape.wiki/api` models.
