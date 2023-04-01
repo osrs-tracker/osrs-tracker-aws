@@ -1,6 +1,6 @@
 export class OsrsNewsItem {
   title: string;
-  pubDate: Date | null;
+  pubDate: Date;
   category: string;
   link: string;
   description: string;

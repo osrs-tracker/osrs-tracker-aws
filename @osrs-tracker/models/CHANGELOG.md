@@ -1,3 +1,7 @@
+## v0.3.2 - 2023/04/01
+
+- Made `pubDate` not nullable.
+
 ## v0.3.1 - 2023/04/01
 
 - Added `OsrsNewsItem` to models.
