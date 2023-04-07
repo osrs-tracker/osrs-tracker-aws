@@ -1,7 +1,7 @@
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { Agent } from 'https';
 import { AuthMechanism, MongoClient } from 'mongodb';
-import { fetchItems, fetchLatest } from './utils/item.utils';
+import { fetchItems } from './utils/item.utils';
 import { MU } from './utils/mongo.utils';
 
 const client = new MongoClient(process.env.MONGODB_URI!, {
@@ -23,11 +23,7 @@ const agent = new Agent({
 export const handler = async (_event: ScheduledEvent, context: Context) => {
   const startFetching = process.hrtime();
 
-  const [items, latest] = await Promise.all([
-    fetchItems(agent),
-    fetchLatest(agent),
-    MU.col(client).createIndex({ id: 1 }, { unique: true }),
-  ]);
+  const [items] = await Promise.all([fetchItems(agent), MU.col(client).createIndex({ id: 1 }, { unique: true })]);
 
   console.info(
     `Fetched ${items.length} items in ${Math.trunc(
@@ -37,10 +33,7 @@ export const handler = async (_event: ScheduledEvent, context: Context) => {
 
   const startUpserting = process.hrtime();
 
-  const upsertedItemCount = await MU.upsertItems(
-    client,
-    items.map((item) => ({ ...item, latest: latest[item.id] })),
-  );
+  const upsertedItemCount = await MU.upsertItems(client, items);
 
   console.info(
     `Upserted ${upsertedItemCount} items in ${Math.trunc(

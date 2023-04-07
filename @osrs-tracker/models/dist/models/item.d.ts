@@ -1,9 +1,3 @@
-export declare class LatestPrice {
-    high: number;
-    highTime: number;
-    low: number;
-    lowTime: number;
-}
 export declare class Item {
     id: number;
     name: string;
@@ -14,5 +8,4 @@ export declare class Item {
     limit: number;
     lowalch: number;
     highalch: number;
-    latest: LatestPrice;
 }
