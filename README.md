@@ -43,10 +43,14 @@ and player information in the game Old School RuneScape.
 
 - **osrs-tracker_player-info**
 
-  When sending a `GET /:username(?hiscore=false)` request, this function returns player information for the provided
-  username from MongoDB, or attempts to scrape it if not found in MongoDB.
+  When sending a `GET /:username(?scrapingOffset=0&hiscore=false)` request, this function returns player information for
+  the provided username from MongoDB, or attempts to scrape it if not found in MongoDB.
+
+  The `scrapingOffset` will be added to the `player.scrapingOffsets` if it's not present yet, and will be used filter
+  `hiscoreEntries` when `hiscore=true`.
 
   By default, the returned player does not include `hiscoreEntries`. However, if the query parameter `hiscore=true` is
-  included in the request, the function will also include the player's most recent hiscore entry.
+  included in the request, the function will also include the player's most recent hiscore entry matching the
+  `scrapingOffset`.
 
-  The function automatically refreshes when information from MongoDB is older than 2 hours.
+  The function automatically refreshes the player info when information from MongoDB is older than 2 hours.

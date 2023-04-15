@@ -15,20 +15,35 @@ export class MU {
     return this.db(mongo).collection(process.env.MONGODB_COLLECTION!);
   }
 
-  static getPlayer(mongo: MongoClient, username: string, includeLatestHiscoreEntry?: boolean): Promise<Player | null> {
+  static getPlayer(
+    mongo: MongoClient,
+    username: string,
+    scrapingOffset: number,
+    includeLatestHiscoreEntry: boolean,
+  ): Promise<Player | null> {
     return this.col(mongo).findOne<Player>(
       { username: username },
       {
         hint: { username: 1 },
-        projection: { _id: 0, hiscoreEntries: includeLatestHiscoreEntry ? { $slice: 1 } : 0 },
+        projection: {
+          _id: 0,
+          username: 1,
+          combatLevel: 1,
+          diedAsHardcore: 1,
+          lastModified: 1,
+          status: 1,
+          type: 1,
+          scrapingOffsets: 1,
+          ...(includeLatestHiscoreEntry ? { hiscoreEntries: { $elemMatch: { scrapingOffset } } } : {}),
+        } as { [key in keyof Omit<Player, 'hiscoreEntries'>]: 1 },
       },
     );
   }
 
-  static upsertPlayer(mongo: MongoClient, player: Player): Promise<UpdateResult> {
+  static upsertPlayer(mongo: MongoClient, player: Player, scrapingOffset: number): Promise<UpdateResult> {
     return this.col(mongo).updateOne(
       { username: player.username },
-      { $set: player },
+      { $set: player, $addToSet: { scrapingOffsets: scrapingOffset } },
       {
         upsert: true,
         hint: { username: 1 },

@@ -29,22 +29,31 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
   if (username.length > 12) return { statusCode: 400, body: 'Usernames must be between 1 and 12 characters long.' };
 
   const includeLatestHiscoreEntry = event.queryStringParameters?.hiscore === 'true';
+  const scrapingOffset = parseInt(event.queryStringParameters?.scrapingOffset ?? '0');
+
+  // Check if scrapingOffset is valid
+  if (isNaN(scrapingOffset)) return { statusCode: 400, body: 'Invalid scraping offset' };
+  if (scrapingOffset < -12 || scrapingOffset > 11) return { statusCode: 400, body: 'ScrapingOffset < -12 or > 11.' };
 
   // create index on id (if not exists)
   await MU.col(client).createIndex({ username: 1 }, { unique: true });
 
   // Check if player is in database
-  let player = await MU.getPlayer(client, username, includeLatestHiscoreEntry);
+  let player = await MU.getPlayer(client, username, scrapingOffset, includeLatestHiscoreEntry);
 
-  // Refresh player info if player is not found or if player has not been refreshed in the last 2 hours
-  if (!player || differenceInHours(new Date(), player.lastModified) >= 2) {
-    const refreshed = await refreshPlayerInfo(client, agent, username);
+  // Refresh player info if player is not found, has not been refreshed in the last 2 hours, or has a new scraping offset
+  if (
+    !player ||
+    differenceInHours(new Date(), player.lastModified) >= 2 ||
+    !player.scrapingOffsets?.includes(scrapingOffset)
+  ) {
+    const refreshed = await refreshPlayerInfo(client, agent, username, scrapingOffset);
 
     // Player does not exist or is not in the hiscores yet
     if (!refreshed) return { statusCode: 404, body: `Player "${username}" not found` };
 
     // fetch refreshed player from database to get all fields
-    player = await MU.getPlayer(client, username, includeLatestHiscoreEntry)!;
+    player = await MU.getPlayer(client, username, scrapingOffset, includeLatestHiscoreEntry)!;
   }
 
   // Return player info

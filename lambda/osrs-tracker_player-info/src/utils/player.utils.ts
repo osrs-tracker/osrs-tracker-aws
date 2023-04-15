@@ -12,14 +12,12 @@ export async function refreshPlayerInfo(
   client: MongoClient,
   agent: Agent,
   username: string,
-  savedPlayer?: Player,
+  scrapingOffset: number,
 ): Promise<boolean> {
-  if (savedPlayer?.type === PlayerType.Normal) throw new Error('Normal players should not be refreshed');
-
   const player = await determinePlayerStatusAndType(agent, username);
   if (player === null) return false;
 
-  const { upsertedCount, modifiedCount } = await MU.upsertPlayer(client, player);
+  const { upsertedCount, modifiedCount } = await MU.upsertPlayer(client, player, scrapingOffset);
   if (!upsertedCount && !modifiedCount) throw new Error('Player failed to be upserted');
 
   return true;
