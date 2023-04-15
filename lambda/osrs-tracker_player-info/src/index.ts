@@ -41,13 +41,18 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
   // Check if player is in database
   let player = await MU.getPlayer(client, username, scrapingOffset, includeLatestHiscoreEntry);
 
+  // Check if player has been scraped with this scrapingOffset before
+  const playerHasOffset = player?.scrapingOffsets?.includes(scrapingOffset);
+
   // Refresh player info if player is not found, has not been refreshed in the last 2 hours, or has a new scraping offset
-  if (
-    !player ||
-    differenceInHours(new Date(), player.lastModified) >= 2 ||
-    !player.scrapingOffsets?.includes(scrapingOffset)
-  ) {
-    const refreshed = await refreshPlayerInfo(client, agent, username, scrapingOffset);
+  if (!player || !playerHasOffset || differenceInHours(new Date(), player.lastModified) >= 2) {
+    const refreshed = await refreshPlayerInfo(
+      client,
+      agent,
+      username,
+      scrapingOffset, // Add scrapingOffset to player.scrapingOffsets if not already present
+      !playerHasOffset, // create initial hiscoreEntry if the player has not been scraped with this offset before
+    );
 
     // Player does not exist or is not in the hiscores yet
     if (!refreshed) return { statusCode: 404, body: `Player "${username}" not found` };

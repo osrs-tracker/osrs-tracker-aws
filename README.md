@@ -47,7 +47,8 @@ and player information in the game Old School RuneScape.
   the provided username from MongoDB, or attempts to scrape it if not found in MongoDB.
 
   The `scrapingOffset` will be added to the `player.scrapingOffsets` if it's not present yet, and will be used filter
-  `hiscoreEntries` when `hiscore=true`.
+  `hiscoreEntries` when `hiscore=true`. An initial `hiscoreEntry` will also be pushed if it's the first time the player
+  was fetched with this specific `scrapingOffset`.
 
   By default, the returned player does not include `hiscoreEntries`. However, if the query parameter `hiscore=true` is
   included in the request, the function will also include the player's most recent hiscore entry matching the

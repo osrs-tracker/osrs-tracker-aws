@@ -40,10 +40,20 @@ export class MU {
     );
   }
 
-  static upsertPlayer(mongo: MongoClient, player: Player, scrapingOffset: number): Promise<UpdateResult> {
+  static upsertPlayer(
+    mongo: MongoClient,
+    player: Player,
+    scrapingOffset: number,
+    initialScrape: boolean,
+    sourceString: string,
+  ): Promise<UpdateResult> {
     return this.col(mongo).updateOne(
       { username: player.username },
-      { $set: player, $addToSet: { scrapingOffsets: scrapingOffset } },
+      {
+        $set: player,
+        $addToSet: { scrapingOffsets: scrapingOffset },
+        ...(initialScrape ? { $push: { hiscoreEntries: { scrapingOffset, sourceString, date: new Date() } } } : {}),
+      },
       {
         upsert: true,
         hint: { username: 1 },
