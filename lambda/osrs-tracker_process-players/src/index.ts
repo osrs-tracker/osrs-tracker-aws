@@ -1,5 +1,6 @@
 import { SendMessageBatchCommand, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
-import { HiscoreEntry, PlayerScrapeMessageBody, PlayerWithHiscores } from '@osrs-tracker/models';
+import { discordAlert } from '@osrs-tracker/aws-alerting';
+import { Player, PlayerScrapeMessageBody } from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
 import { Agent } from 'https';
 import chunk from 'lodash.chunk';
@@ -45,7 +46,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
   for (const messageBody of messageBodies) {
     const { usernames, scrapingOffset } = messageBody;
     const scrapeTime = new Date();
-    const bulkUpdateOps: AnyBulkWriteOperation<PlayerWithHiscores>[] = [];
+    const bulkUpdateOps: AnyBulkWriteOperation<Player>[] = [];
 
     // scrape each username from body in parallel and wait for all to finish
     await Promise.allSettled(
@@ -54,7 +55,9 @@ export const handler = async (event: SQSEvent, context: Context) => {
         if (!hiscore) return mapArrayPush(failedMap, scrapingOffset, username);
 
         // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
-        bulkUpdateOps.push(MU.hiscoreEntryBulkWriteOp(username, new HiscoreEntry(hiscore, scrapeTime, scrapingOffset)));
+        bulkUpdateOps.push(
+          MU.hiscoreEntryBulkWriteOp(username, { sourceString: hiscore, date: scrapeTime, scrapingOffset }),
+        );
       }),
     );
 
@@ -68,6 +71,15 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
   if (updatedPlayerCount === 0) {
+    await discordAlert({
+      title: 'No players were updated',
+      description: `Failed to update ${[...failedMap.values()].flat().length} players.`,
+      authorName: 'osrs-tracker_process-players',
+      authorUrl: process.env.LOGS_URL,
+      color: 0xff0000,
+      timestamp: new Date(),
+    });
+
     throw new Error(`No players were updated. Failed to update ${[...failedMap.values()].flat().length} players.`);
   }
 
@@ -96,6 +108,23 @@ export const handler = async (event: SQSEvent, context: Context) => {
     `Updated ${updatedPlayerCount} players successfully.`,
     `Failed to update ${[...failedMap.values()].flat().length} players.`,
   );
+
+  if ([...failedMap.values()].flat().length) {
+    let description = `Failed to update ${[...failedMap.values()].flat().length} players:\n\n`;
+    description += [...failedMap.values()]
+      .flat()
+      .map((username) => `- ${username}`)
+      .join('\n');
+
+    await discordAlert({
+      title: 'Failed to process some players',
+      description,
+      authorName: 'osrs-tracker_process-players',
+      authorUrl: process.env.LOGS_URL,
+      color: 0xff0000,
+      timestamp: new Date(),
+    });
+  }
 
   return context.logStreamName;
 };

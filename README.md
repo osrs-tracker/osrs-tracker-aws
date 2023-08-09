@@ -27,6 +27,23 @@ and player information in the game Old School RuneScape.
 
 ### API Gateway driven
 
+- **osrs-tracker_discord-alert**
+
+  When invoking the lambda function with the following body, an message will be sent to the discord webhook specified by
+  `process.env.WEBHOOK_URL`. A helper function to make this easier can be found in the `@osrs-tracker/aws-alerting`
+  package.
+
+  ```ts
+  {
+    title?: string;
+    description?: string;
+    color?: string; // hexadecimal in string format, ex. '0xff0000' for red.
+    authorName?: string;
+    authorUrl?: string; // url to navigate to when author name is clicked.
+    timestamp?: string; // As ISO string, ex. '2023-08-09T16:26:48.965Z'.
+  }
+  ```
+
 - **osrs-tracker_item-info**
 
   When sending a `GET /:id` request, this function returns item details from MongoDB.

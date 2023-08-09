@@ -1,4 +1,4 @@
-import { HiscoreEntry, PlayerWithHiscores } from '@osrs-tracker/models';
+import { HiscoreEntry, Player } from '@osrs-tracker/models';
 import { AnyBulkWriteOperation, Collection, Db, MongoClient } from 'mongodb';
 
 /**
@@ -11,14 +11,11 @@ export class MU {
     return mongo.db(process.env.MONGODB_DATABASE!);
   }
 
-  static col(mongo: MongoClient): Collection<PlayerWithHiscores> {
+  static col(mongo: MongoClient): Collection<Player> {
     return this.db(mongo).collection(process.env.MONGODB_COLLECTION!);
   }
 
-  static hiscoreEntryBulkWriteOp(
-    username: string,
-    hiscoreEntry: HiscoreEntry,
-  ): AnyBulkWriteOperation<PlayerWithHiscores> {
+  static hiscoreEntryBulkWriteOp(username: string, hiscoreEntry: HiscoreEntry): AnyBulkWriteOperation<Player> {
     return {
       updateOne: {
         filter: { username },

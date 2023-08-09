@@ -1,0 +1,23 @@
+{
+  "name": "@osrs-tracker/aws-alerting",
+  "version": "0.0.2",
+  "description": "Discord alerting functions for OSRS Tracker.",
+  "license": "MIT",
+  "author": "Freek Mencke",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "github:osrs-tracker/osrs-tracker-aws",
+    "directory": "@osrs-tracker/aws-alerting"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.387.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  }
+}
