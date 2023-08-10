@@ -25,7 +25,6 @@ jobs:
 
       - name: Install
         run: npm ci
-        working-directory: lambda/${{ matrix.lambda_function }}
 
       - name: Prettier
         run: npm run prettier:ci
