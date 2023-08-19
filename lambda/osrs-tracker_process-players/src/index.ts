@@ -1,10 +1,10 @@
 import { SendMessageBatchCommand, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
-import { discordAlert } from '@osrs-tracker/aws-alerting';
 import { Player, PlayerScrapeMessageBody } from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
 import { Agent } from 'https';
 import chunk from 'lodash.chunk';
 import { AnyBulkWriteOperation, AuthMechanism, BulkWriteResult, MongoClient } from 'mongodb';
+import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
 import { getHiscore } from './utils/player.utils';
@@ -71,14 +71,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
   if (updatedPlayerCount === 0) {
-    await discordAlert({
-      title: 'No players were updated',
-      description: `Failed to update ${[...failedMap.values()].flat().length} players.`,
-      authorName: 'osrs-tracker_process-players',
-      authorUrl: process.env.LOGS_URL,
-      color: 0xff0000,
-      timestamp: new Date(),
-    });
+    await discordAlert(
+      'No players were updated',
+      `Failed to update ${[...failedMap.values()].flat().length} players.`,
+      context,
+    );
 
     throw new Error(`No players were updated. Failed to update ${[...failedMap.values()].flat().length} players.`);
   }
@@ -116,14 +113,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
       .map((username) => `- ${username}`)
       .join('\n');
 
-    await discordAlert({
-      title: 'Failed to process some players',
-      description,
-      authorName: 'osrs-tracker_process-players',
-      authorUrl: process.env.LOGS_URL,
-      color: 0xff0000,
-      timestamp: new Date(),
-    });
+    await discordAlert('Failed to process some players', description, context);
   }
 
   return context.logStreamName;
