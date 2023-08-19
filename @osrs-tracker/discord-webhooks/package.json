@@ -1,0 +1,25 @@
+{
+  "name": "@osrs-tracker/discord-webhooks",
+  "version": "0.0.1",
+  "description": "A simple discord webhook wrapper, including typings.",
+  "license": "MIT",
+  "author": "Freek Mencke",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "github:osrs-tracker/osrs-tracker-aws",
+    "directory": "@osrs-tracker/discord-webhook"
+  },
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "discord.js": "^14.13.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.0.4"
+  }
+}
