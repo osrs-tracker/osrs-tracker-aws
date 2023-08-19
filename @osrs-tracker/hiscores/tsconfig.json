@@ -1,0 +1,14 @@
+{
+  "files": ["src/index.ts"],
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "dist",
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "lib": ["dom", "es2022"],
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "strict": true
+  }
+}

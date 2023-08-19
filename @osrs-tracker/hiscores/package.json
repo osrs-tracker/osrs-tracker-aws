@@ -1,0 +1,33 @@
+{
+  "name": "@osrs-tracker/hiscores",
+  "version": "0.0.1",
+  "description": "Logic for parsing OSRS hiscores",
+  "license": "MIT",
+  "author": "Freek Mencke",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "github:osrs-tracker/osrs-tracker-aws",
+    "directory": "@osrs-tracker/hiscores"
+  },
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "@osrs-tracker/models": "^0.4.0"
+  },
+  "dependencies": {
+    "@osrs-tracker/models": "^0.4.0",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.3",
+    "jest": "^29.6.2",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.1.6"
+  }
+}
