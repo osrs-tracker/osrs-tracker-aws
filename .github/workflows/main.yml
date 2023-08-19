@@ -37,7 +37,6 @@ jobs:
       fail-fast: false
       matrix:
         lambda_function:
-          - osrs-tracker_discord-alert
           - osrs-tracker_item-info
           - osrs-tracker_item-search
           - osrs-tracker_latest-news
