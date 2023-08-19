@@ -1,3 +1,8 @@
+## 0.4.0 - 2023/08/19
+
+- Update `typescript` to `^5.1.6`.
+- Changed from classes to interfaces because it makes more sense.
+
 ## v0.3.3 - 2023/04/07
 
 - Remove`latest` from `Item`.

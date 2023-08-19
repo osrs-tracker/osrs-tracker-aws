@@ -13,7 +13,7 @@ export enum PlayerStatus {
   DeUltimated = 'de_ultimated',
 }
 
-export class Player {
+export interface Player {
   username: string;
   combatLevel: number;
   type: PlayerType;

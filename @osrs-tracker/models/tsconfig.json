@@ -7,11 +7,8 @@
     "module": "es2022",
     "moduleResolution": "node",
     "lib": ["dom", "es2022"],
-    "experimentalDecorators": true,
     "noUnusedLocals": true,
     "removeComments": true,
-    "strict": true,
-    "strictPropertyInitialization": false,
-    "useDefineForClassFields": false
+    "strict": true
   }
 }

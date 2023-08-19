@@ -10,7 +10,7 @@ export declare enum PlayerStatus {
     DeIroned = "de_ironed",
     DeUltimated = "de_ultimated"
 }
-export declare class Player {
+export interface Player {
     username: string;
     combatLevel: number;
     type: PlayerType;

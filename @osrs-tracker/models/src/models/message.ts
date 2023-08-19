@@ -1,4 +1,4 @@
-export class PlayerScrapeMessageBody {
+export interface PlayerScrapeMessageBody {
   usernames: string[];
   scrapingOffset: number;
 }

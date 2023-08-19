@@ -1,2 +1,1 @@
-export class PlayerScrapeMessageBody {
-}
+export {};

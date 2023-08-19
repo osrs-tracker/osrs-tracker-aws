@@ -1,4 +1,4 @@
-export class OsrsNewsItem {
+export interface OsrsNewsItem {
   title: string;
   pubDate: Date;
   category: string;
