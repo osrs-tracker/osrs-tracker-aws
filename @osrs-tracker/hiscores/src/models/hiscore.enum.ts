@@ -29,6 +29,7 @@ export enum CompetitiveEnum {
   LeaguePoints = 'League Points',
   PvpArena = 'PvP Arena - Rank',
   LastManStanding = 'Last Man Standing (Rank)',
+  Unknown = 'Unknown', // something with deadman apocalypse
 }
 
 export enum BountyHunterEnum {

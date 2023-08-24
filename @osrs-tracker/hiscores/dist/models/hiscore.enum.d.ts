@@ -27,7 +27,8 @@ export declare enum SkillEnum {
 export declare enum CompetitiveEnum {
     LeaguePoints = "League Points",
     PvpArena = "PvP Arena - Rank",
-    LastManStanding = "Last Man Standing (Rank)"
+    LastManStanding = "Last Man Standing (Rank)",
+    Unknown = "Unknown"
 }
 export declare enum BountyHunterEnum {
     BountyHunter = "Bounty Hunter - Hunter",

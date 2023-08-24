@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/hiscores",
-  "version": "0.0.2",
+  "version": "0.1.1",
   "description": "Logic for parsing OSRS hiscores",
   "license": "MIT",
   "author": "Freek Mencke",
@@ -15,7 +15,7 @@
     "prebuild": "rm -rf dist",
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "test": "jest"
+    "test": "jest --watch"
   },
   "peerDependencies": {
     "@osrs-tracker/models": "^0.4.0"
