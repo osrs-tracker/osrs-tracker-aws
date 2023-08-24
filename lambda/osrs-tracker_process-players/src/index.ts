@@ -68,16 +68,13 @@ export const handler = async (event: SQSEvent, context: Context) => {
   // wait for all bulk writes to finish
   const bulkWriteResults = await Promise.all(bulkWrites);
   const updatedPlayerCount = bulkWriteResults.reduce((acc, result) => acc + result.modifiedCount, 0);
+  const failedMessagesCount = [...failedMap.values()].flat().length;
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
   if (updatedPlayerCount === 0) {
-    await discordAlert(
-      'No players were updated',
-      `Failed to update ${[...failedMap.values()].flat().length} players.`,
-      context,
-    );
+    await discordAlert('No players were updated', [...failedMap.values()].flat(), context);
 
-    throw new Error(`No players were updated. Failed to update ${[...failedMap.values()].flat().length} players.`);
+    throw new Error(`No players were updated. Failed to update ${failedMessagesCount} players.`);
   }
 
   // If some usernames updated successfully and some failed, send new SQS messages for the failed usernames
@@ -103,17 +100,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
   console.log(
     `Updated ${updatedPlayerCount} players successfully.`,
-    `Failed to update ${[...failedMap.values()].flat().length} players.`,
+    `Failed to update ${failedMessagesCount} players.`,
   );
 
-  if ([...failedMap.values()].flat().length) {
-    let description = `Failed to update ${[...failedMap.values()].flat().length} players:\n\n`;
-    description += [...failedMap.values()]
-      .flat()
-      .map((username) => `- ${username}`)
-      .join('\n');
-
-    await discordAlert('Failed to process some players', description, context);
+  if (failedMessagesCount) {
+    await discordAlert('Failed to process some players', [...failedMap.values()].flat(), context);
   }
 
   return context.logStreamName;

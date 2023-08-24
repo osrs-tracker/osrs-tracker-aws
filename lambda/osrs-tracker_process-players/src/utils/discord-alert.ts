@@ -1,8 +1,11 @@
 import { DiscordWebhook } from '@osrs-tracker/discord-webhooks';
 import { Context } from 'aws-lambda/handler';
 
-export function discordAlert(title: string, description: string, context: Context) {
+export function discordAlert(title: string, failedPlayers: string[], context: Context) {
   const region = context.invokedFunctionArn.split(':')[3];
+
+  let description = `Failed to update ${failedPlayers.length} player${failedPlayers.length > 1 ? 's:' : ':'}\n`;
+  description += failedPlayers.map((username) => `- ${username}`).join('\n');
 
   return DiscordWebhook.dispatch({
     embeds: [
