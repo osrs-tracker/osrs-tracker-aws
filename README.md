@@ -25,6 +25,16 @@ and player information in the game Old School RuneScape.
   This function fetches OSRS hiscores for the provided usernames, and prepends the hiscore to the
   `player.hiscoreEntries` array.
 
+- **osrs-tracker_hiscore-parser-validator**
+
+  This function fetches the hiscores every hour for a few test usernames and will run the `parseHiscoreString` function
+  from the `@osrs-tracker/hiscores` package to test if the current parser is still valid, and no api changes have
+  happened.
+
+- **osrs-tracker_clean-hiscores**
+
+  This function deletes all hiscores older then 60 days from the data base every day at UTC midnight.
+
 ### API Gateway driven
 
 - **osrs-tracker_item-info**
