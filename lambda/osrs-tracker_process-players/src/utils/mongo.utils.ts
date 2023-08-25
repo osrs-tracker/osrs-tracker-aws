@@ -17,6 +17,7 @@ export class MU {
 
   static hiscoreEntryBulkWriteOp(username: string, hiscoreEntry: HiscoreEntry): AnyBulkWriteOperation<Player> {
     return {
+      // add new hiscoreEntry to player.hiscoreEntries
       updateOne: {
         filter: { username },
         hint: { username: 1 },
