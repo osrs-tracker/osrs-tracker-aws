@@ -21,8 +21,8 @@ export const handler = async (event: APIGatewayEvent, _context: Context): Promis
   const size = parseInt(event.queryStringParameters?.size ?? '7');
   const skip = parseInt(event.queryStringParameters?.skip ?? '0');
 
-  // ensure index exists on username and scrapingOffset
-  await MU.col(client).createIndex({ 'username': 1, 'hiscoreEntries.scrapingOffset': 1 }, { sparse: true });
+  // create index on id (if not exists)
+  await MU.col(client).createIndex({ username: 1 }, { unique: true });
 
   // Get player hiscores
   const hiscores = await MU.getPlayerHiscores(client, username, scrapingOffset, size, skip);

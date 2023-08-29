@@ -1,4 +1,4 @@
-import { HiscoreEntry, PlayerWithHiscores } from '@osrs-tracker/models';
+import { HiscoreEntry, Player } from '@osrs-tracker/models';
 import { Collection, Db, MongoClient } from 'mongodb';
 
 /**
@@ -22,13 +22,30 @@ export class MU {
     size: number,
     skip: number,
   ): Promise<HiscoreEntry[] | null> {
-    const player = await this.col(mongo).findOne<PlayerWithHiscores>(
-      { 'username': username, 'hiscoreEntries.scrapingOffset': scrapingOffset },
-      {
-        hint: { 'username': 1, 'hiscoreEntries.scrapingOffset': 1 },
-        projection: { _id: 0, username: 1, hiscoreEntries: { $slice: [skip, size] } }, // project username to trigger inclusion, and thus exclude all other fields
-      },
-    );
+    const player = await this.col(mongo)
+      .aggregate<Player>([
+        { $match: { username: username } },
+        {
+          $project: {
+            _id: 0,
+            username: 1,
+            hiscoreEntries: {
+              $slice: [
+                {
+                  $filter: {
+                    input: '$hiscoreEntries',
+                    as: 'entry',
+                    cond: { $eq: ['$$entry.scrapingOffset', scrapingOffset] },
+                  },
+                },
+                skip,
+                size,
+              ],
+            },
+          },
+        },
+      ])
+      .next();
 
     return player?.hiscoreEntries ?? null;
   }

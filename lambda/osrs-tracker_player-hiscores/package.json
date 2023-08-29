@@ -7,7 +7,7 @@
     "prebuild": "rm -rf ./dist",
     "build": "node ./build/esbuild.js",
     "predeploy": "npm run build && cd dist && bestzip ../dist.zip * && cd ..",
-    "deploy": "aws lambda update-function-code --function-name osrs-tracker_player-hiscores --zip-file fileb://dist.zip --publish --no-cli-pager",
+    "deploy": "aws lambda update-function-code --function-name osrs-tracker_player-hiscores --zip-file fileb://dist.zip --publish",
     "postdeploy": "rm ./dist.zip",
     "lint": "eslint . --ext .ts,.js",
     "prettier": "prettier --write .",
@@ -21,22 +21,22 @@
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
-    "@osrs-tracker/models": "^0.0.1",
+    "@osrs-tracker/models": "^0.4.0",
     "aws4": "^1.12.0",
-    "mongodb": "^5.1.0"
+    "mongodb": "^5.8.1"
   },
   "devDependencies": {
-    "@es-exec/esbuild-plugin-start": "^0.0.4",
-    "@types/aws-lambda": "^8.10.111",
-    "@types/node": "^18.14.1",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
-    "@typescript-eslint/parser": "^5.53.0",
+    "@es-exec/esbuild-plugin-start": "^0.0.5",
+    "@types/aws-lambda": "^8.10.119",
+    "@types/node": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
     "bestzip": "^2.2.1",
-    "esbuild": "^0.17.10",
-    "eslint": "^8.34.0",
-    "eslint-config-prettier": "^8.6.0",
+    "esbuild": "^0.19.2",
+    "eslint": "^8.47.0",
+    "eslint-config-prettier": "^9.0.0",
     "minimist": "^1.2.8",
-    "prettier": "^2.8.4",
-    "typescript": "^4.9.5"
+    "prettier": "^3.0.2",
+    "typescript": "^5.2.2"
   }
 }
