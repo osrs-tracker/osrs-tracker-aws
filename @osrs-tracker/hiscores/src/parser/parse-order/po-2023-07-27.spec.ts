@@ -16,13 +16,13 @@ describe('Parser with 2023-07-27 parse order', () => {
     });
     expect(hiscore.bosses[BossEnum.TheLeviathan]).toEqual({
       name: BossEnum.TheLeviathan,
-      rank: 156417,
-      score: 9,
+      rank: 16738,
+      score: 19,
     });
     expect(hiscore.bosses[BossEnum.TheWhisperer]).toEqual({
       name: BossEnum.TheWhisperer,
-      rank: -1,
-      score: -1,
+      rank: 9862,
+      score: 68,
     });
     expect(hiscore.bosses[BossEnum.Vardorvis]).toEqual({
       name: BossEnum.Vardorvis,

@@ -1,3 +1,7 @@
+## v0.1.2 - 2023/09/11
+
+- Fix bad DT2 boss parsing order.
+
 ## v0.1.1 - 2023/08/24
 
 - Used correct start date for new parser.

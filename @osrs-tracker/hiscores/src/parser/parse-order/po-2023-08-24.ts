@@ -100,11 +100,13 @@ export const PO_2023_08_24: ParseOrder = [
   BossEnum.Skotizo,
   BossEnum.Spindel,
   BossEnum.Tempoross,
-  BossEnum.TheLeviathan,
-  BossEnum.TheWhisperer,
 
   RaidEnum.TheGauntlet,
   RaidEnum.TheCorruptedGauntlet,
+
+  BossEnum.TheLeviathan,
+  BossEnum.TheWhisperer,
+
   RaidEnum.TheatreOfBlood,
   RaidEnum.TheatreOfBloodHardMode,
 
