@@ -31,12 +31,11 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   let usernamesProcessed = 0;
   let messagesCreated = 0;
   let commandsExecuted = 0;
-  let errors = 0;
+  const errors: any[] = [];
 
   // temporary arrays
   const usernames: string[] = [];
   const messageBatch: SendMessageBatchRequestEntry[] = [];
-  const messagesInFlight: any[] = [];
 
   for await (const username of usernameCursor) {
     // add username to usernames array
@@ -53,7 +52,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
 
     // if batch is full, send batch
     if (messageBatch.length === SQS_MESSAGE_BATCH_SIZE) {
-      messagesInFlight.push(sendMessageBatch(sqsClient, messageBatch).catch(() => errors++));
+      await sendMessageBatch(sqsClient, messageBatch).catch((e) => errors.push(e));
       commandsExecuted++;
       messageBatch.length = 0;
     }
@@ -65,19 +64,20 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
     messagesCreated++;
   }
   if (messageBatch.length) {
-    messagesInFlight.push(sendMessageBatch(sqsClient, messageBatch).catch(() => errors++));
+    await sendMessageBatch(sqsClient, messageBatch).catch((e) => errors.push(e));
     commandsExecuted++;
   }
-
-  // wait for all messages to be sent
-  await Promise.all(messagesInFlight);
 
   console.log('RESULT: ', {
     usernamesProcessed,
     messagesCreated,
     commandsExecuted,
-    errors,
+    errors: errors.length,
   });
+
+  if (errors.length) {
+    errors.forEach((e) => console.error(e));
+  }
 
   return context.logStreamName;
 };

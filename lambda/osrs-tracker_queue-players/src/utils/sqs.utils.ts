@@ -9,5 +9,6 @@ export function createMessage(usernames: string[], scrapingOffset: number) {
 }
 
 export function sendMessageBatch(sqsClient: SQSClient, messageBatch: SendMessageBatchRequestEntry[]) {
+  console.info(messageBatch);
   return sqsClient.send(new SendMessageBatchCommand({ QueueUrl: process.env.SQS_QUEUE_URL!, Entries: messageBatch }));
 }
