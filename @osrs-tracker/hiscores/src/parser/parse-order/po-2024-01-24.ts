@@ -10,7 +10,7 @@ import {
 import { ParseOrder } from './parse-order';
 
 /** Deadman: Apocalypse */
-export const PO_2023_08_24: ParseOrder = [
+export const PO_2024_01_24: ParseOrder = [
   SkillEnum.Overall,
   SkillEnum.Attack,
   SkillEnum.Defence,
@@ -97,6 +97,7 @@ export const PO_2023_08_24: ParseOrder = [
   BossEnum.PhantomMuspah,
   BossEnum.Sarachnis,
   BossEnum.Scorpia,
+  BossEnum.Scurrius,
   BossEnum.Skotizo,
   BossEnum.Spindel,
   BossEnum.Tempoross,

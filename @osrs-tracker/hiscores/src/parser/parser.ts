@@ -1,5 +1,5 @@
 import { HiscoreEntry } from '@osrs-tracker/models';
-import { isAfter, parseISO } from 'date-fns';
+import { addHours, isAfter, parseISO } from 'date-fns';
 import {
   BossEnum,
   BountyHunterEnum,
@@ -167,7 +167,9 @@ function getSkillFromSourceString(sourceString: string, skill: SkillEnum, date: 
 
 function getCurrentParser(dateToParse: Date): ParseOrder {
   for (const [parseDate, parser] of Object.entries(ParseOrderMap)) {
-    if (isAfter(dateToParse, parseISO(parseDate))) return parser;
+    if (isAfter(dateToParse, addHours(parseISO(parseDate), 11))) {
+      return parser;
+    }
   }
   return PO_DEFAULT;
 }

@@ -1,3 +1,7 @@
+## v0.1.3 - 2023/09/11
+
+- Add scurrius to parser to fix parser.
+
 ## v0.1.2 - 2023/09/11
 
 - Fix bad DT2 boss parsing order.

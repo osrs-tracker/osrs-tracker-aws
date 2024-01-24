@@ -101,6 +101,7 @@ export enum BossEnum {
   PhantomMuspah = 'Phantom Muspah',
   Sarachnis = 'Sarachnis',
   Scorpia = 'Scorpia',
+  Scurrius = 'Scurrius', // New boss 24/01/2024
   Skotizo = 'Skotizo',
   Spindel = 'Spindel', // New boss 13/04/2023
   Tempoross = 'Tempoross',

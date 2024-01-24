@@ -1,4 +1,4 @@
-import { isAfter, parseISO } from 'date-fns';
+import { addHours, isAfter, parseISO } from 'date-fns';
 import { BossEnum, BountyHunterEnum, ClueScrollsEnum, CompetitiveEnum, MiniGameEnum, RaidEnum, SkillEnum, } from '../models/hiscore.enum';
 import { ParseOrderMap } from './parse-order/parse-order';
 import { PO_DEFAULT } from './parse-order/po-default';
@@ -96,8 +96,9 @@ function getSkillFromSourceString(sourceString, skill, date) {
 }
 function getCurrentParser(dateToParse) {
     for (const [parseDate, parser] of Object.entries(ParseOrderMap)) {
-        if (isAfter(dateToParse, parseISO(parseDate)))
+        if (isAfter(dateToParse, addHours(parseISO(parseDate), 11))) {
             return parser;
+        }
     }
     return PO_DEFAULT;
 }

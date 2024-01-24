@@ -95,6 +95,7 @@ export declare enum BossEnum {
     PhantomMuspah = "Phantom Muspah",
     Sarachnis = "Sarachnis",
     Scorpia = "Scorpia",
+    Scurrius = "Scurrius",
     Skotizo = "Skotizo",
     Spindel = "Spindel",
     Tempoross = "Tempoross",

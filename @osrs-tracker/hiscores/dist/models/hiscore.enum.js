@@ -102,6 +102,7 @@ export var BossEnum;
     BossEnum["PhantomMuspah"] = "Phantom Muspah";
     BossEnum["Sarachnis"] = "Sarachnis";
     BossEnum["Scorpia"] = "Scorpia";
+    BossEnum["Scurrius"] = "Scurrius";
     BossEnum["Skotizo"] = "Skotizo";
     BossEnum["Spindel"] = "Spindel";
     BossEnum["Tempoross"] = "Tempoross";

@@ -1,5 +1,5 @@
 import { BossEnum, BountyHunterEnum, ClueScrollsEnum, CompetitiveEnum, MiniGameEnum, RaidEnum, SkillEnum, } from '../../models/hiscore.enum';
-export const PO_2023_08_24 = [
+export const PO_2023_08_23 = [
     SkillEnum.Overall,
     SkillEnum.Attack,
     SkillEnum.Defence,
