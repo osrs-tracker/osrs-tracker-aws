@@ -1,3 +1,9 @@
+## v0.2.0 - 2024/02/27
+
+- Added methods for XP calculation
+  - `calculateXPForSkillLevel(level: number): number`
+  - `calculateXPToNextLevel(currentXP: number, currentLevel: number)`
+
 ## v0.1.3 - 2023/09/11
 
 - Add scurrius to parser to fix parser.
