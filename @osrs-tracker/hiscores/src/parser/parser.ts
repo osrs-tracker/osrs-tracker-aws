@@ -149,6 +149,8 @@ export function parseHiscoreString(hiscoreString: string, date: Date): Omit<Hisc
     if (Object.values(MiniGameEnum).includes(miniGame.name as MiniGameEnum))
       return (hiscore.miniGames[miniGame.name as MiniGameEnum] = miniGame);
 
+    console.log(miniGame, Object.values(MiniGameEnum));
+
     // When a minigame can't be found in the current parse order, throw an error
     throw new Error('Unknown minigame detected:' + miniGame.name);
   });

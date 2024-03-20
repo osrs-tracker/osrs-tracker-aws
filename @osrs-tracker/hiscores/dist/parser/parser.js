@@ -84,6 +84,7 @@ export function parseHiscoreString(hiscoreString, date) {
             return (hiscore.bountyHunter[miniGame.name] = miniGame);
         if (Object.values(MiniGameEnum).includes(miniGame.name))
             return (hiscore.miniGames[miniGame.name] = miniGame);
+        console.log(miniGame, Object.values(MiniGameEnum));
         throw new Error('Unknown minigame detected:' + miniGame.name);
     });
     return hiscore;

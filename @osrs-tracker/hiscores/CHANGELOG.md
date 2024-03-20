@@ -1,3 +1,7 @@
+## v0.3.0 - 2024/03/20
+
+- Added new hiscore parse order for Varlamore Part 1.
+
 ## v0.2.0 - 2024/02/27
 
 - Added methods for XP calculation

@@ -53,6 +53,7 @@ export var MiniGameEnum;
 (function (MiniGameEnum) {
     MiniGameEnum["SoulWarsZeal"] = "Soul Wars Zeal";
     MiniGameEnum["RiftsClosed"] = "Rifts Closed";
+    MiniGameEnum["ColosseumGlory"] = "Colosseum Glory";
 })(MiniGameEnum || (MiniGameEnum = {}));
 export var RaidEnum;
 (function (RaidEnum) {
@@ -94,6 +95,7 @@ export var BossEnum;
     BossEnum["Kraken"] = "Kraken";
     BossEnum["KreeArra"] = "Kree'Arra";
     BossEnum["KrilTsutsaroth"] = "K'ril Tsutsaroth";
+    BossEnum["LunarChests"] = "Lunar Chests";
     BossEnum["Mimic"] = "Mimic";
     BossEnum["Nex"] = "Nex";
     BossEnum["Nightmare"] = "Nightmare";
@@ -104,6 +106,7 @@ export var BossEnum;
     BossEnum["Scorpia"] = "Scorpia";
     BossEnum["Scurrius"] = "Scurrius";
     BossEnum["Skotizo"] = "Skotizo";
+    BossEnum["SolHeredit"] = "Sol Heredit";
     BossEnum["Spindel"] = "Spindel";
     BossEnum["Tempoross"] = "Tempoross";
     BossEnum["TheLeviathan"] = "The Leviathan";

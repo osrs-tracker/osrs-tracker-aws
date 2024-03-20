@@ -22,7 +22,7 @@
   "prettier": "./.prettierrc.json",
   "dependencies": {
     "@osrs-tracker/discord-webhooks": "^0.0.2",
-    "@osrs-tracker/hiscores": "^0.1.3",
+    "@osrs-tracker/hiscores": "^0.3.0",
     "@osrs-tracker/models": "^0.4.0",
     "node-fetch": "^3.3.2"
   },

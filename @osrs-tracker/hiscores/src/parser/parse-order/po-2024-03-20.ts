@@ -9,8 +9,8 @@ import {
 } from '../../models/hiscore.enum';
 import { ParseOrder } from './parse-order';
 
-/** Scurrius */
-export const PO_2024_01_24: ParseOrder = [
+/** Varlamore: Part 1 */
+export const PO_2024_03_20: ParseOrder = [
   SkillEnum.Overall,
   SkillEnum.Attack,
   SkillEnum.Defence,
@@ -57,6 +57,7 @@ export const PO_2024_01_24: ParseOrder = [
 
   MiniGameEnum.SoulWarsZeal,
   MiniGameEnum.RiftsClosed,
+  MiniGameEnum.ColosseumGlory,
 
   BossEnum.AbyssalSire,
   BossEnum.AlchemicalHydra,
@@ -89,6 +90,7 @@ export const PO_2024_01_24: ParseOrder = [
   BossEnum.Kraken,
   BossEnum.KreeArra,
   BossEnum.KrilTsutsaroth,
+  BossEnum.LunarChests,
   BossEnum.Mimic,
   BossEnum.Nex,
   BossEnum.Nightmare,
@@ -99,6 +101,7 @@ export const PO_2024_01_24: ParseOrder = [
   BossEnum.Scorpia,
   BossEnum.Scurrius,
   BossEnum.Skotizo,
+  BossEnum.SolHeredit,
   BossEnum.Spindel,
   BossEnum.Tempoross,
 

@@ -52,6 +52,7 @@ export enum ClueScrollsEnum {
 export enum MiniGameEnum {
   SoulWarsZeal = 'Soul Wars Zeal',
   RiftsClosed = 'Rifts Closed',
+  ColosseumGlory = 'Colosseum Glory', // New minigame 20/03/2024
 }
 
 export enum RaidEnum {
@@ -93,6 +94,7 @@ export enum BossEnum {
   Kraken = 'Kraken',
   KreeArra = "Kree'Arra",
   KrilTsutsaroth = "K'ril Tsutsaroth",
+  LunarChests = 'Lunar Chests', // New boss 20/03/2024
   Mimic = 'Mimic',
   Nex = 'Nex',
   Nightmare = 'Nightmare',
@@ -103,6 +105,7 @@ export enum BossEnum {
   Scorpia = 'Scorpia',
   Scurrius = 'Scurrius', // New boss 24/01/2024
   Skotizo = 'Skotizo',
+  SolHeredit = 'Sol Heredit', // New boss 20/03/2024
   Spindel = 'Spindel', // New boss 13/04/2023
   Tempoross = 'Tempoross',
   TheLeviathan = 'The Leviathan', // New boss 31/07/2023

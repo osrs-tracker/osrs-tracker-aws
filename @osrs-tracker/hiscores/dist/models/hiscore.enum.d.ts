@@ -47,7 +47,8 @@ export declare enum ClueScrollsEnum {
 }
 export declare enum MiniGameEnum {
     SoulWarsZeal = "Soul Wars Zeal",
-    RiftsClosed = "Rifts Closed"
+    RiftsClosed = "Rifts Closed",
+    ColosseumGlory = "Colosseum Glory"
 }
 export declare enum RaidEnum {
     ChambersOfXeric = "Chambers of Xeric",
@@ -87,6 +88,7 @@ export declare enum BossEnum {
     Kraken = "Kraken",
     KreeArra = "Kree'Arra",
     KrilTsutsaroth = "K'ril Tsutsaroth",
+    LunarChests = "Lunar Chests",
     Mimic = "Mimic",
     Nex = "Nex",
     Nightmare = "Nightmare",
@@ -97,6 +99,7 @@ export declare enum BossEnum {
     Scorpia = "Scorpia",
     Scurrius = "Scurrius",
     Skotizo = "Skotizo",
+    SolHeredit = "Sol Heredit",
     Spindel = "Spindel",
     Tempoross = "Tempoross",
     TheLeviathan = "The Leviathan",
