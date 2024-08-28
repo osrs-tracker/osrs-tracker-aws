@@ -10,8 +10,8 @@ describe('Parser with 2024-03-20 parse order', () => {
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 7, 28, 12));
 
     expect(hiscore.bosses[BossEnum.AlchemicalHydra]).toEqual({
-      name:  BossEnum.AlchemicalHydra,
-      rank: 18991	,
+      name: BossEnum.AlchemicalHydra,
+      rank: 18991,
       score: 2198,
     });
     expect(hiscore.bosses[BossEnum.Araxxor]).toEqual({
