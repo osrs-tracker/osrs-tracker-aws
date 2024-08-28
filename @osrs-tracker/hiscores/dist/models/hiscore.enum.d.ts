@@ -63,6 +63,7 @@ export declare enum RaidEnum {
 export declare enum BossEnum {
     AbyssalSire = "Abyssal Sire",
     AlchemicalHydra = "Alchemical Hydra",
+    Araxxor = "Araxxor",
     Artio = "Artio",
     BarrowsChests = "Barrows Chests",
     Bryophyta = "Bryophyta",

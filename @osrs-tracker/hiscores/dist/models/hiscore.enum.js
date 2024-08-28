@@ -70,6 +70,7 @@ export var BossEnum;
 (function (BossEnum) {
     BossEnum["AbyssalSire"] = "Abyssal Sire";
     BossEnum["AlchemicalHydra"] = "Alchemical Hydra";
+    BossEnum["Araxxor"] = "Araxxor";
     BossEnum["Artio"] = "Artio";
     BossEnum["BarrowsChests"] = "Barrows Chests";
     BossEnum["Bryophyta"] = "Bryophyta";

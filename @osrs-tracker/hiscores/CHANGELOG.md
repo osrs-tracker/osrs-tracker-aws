@@ -1,3 +1,7 @@
+## v0.4.0 - 2024/03/20
+
+- Added new hiscore parse order for Araxxor
+
 ## v0.3.0 - 2024/03/20
 
 - Added new hiscore parse order for Varlamore Part 1.

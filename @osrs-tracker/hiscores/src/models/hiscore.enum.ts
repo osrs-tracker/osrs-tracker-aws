@@ -69,6 +69,7 @@ export enum RaidEnum {
 export enum BossEnum {
   AbyssalSire = 'Abyssal Sire',
   AlchemicalHydra = 'Alchemical Hydra',
+  Araxxor = 'Araxxor', // New boss 28/08/2024
   Artio = 'Artio', // New boss 13/04/2023
   BarrowsChests = 'Barrows Chests',
   Bryophyta = 'Bryophyta',
