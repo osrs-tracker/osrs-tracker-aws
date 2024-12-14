@@ -70,6 +70,7 @@ export enum BossEnum {
   AbyssalSire = 'Abyssal Sire',
   AlchemicalHydra = 'Alchemical Hydra',
   Araxxor = 'Araxxor', // New boss 28/08/2024
+  Amoxliatl = 'Amoxliatl', // Varlamore P2 25/09/2024
   Artio = 'Artio', // New boss 13/04/2023
   BarrowsChests = 'Barrows Chests',
   Bryophyta = 'Bryophyta',
@@ -109,6 +110,7 @@ export enum BossEnum {
   SolHeredit = 'Sol Heredit', // New boss 20/03/2024
   Spindel = 'Spindel', // New boss 13/04/2023
   Tempoross = 'Tempoross',
+  TheHueycoatl = 'The Hueycoatl', // Varlamore P2 25/09/2024
   TheLeviathan = 'The Leviathan', // New boss 31/07/2023
   TheWhisperer = 'The Whisperer', // New boss 31/07/2023
   ThermoNuclearSmokeDevil = 'Thermonuclear Smoke Devil',
