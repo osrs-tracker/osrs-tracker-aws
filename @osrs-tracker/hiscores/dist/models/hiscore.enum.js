@@ -54,6 +54,7 @@ export var MiniGameEnum;
     MiniGameEnum["SoulWarsZeal"] = "Soul Wars Zeal";
     MiniGameEnum["RiftsClosed"] = "Rifts Closed";
     MiniGameEnum["ColosseumGlory"] = "Colosseum Glory";
+    MiniGameEnum["CollectionsLogged"] = "Collections Logged";
 })(MiniGameEnum || (MiniGameEnum = {}));
 export var RaidEnum;
 (function (RaidEnum) {

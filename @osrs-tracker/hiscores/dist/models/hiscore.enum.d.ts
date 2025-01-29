@@ -48,7 +48,8 @@ export declare enum ClueScrollsEnum {
 export declare enum MiniGameEnum {
     SoulWarsZeal = "Soul Wars Zeal",
     RiftsClosed = "Rifts Closed",
-    ColosseumGlory = "Colosseum Glory"
+    ColosseumGlory = "Colosseum Glory",
+    CollectionsLogged = "Collections Logged"
 }
 export declare enum RaidEnum {
     ChambersOfXeric = "Chambers of Xeric",

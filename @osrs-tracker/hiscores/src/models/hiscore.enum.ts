@@ -53,6 +53,7 @@ export enum MiniGameEnum {
   SoulWarsZeal = 'Soul Wars Zeal',
   RiftsClosed = 'Rifts Closed',
   ColosseumGlory = 'Colosseum Glory', // New minigame 20/03/2024
+  CollectionsLogged = 'Collections Logged', // New minigame 29/01/2025
 }
 
 export enum RaidEnum {

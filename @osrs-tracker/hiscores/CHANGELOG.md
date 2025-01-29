@@ -1,3 +1,7 @@
+## v0.6.0 - 2025/01/29
+
+- Added new hiscore parse order for Collection Log.
+
 ## v0.5.0 - 2024/09/25
 
 - Added new hiscore parse order for Varlamore Part 2.
