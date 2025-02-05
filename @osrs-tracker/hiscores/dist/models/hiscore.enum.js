@@ -114,6 +114,7 @@ export var BossEnum;
     BossEnum["Tempoross"] = "Tempoross";
     BossEnum["TheHueycoatl"] = "The Hueycoatl";
     BossEnum["TheLeviathan"] = "The Leviathan";
+    BossEnum["TheRoyalTitans"] = "The Royal Titans";
     BossEnum["TheWhisperer"] = "The Whisperer";
     BossEnum["ThermoNuclearSmokeDevil"] = "Thermonuclear Smoke Devil";
     BossEnum["TzKalZuk"] = "TzKal-Zuk";

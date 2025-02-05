@@ -113,6 +113,7 @@ export enum BossEnum {
   Tempoross = 'Tempoross',
   TheHueycoatl = 'The Hueycoatl', // Varlamore P2 25/09/2024
   TheLeviathan = 'The Leviathan', // New boss 31/07/2023
+  TheRoyalTitans = 'The Royal Titans', // New boss 05/02/2025
   TheWhisperer = 'The Whisperer', // New boss 31/07/2023
   ThermoNuclearSmokeDevil = 'Thermonuclear Smoke Devil',
   TzKalZuk = 'TzKal-Zuk',

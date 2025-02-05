@@ -1,3 +1,7 @@
+## v0.7.0 - 2025/01/29
+
+- Added new hiscore parse order for The Royal Titans.
+
 ## v0.6.0 - 2025/01/29
 
 - Added new hiscore parse order for Collection Log.

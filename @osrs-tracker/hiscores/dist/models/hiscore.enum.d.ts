@@ -107,6 +107,7 @@ export declare enum BossEnum {
     Tempoross = "Tempoross",
     TheHueycoatl = "The Hueycoatl",
     TheLeviathan = "The Leviathan",
+    TheRoyalTitans = "The Royal Titans",
     TheWhisperer = "The Whisperer",
     ThermoNuclearSmokeDevil = "Thermonuclear Smoke Devil",
     TzKalZuk = "TzKal-Zuk",

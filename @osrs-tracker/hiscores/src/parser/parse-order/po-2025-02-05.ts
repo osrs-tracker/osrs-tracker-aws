@@ -9,8 +9,8 @@ import {
 } from '../../models/hiscore.enum';
 import { ParseOrder } from './parse-order';
 
-/** Collection Log */
-export const PO_2025_01_29: ParseOrder = [
+/** Royal Titans */
+export const PO_2025_02_05: ParseOrder = [
   SkillEnum.Overall,
   SkillEnum.Attack,
   SkillEnum.Defence,
@@ -113,6 +113,7 @@ export const PO_2025_01_29: ParseOrder = [
 
   BossEnum.TheHueycoatl,
   BossEnum.TheLeviathan,
+  BossEnum.TheRoyalTitans,
   BossEnum.TheWhisperer,
 
   RaidEnum.TheatreOfBlood,
