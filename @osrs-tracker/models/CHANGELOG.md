@@ -1,5 +1,9 @@
 ## 0.5.1 - 2025/03/29
 
+- Fix `package-lock.json` mismatch.
+
+## 0.5.1 - 2025/03/29
+
 - Added `lastFetch` to `Item`.
 
 ## 0.5.0 - 2025/03/29

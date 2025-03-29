@@ -22,7 +22,7 @@
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
-    "@osrs-tracker/models": "^0.5.1",
+    "@osrs-tracker/models": "^0.5.2",
     "aws4": "^1.13.2",
     "mongodb": "^6.15.0"
   },
