@@ -17,6 +17,7 @@ export interface Player {
     status: PlayerStatus;
     diedAsHardcore: boolean;
     lastModified: Date;
+    lastHiscoreFetch?: Date;
     scrapingOffsets?: number[];
     hiscoreEntries?: HiscoreEntry[];
 }

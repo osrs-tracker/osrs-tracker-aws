@@ -16,6 +16,14 @@ export class MU {
   }
 
   static getItem(mongo: MongoClient, id: number): Promise<Item | null> {
-    return this.col(mongo).findOne<Item>({ id: id }, { hint: { id: 1 }, projection: { _id: 0 } });
+    return this.col(mongo).findOneAndUpdate(
+      { id: id },
+      { $set: { lastFetch: new Date() } },
+      {
+        hint: { id: 1 },
+        projection: { _id: 0 },
+        returnDocument: 'after', // Important: returns the document after the update
+      },
+    ) as Promise<Item | null>;
   }
 }

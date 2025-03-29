@@ -36,7 +36,7 @@ export const handler = async (event: APIGatewayEvent): Promise<APIGatewayProxyRe
           url: val.enclosure.url,
           type: val.enclosure.type,
         },
-      } as OsrsNewsItem),
+      }) as OsrsNewsItem,
   );
 
   return {

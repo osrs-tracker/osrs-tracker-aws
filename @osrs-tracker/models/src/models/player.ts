@@ -19,9 +19,13 @@ export interface Player {
   type: PlayerType;
   status: PlayerStatus;
   diedAsHardcore: boolean;
-  lastModified: Date;
 
-  /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11 */
-  scrapingOffsets?: number[]; // optional because it only exists when the player is tracked
-  hiscoreEntries?: HiscoreEntry[]; // optional because it only exists when the player is tracked
+  /** Last time the player type and status was determined. Will only update after at minimum 2 hours have passed. */
+  lastModified: Date;
+  /** Last time the hiscores were fetched for this player. Optional because it only exists when the player is tracked. */
+  lastHiscoreFetch?: Date;
+
+  /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11. */
+  scrapingOffsets?: number[];
+  hiscoreEntries?: HiscoreEntry[];
 }

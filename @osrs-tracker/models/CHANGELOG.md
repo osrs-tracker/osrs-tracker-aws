@@ -1,3 +1,11 @@
+## 0.5.1 - 2025/03/29
+
+- Added `lastFetch` to `Item`.
+
+## 0.5.0 - 2025/03/29
+
+- Added `lastHiscoreFetch` to `Player`.
+
 ## 0.4.0 - 2023/08/19
 
 - Update `typescript` to `^5.1.6`.

@@ -26,7 +26,7 @@ export function parseHiscores(hiscoreEntries: HiscoreEntry[]): Hiscore[] {
       ({
         ...hiscoreEntry,
         ...parseHiscoreString(hiscoreEntry.sourceString, hiscoreEntry.date),
-      } as Hiscore),
+      }) as Hiscore,
   );
 }
 

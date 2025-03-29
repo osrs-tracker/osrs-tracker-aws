@@ -22,6 +22,10 @@ export class MU {
     size: number,
     skip: number,
   ): Promise<HiscoreEntry[] | null> {
+    // First run an update to set the lastFetchedHiscores time
+    await this.col(mongo).updateOne({ username: username }, { $set: { lastHiscoreFetch: new Date() } });
+
+    // Retrieve the player's hiscores
     const player = await this.col(mongo)
       .aggregate<Player>([
         { $match: { username: username } },

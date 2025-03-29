@@ -8,4 +8,5 @@ export interface Item {
     limit: number;
     lowalch: number;
     highalch: number;
+    lastFetch?: Date;
 }

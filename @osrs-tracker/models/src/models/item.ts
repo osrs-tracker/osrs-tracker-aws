@@ -12,4 +12,7 @@ export interface Item {
 
   lowalch: number;
   highalch: number;
+
+  /** Last time the detail was fetched for this item. */
+  lastFetch?: Date;
 }
