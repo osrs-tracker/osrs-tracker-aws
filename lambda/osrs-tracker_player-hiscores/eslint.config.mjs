@@ -27,7 +27,6 @@ const rules = {
   '@stylistic/semi': ['error', 'always'],
   'comma-dangle': ['error', 'always-multiline'],
   'max-classes-per-file': 'off',
-  'no-console': 'error',
   'no-multiple-empty-lines': ['error', { max: 1 }],
   'no-redeclare': 'error',
   'no-return-await': 'error',
