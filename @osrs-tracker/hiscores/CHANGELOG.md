@@ -1,3 +1,7 @@
+## v0.7.1 - 2025/04/13
+
+- Updated dependencies for compatibility with the latest version of `@osrs-tracker/models`.
+
 ## v0.7.0 - 2025/01/29
 
 - Added new hiscore parse order for The Royal Titans.
