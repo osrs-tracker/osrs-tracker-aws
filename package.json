@@ -8,6 +8,11 @@
       "path": "./node_modules/cz-conventional-changelog"
     }
   },
+  "author": {
+    "name": "Freek Mencke",
+    "email": "freek_mencke.dev@outlook.com",
+    "url": "https://freekmencke.com"
+  },
   "prettier": "./.prettierrc.json",
   "repository": {
     "type": "git",
