@@ -3,3 +3,4 @@ export interface HiscoreEntry {
     date: Date;
     scrapingOffset: number;
 }
+//# sourceMappingURL=hiscores.d.ts.map

@@ -11,3 +11,4 @@ export var PlayerStatus;
     PlayerStatus["DeIroned"] = "de_ironed";
     PlayerStatus["DeUltimated"] = "de_ultimated";
 })(PlayerStatus || (PlayerStatus = {}));
+//# sourceMappingURL=player.js.map

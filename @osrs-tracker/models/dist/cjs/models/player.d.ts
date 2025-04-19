@@ -21,3 +21,4 @@ export interface Player {
     scrapingOffsets?: number[];
     hiscoreEntries?: HiscoreEntry[];
 }
+//# sourceMappingURL=player.d.ts.map

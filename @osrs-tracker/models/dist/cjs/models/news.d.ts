@@ -9,3 +9,4 @@ export interface OsrsNewsItem {
         type: string;
     };
 }
+//# sourceMappingURL=news.d.ts.map

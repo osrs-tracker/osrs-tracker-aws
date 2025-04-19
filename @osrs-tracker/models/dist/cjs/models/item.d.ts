@@ -10,3 +10,4 @@ export interface Item {
     highalch: number;
     lastFetch?: Date;
 }
+//# sourceMappingURL=item.d.ts.map

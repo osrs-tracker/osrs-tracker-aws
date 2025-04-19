@@ -1,11 +1,19 @@
 {
   "name": "@osrs-tracker/models",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Typings for OSRS Tracker API",
   "license": "MIT",
   "author": "Freek Mencke",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "github:osrs-tracker/osrs-tracker-aws",
@@ -13,7 +21,10 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
+    "build:esm": "tsc --module ESNext --outDir dist/esm",
+    "build:types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir dist/types",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

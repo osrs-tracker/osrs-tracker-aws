@@ -1,3 +1,7 @@
+## 0.6.0 - 2025/04/19
+
+- Added support for both `esm` and `cjs` module formats.
+
 ## 0.5.1 - 2025/03/29
 
 - Fix `package-lock.json` mismatch.
