@@ -39,7 +39,6 @@ jobs:
         lambda_function:
           - osrs-tracker_clean-hiscores
           - osrs-tracker_hiscore-parser-validator
-          - osrs-tracker_latest-news
           - osrs-tracker_process-players
           - osrs-tracker_queue-players
           - osrs-tracker_refresh-items
