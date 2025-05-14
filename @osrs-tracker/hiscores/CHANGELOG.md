@@ -1,3 +1,7 @@
+## v0.8.0 - 2025/05/14
+
+- Added new hiscore parse order for Yama.
+
 ## v0.7.1 - 2025/04/13
 
 - Updated dependencies for compatibility with the latest version of `@osrs-tracker/models`.

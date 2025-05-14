@@ -117,6 +117,7 @@ export declare enum BossEnum {
     Vetion = "Vet'ion",
     Vorkath = "Vorkath",
     Wintertodt = "Wintertodt",
+    Yama = "Yama",
     Zalcano = "Zalcano",
     Zulrah = "Zulrah"
 }

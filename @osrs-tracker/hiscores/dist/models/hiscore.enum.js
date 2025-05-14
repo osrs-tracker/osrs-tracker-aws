@@ -124,6 +124,7 @@ export var BossEnum;
     BossEnum["Vetion"] = "Vet'ion";
     BossEnum["Vorkath"] = "Vorkath";
     BossEnum["Wintertodt"] = "Wintertodt";
+    BossEnum["Yama"] = "Yama";
     BossEnum["Zalcano"] = "Zalcano";
     BossEnum["Zulrah"] = "Zulrah";
 })(BossEnum || (BossEnum = {}));

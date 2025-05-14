@@ -9,11 +9,13 @@ import { PO_2024_08_28 } from './po-2024-08-28';
 import { PO_2024_09_25 } from './po-2024-09-25';
 import { PO_2025_01_29 } from './po-2025-01-29';
 import { PO_2025_02_05 } from './po-2025-02-05';
+import { PO_2025_05_14 } from './po-2025-05-14';
 import { PO_DEFAULT } from './po-default';
 
 export type ParseOrder = HiscoreLineType[];
 
 export const ParseOrderMap: { [date: string]: ParseOrder } = {
+  '2025-05-14': PO_2025_05_14,
   '2025-02-05': PO_2025_02_05,
   '2025-01-29': PO_2025_01_29,
   '2024-09-25': PO_2024_09_25,

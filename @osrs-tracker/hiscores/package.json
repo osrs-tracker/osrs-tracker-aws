@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/hiscores",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Logic for parsing OSRS hiscores",
   "license": "MIT",
   "author": "Freek Mencke",
@@ -18,14 +18,14 @@
     "test": "jest --watch"
   },
   "peerDependencies": {
-    "@osrs-tracker/models": "^0.5.2"
+    "@osrs-tracker/models": "^0.6.0"
   },
   "dependencies": {
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.18",
     "date-fns": "^4.1.0"
   },
   "devDependencies": {
-    "@osrs-tracker/models": "^0.5.2",
+    "@osrs-tracker/models": "^0.6.0",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "ts-jest": "^29.3.2",

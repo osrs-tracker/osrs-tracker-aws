@@ -123,6 +123,7 @@ export enum BossEnum {
   Vetion = "Vet'ion",
   Vorkath = 'Vorkath',
   Wintertodt = 'Wintertodt',
+  Yama = 'Yama', // New boss 14/05/2025
   Zalcano = 'Zalcano',
   Zulrah = 'Zulrah',
 }
