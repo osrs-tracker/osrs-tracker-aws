@@ -81,6 +81,7 @@ export declare enum BossEnum {
     DagannothRex = "Dagannoth Rex",
     DagannothSupreme = "Dagannoth Supreme",
     DerangedArchaeologist = "Deranged Archaeologist",
+    DoomOfMokhaiotl = "Doom of Mokhaiotl",
     DukeSucellus = "Duke Sucellus",
     GeneralGraardor = "General Graardor",
     GiantMole = "Giant Mole",

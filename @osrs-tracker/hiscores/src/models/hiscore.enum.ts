@@ -87,6 +87,7 @@ export enum BossEnum {
   DagannothRex = 'Dagannoth Rex',
   DagannothSupreme = 'Dagannoth Supreme',
   DerangedArchaeologist = 'Deranged Archaeologist',
+  DoomOfMokhaiotl = 'Doom of Mokhaiotl', // Varlamore P3 23/07/2025
   DukeSucellus = 'Duke Sucellus', // New boss 31/07/2023
   GeneralGraardor = 'General Graardor',
   GiantMole = 'Giant Mole',

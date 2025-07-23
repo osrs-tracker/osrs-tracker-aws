@@ -88,6 +88,7 @@ export var BossEnum;
     BossEnum["DagannothRex"] = "Dagannoth Rex";
     BossEnum["DagannothSupreme"] = "Dagannoth Supreme";
     BossEnum["DerangedArchaeologist"] = "Deranged Archaeologist";
+    BossEnum["DoomOfMokhaiotl"] = "Doom of Mokhaiotl";
     BossEnum["DukeSucellus"] = "Duke Sucellus";
     BossEnum["GeneralGraardor"] = "General Graardor";
     BossEnum["GiantMole"] = "Giant Mole";
