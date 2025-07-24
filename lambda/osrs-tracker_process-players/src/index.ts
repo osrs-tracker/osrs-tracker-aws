@@ -3,7 +3,7 @@ import { Player, PlayerScrapeMessageBody } from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
 import { Agent } from 'https';
 import chunk from 'lodash.chunk';
-import { AnyBulkWriteOperation, AuthMechanism, BulkWriteResult, MongoClient } from 'mongodb';
+import { AnyBulkWriteOperation, AuthMechanism, BulkWriteResult, MongoClient, ServerApiVersion } from 'mongodb';
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
@@ -19,6 +19,7 @@ const client = new MongoClient(process.env.MONGODB_URI!, {
     username: process.env.AWS_ACCESS_KEY_ID,
     password: process.env.AWS_SECRET_ACCESS_KEY,
   },
+  serverApi: { version: ServerApiVersion.v1, deprecationErrors: true },
   authMechanism: AuthMechanism.MONGODB_AWS,
   authSource: '$external',
 });
@@ -32,6 +33,11 @@ const agent = new Agent({
 
 export const handler = async (event: SQSEvent, context: Context) => {
   const messageBodies: PlayerScrapeMessageBody[] = event.Records.map((record) => JSON.parse(record.body));
+
+  if (messageBodies.length === 0) {
+    console.log('No messages to process');
+    return context.logStreamName;
+  }
 
   // map of failed usernames by scrapingOffset
   const failedMap: Map<number, string[]> = new Map();
@@ -109,3 +115,5 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
   return context.logStreamName;
 };
+
+handler({ Records: [] } as SQSEvent, { invokedFunctionArn: 'test-invoked-function-arn' } as Context);
