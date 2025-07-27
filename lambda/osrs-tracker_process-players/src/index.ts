@@ -35,6 +35,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
   const messageBodies: PlayerScrapeMessageBody[] = event.Records.map((record) => JSON.parse(record.body));
 
   if (messageBodies.length === 0) {
+    await discordAlert('No messages to process', [], context);
     console.log('No messages to process');
     return context.logStreamName;
   }
@@ -115,5 +116,3 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
   return context.logStreamName;
 };
-
-handler({ Records: [] } as SQSEvent, { invokedFunctionArn: 'test-invoked-function-arn' } as Context);

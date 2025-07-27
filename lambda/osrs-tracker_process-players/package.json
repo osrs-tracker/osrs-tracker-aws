@@ -22,7 +22,7 @@
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.398.0",
+    "@aws-sdk/client-sqs": "^3.854.0",
     "@osrs-tracker/discord-webhooks": "^0.0.2",
     "@osrs-tracker/models": "^0.6.0",
     "aws4": "^1.12.0",
