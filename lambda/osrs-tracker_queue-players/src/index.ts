@@ -1,6 +1,7 @@
 import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { AuthMechanism, MongoClient } from 'mongodb';
+import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
 
@@ -22,7 +23,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   const scrapingOffset = ((12 + new Date(event.time).getUTCHours()) % 24) - 12;
 
   // ensure index on scrapingOffsets
-  await MU.col(client).createIndex({ scrapingOffsets: 1 }, { sparse: true });
+  await MU.col(client).createIndex({ scrapingOffsets: 1 }, { sparse: true, background: true });
 
   // get usernames for scrapingOffset as cursor
   const usernameCursor = MU.getAllUsernamesForOffset(client, scrapingOffset);
@@ -37,25 +38,30 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   const usernames: string[] = [];
   const messageBatch: SendMessageBatchRequestEntry[] = [];
 
-  for await (const username of usernameCursor) {
-    // add username to usernames array
-    usernames.push(username);
-    usernamesProcessed++;
+  try {
+    for await (const username of usernameCursor) {
+      // add username to usernames array
+      usernames.push(username);
+      usernamesProcessed++;
 
-    // if usernames array is smaller then PLAYERS_PER_SQS_MESSAGE,
-    if (usernames.length < parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)) continue;
+      // if usernames array is smaller then PLAYERS_PER_SQS_MESSAGE,
+      if (usernames.length < parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)) continue;
 
-    // if usernames array is full, add message to batch
-    messageBatch.push(createMessage(usernames, scrapingOffset));
-    messagesCreated++;
-    usernames.length = 0;
+      // if usernames array is full, add message to batch
+      messageBatch.push(createMessage(usernames, scrapingOffset));
+      messagesCreated++;
+      usernames.length = 0;
 
-    // if batch is full, send batch
-    if (messageBatch.length === SQS_MESSAGE_BATCH_SIZE) {
-      await sendMessageBatch(sqsClient, messageBatch).catch((e) => errors.push(e));
-      commandsExecuted++;
-      messageBatch.length = 0;
+      // if batch is full, send batch
+      if (messageBatch.length === SQS_MESSAGE_BATCH_SIZE) {
+        await sendMessageBatch(sqsClient, messageBatch).catch((e) => errors.push(e));
+        commandsExecuted++;
+        messageBatch.length = 0;
+      }
     }
+  } finally {
+    // close the cursor
+    await usernameCursor.close();
   }
 
   // send last batch
@@ -77,6 +83,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
 
   if (errors.length) {
     errors.forEach((e) => console.error(e));
+    await discordAlert('Failed to queue players', errors, context);
   }
 
   return context.logStreamName;

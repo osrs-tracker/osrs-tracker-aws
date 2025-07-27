@@ -22,21 +22,22 @@
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.282.0",
-    "@osrs-tracker/models": "^0.4.0",
+    "@aws-sdk/client-sqs": "^3.854.0",
+    "@osrs-tracker/discord-webhooks": "^0.0.2",
+    "@osrs-tracker/models": "^0.6.0",
     "aws4": "^1.12.0",
-    "mongodb": "^5.1.0"
+    "mongodb": "^6.18.0"
   },
   "devDependencies": {
-    "@es-exec/esbuild-plugin-start": "^0.0.4",
+    "@es-exec/esbuild-plugin-start": "^0.0.5",
     "@types/aws-lambda": "^8.10.111",
-    "@types/node": "^22.13.14",
-    "@stylistic/eslint-plugin": "^2.12.0",
+    "@types/node": "^22.16.5",
+    "@stylistic/eslint-plugin": "^5.2.2",
     "typescript-eslint": "^8.17.0",
     "bestzip": "^2.2.1",
     "esbuild": "^0.25.1",
-    "eslint": "^9.23.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
     "minimist": "^1.2.8",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2"
