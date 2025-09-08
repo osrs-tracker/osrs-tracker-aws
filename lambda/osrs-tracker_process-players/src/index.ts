@@ -32,10 +32,16 @@ const agent = new Agent({
 });
 
 export const handler = async (event: SQSEvent, context: Context) => {
+  // Parse message bodies
   const messageBodies: PlayerScrapeMessageBody[] = event.Records.map((record) => JSON.parse(record.body));
 
+  // Logs max SQS retry count (ApproximateReceiveCount) so we can see how many times the messages were delivered.
+  const maxReceiveCount = event.Records.reduce(
+    (acc, val) => Math.max(acc, parseInt(val.attributes.ApproximateReceiveCount)),
+    0,
+  );
+
   if (messageBodies.length === 0) {
-    await discordAlert('No messages to process', [], context);
     console.log('No messages to process');
     return context.logStreamName;
   }
@@ -55,9 +61,12 @@ export const handler = async (event: SQSEvent, context: Context) => {
     const scrapeTime = new Date();
     const bulkUpdateOps: AnyBulkWriteOperation<Player>[] = [];
 
-    // scrape each username from body in parallel and wait for all to finish
+    // scrape each username from body with staggered delays and wait for all to finish
     await Promise.allSettled(
-      usernames.map(async (username) => {
+      usernames.map(async (username, index) => {
+        // Add 2000ms (2 second) delay for each subsequent request to avoid 503 errors
+        if (index > 0) await new Promise((resolve) => setTimeout(resolve, index * 2000));
+
         const hiscore = await getHiscore(agent, username);
         if (!hiscore) return mapArrayPush(failedMap, scrapingOffset, username);
 
@@ -78,7 +87,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
   const failedMessagesCount = [...failedMap.values()].flat().length;
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
-  if (updatedPlayerCount === 0) {
+  if (updatedPlayerCount === 0 && maxReceiveCount > 1) {
     await discordAlert('No players were updated', [...failedMap.values()].flat(), context);
 
     throw new Error(`No players were updated. Failed to update ${failedMessagesCount} players.`);
@@ -110,7 +119,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
     `Failed to update ${failedMessagesCount} players.`,
   );
 
-  if (failedMessagesCount) {
+  if (failedMessagesCount && maxReceiveCount > 1) {
     await discordAlert('Failed to process some players', [...failedMap.values()].flat(), context);
   }
 
