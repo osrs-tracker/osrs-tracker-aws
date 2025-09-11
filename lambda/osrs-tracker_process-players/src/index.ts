@@ -87,8 +87,8 @@ export const handler = async (event: SQSEvent, context: Context) => {
   const failedMessagesCount = [...failedMap.values()].flat().length;
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
-  if (updatedPlayerCount === 0 && maxReceiveCount > 1) {
-    await discordAlert('No players were updated', [...failedMap.values()].flat(), context);
+  if (updatedPlayerCount === 0) {
+    if (maxReceiveCount > 1) await discordAlert('No players were updated', [...failedMap.values()].flat(), context);
 
     throw new Error(`No players were updated. Failed to update ${failedMessagesCount} players.`);
   }
