@@ -31,6 +31,7 @@ export var CompetitiveEnum;
     CompetitiveEnum["PvpArena"] = "PvP Arena - Rank";
     CompetitiveEnum["LastManStanding"] = "Last Man Standing (Rank)";
     CompetitiveEnum["Unknown"] = "Unknown";
+    CompetitiveEnum["GridPoints"] = "Grid Points";
 })(CompetitiveEnum || (CompetitiveEnum = {}));
 export var BountyHunterEnum;
 (function (BountyHunterEnum) {

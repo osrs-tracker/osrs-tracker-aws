@@ -30,6 +30,7 @@ export enum CompetitiveEnum {
   PvpArena = 'PvP Arena - Rank',
   LastManStanding = 'Last Man Standing (Rank)',
   Unknown = 'Unknown', // something with deadman apocalypse
+  GridPoints = 'Grid Points', // Grid Master 2025/10/15
 }
 
 export enum BountyHunterEnum {

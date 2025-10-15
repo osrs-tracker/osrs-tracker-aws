@@ -1,3 +1,7 @@
+## v0.10.0 - 2025/10/15
+
+- Added new hiscore parse order for Grid Master release.
+
 ## v0.9.0 - 2025/07/23
 
 - Added new hiscore parse order for Varlamore Part 3.
