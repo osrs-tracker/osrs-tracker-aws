@@ -23,6 +23,7 @@ export enum SkillEnum {
   Runecraft = 'Runecraft',
   Hunter = 'Hunter',
   Construction = 'Construction',
+  Sailing = 'Sailing', // New skill 05/11/2025
 }
 
 export enum CompetitiveEnum {
@@ -109,6 +110,7 @@ export enum BossEnum {
   Sarachnis = 'Sarachnis',
   Scorpia = 'Scorpia',
   Scurrius = 'Scurrius', // New boss 24/01/2024
+  ShellbaneGryphon = 'Shellbane Gryphon', // New boss 05/11/2025
   Skotizo = 'Skotizo',
   SolHeredit = 'Sol Heredit', // New boss 20/03/2024
   Spindel = 'Spindel', // New boss 13/04/2023

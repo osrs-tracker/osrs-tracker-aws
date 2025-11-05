@@ -22,7 +22,8 @@ export declare enum SkillEnum {
     Farming = "Farming",
     Runecraft = "Runecraft",
     Hunter = "Hunter",
-    Construction = "Construction"
+    Construction = "Construction",
+    Sailing = "Sailing"
 }
 export declare enum CompetitiveEnum {
     LeaguePoints = "League Points",
@@ -103,6 +104,7 @@ export declare enum BossEnum {
     Sarachnis = "Sarachnis",
     Scorpia = "Scorpia",
     Scurrius = "Scurrius",
+    ShellbaneGryphon = "Shellbane Gryphon",
     Skotizo = "Skotizo",
     SolHeredit = "Sol Heredit",
     Spindel = "Spindel",

@@ -1,3 +1,7 @@
+## v0.11.0 - 2025/11/05
+
+- Added new hiscore parse order for Sailing pre-release (Shellbane Gryphon).
+
 ## v0.10.0 - 2025/10/15
 
 - Added new hiscore parse order for Grid Master release.

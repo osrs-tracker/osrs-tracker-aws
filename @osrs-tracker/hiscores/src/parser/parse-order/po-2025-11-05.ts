@@ -9,8 +9,8 @@ import {
 } from '../../models/hiscore.enum';
 import { ParseOrder } from './parse-order';
 
-/** Grid Master */
-export const PO_2025_10_15: ParseOrder = [
+/** Shellbane Gryphon */
+export const PO_2025_11_05: ParseOrder = [
   SkillEnum.Overall,
   SkillEnum.Attack,
   SkillEnum.Defence,
@@ -35,8 +35,9 @@ export const PO_2025_10_15: ParseOrder = [
   SkillEnum.Runecraft,
   SkillEnum.Hunter,
   SkillEnum.Construction,
+  // SkillEnum.Sailing,
 
-  CompetitiveEnum.GridPoints, // Grid Master 2025/10/15
+  CompetitiveEnum.GridPoints,
   CompetitiveEnum.LeaguePoints,
   CompetitiveEnum.Unknown,
 
@@ -105,6 +106,7 @@ export const PO_2025_10_15: ParseOrder = [
   BossEnum.Sarachnis,
   BossEnum.Scorpia,
   BossEnum.Scurrius,
+  BossEnum.ShellbaneGryphon,
   BossEnum.Skotizo,
   BossEnum.SolHeredit,
   BossEnum.Spindel,

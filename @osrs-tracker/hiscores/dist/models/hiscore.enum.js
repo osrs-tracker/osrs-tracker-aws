@@ -24,6 +24,7 @@ export var SkillEnum;
     SkillEnum["Runecraft"] = "Runecraft";
     SkillEnum["Hunter"] = "Hunter";
     SkillEnum["Construction"] = "Construction";
+    SkillEnum["Sailing"] = "Sailing";
 })(SkillEnum || (SkillEnum = {}));
 export var CompetitiveEnum;
 (function (CompetitiveEnum) {
@@ -110,6 +111,7 @@ export var BossEnum;
     BossEnum["Sarachnis"] = "Sarachnis";
     BossEnum["Scorpia"] = "Scorpia";
     BossEnum["Scurrius"] = "Scurrius";
+    BossEnum["ShellbaneGryphon"] = "Shellbane Gryphon";
     BossEnum["Skotizo"] = "Skotizo";
     BossEnum["SolHeredit"] = "Sol Heredit";
     BossEnum["Spindel"] = "Spindel";
