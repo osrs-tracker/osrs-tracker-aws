@@ -62,7 +62,7 @@ export var RaidEnum;
 (function (RaidEnum) {
     RaidEnum["ChambersOfXeric"] = "Chambers of Xeric";
     RaidEnum["ChambersOfXericChallengeMode"] = "Chambers of Xeric: Challenge Mode";
-    RaidEnum["TheGauntlet"] = "TheGauntlet";
+    RaidEnum["TheGauntlet"] = "The Gauntlet";
     RaidEnum["TheCorruptedGauntlet"] = "The Corrupted Gauntlet";
     RaidEnum["TheatreOfBlood"] = "Theatre of Blood";
     RaidEnum["TheatreOfBloodHardMode"] = "Theatre of Blood: Hard Mode";

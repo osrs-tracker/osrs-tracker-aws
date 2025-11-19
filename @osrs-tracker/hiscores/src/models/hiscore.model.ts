@@ -28,7 +28,7 @@ export type Hiscore = HiscoreEntry & {
   bountyHunter: { [key in BountyHunterEnum]: MiniGame };
   clueScrolls: { [key in ClueScrollsEnum]: MiniGame };
   competitive: { [key in CompetitiveEnum]: MiniGame };
-  miniGames: { [key in MiniGameEnum]: MiniGame };
+  minigames: { [key in MiniGameEnum]: MiniGame };
   bosses: { [key in BossEnum]: MiniGame };
   raids: { [key in RaidEnum]: MiniGame };
 };

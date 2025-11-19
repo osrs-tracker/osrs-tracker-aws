@@ -1,4 +1,4 @@
-import { addHours, isAfter, parseISO } from 'date-fns';
+import { isAfter, parseISO } from 'date-fns';
 import { BossEnum, BountyHunterEnum, ClueScrollsEnum, CompetitiveEnum, MiniGameEnum, RaidEnum, SkillEnum, } from '../models/hiscore.enum';
 import { ParseOrderMap } from './parse-order/parse-order';
 import { PO_DEFAULT } from './parse-order/po-default';
@@ -22,9 +22,9 @@ export function hiscoreDiff(recent, old) {
                         skillName,
                         {
                             name: skillName,
-                            rank: skill.rank - old.skills[skillName].rank,
-                            level: skill.level - old.skills[skillName].level,
-                            xp: diff(skill.xp, old.skills[skillName].xp),
+                            rank: skill.rank - (old.skills[skillName]?.rank ?? 0),
+                            level: skill.level - (old.skills[skillName]?.level ?? 0),
+                            xp: diff(skill.xp, old.skills[skillName]?.xp ?? 0),
                         },
                     ])),
                 ];
@@ -33,7 +33,7 @@ export function hiscoreDiff(recent, old) {
             case 'clueScrolls':
             case 'competitive':
             case 'bountyHunter':
-            case 'miniGames':
+            case 'minigames':
                 return [
                     hiscoreKey,
                     Object.fromEntries(Object.entries(recentValue).map(([miniGameName, miniGame]) => [
@@ -69,7 +69,7 @@ export function parseHiscoreString(hiscoreString, date) {
         clueScrolls: {},
         competitive: {},
         bountyHunter: {},
-        miniGames: {},
+        minigames: {},
     };
     minigames.forEach((miniGame) => {
         if (Object.values(BossEnum).includes(miniGame.name))
@@ -83,7 +83,7 @@ export function parseHiscoreString(hiscoreString, date) {
         if (Object.values(BountyHunterEnum).includes(miniGame.name))
             return (hiscore.bountyHunter[miniGame.name] = miniGame);
         if (Object.values(MiniGameEnum).includes(miniGame.name))
-            return (hiscore.miniGames[miniGame.name] = miniGame);
+            return (hiscore.minigames[miniGame.name] = miniGame);
         throw new Error('Unknown minigame detected:' + miniGame.name);
     });
     return hiscore;
@@ -96,7 +96,7 @@ function getSkillFromSourceString(sourceString, skill, date) {
 }
 function getCurrentParser(dateToParse) {
     for (const [parseDate, parser] of Object.entries(ParseOrderMap)) {
-        if (isAfter(dateToParse, addHours(parseISO(parseDate), 11))) {
+        if (isAfter(dateToParse, parseISO(parseDate))) {
             return parser;
         }
     }

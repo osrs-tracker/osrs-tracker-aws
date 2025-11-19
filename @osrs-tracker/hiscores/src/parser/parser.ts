@@ -1,5 +1,5 @@
 import { HiscoreEntry } from '@osrs-tracker/models';
-import { addHours, isAfter, parseISO } from 'date-fns';
+import { isAfter, parseISO } from 'date-fns';
 import {
   BossEnum,
   BountyHunterEnum,
@@ -53,9 +53,9 @@ export function hiscoreDiff(recent: Hiscore, old: Hiscore): Hiscore {
               skillName,
               {
                 name: skillName,
-                rank: skill.rank - old.skills[skillName as SkillEnum].rank,
-                level: skill.level - old.skills[skillName as SkillEnum].level,
-                xp: diff(skill.xp, old.skills[skillName as SkillEnum].xp),
+                rank: skill.rank - (old.skills[skillName as SkillEnum]?.rank ?? 0), // check if skill exists in previous hiscore (thanks sailing)
+                level: skill.level - (old.skills[skillName as SkillEnum]?.level ?? 0), // check if skill exists in previous hiscore (thanks sailing)
+                xp: diff(skill.xp, old.skills[skillName as SkillEnum]?.xp ?? 0), // check if skill exists in previous hiscore (thanks sailing)
               },
             ]),
           ),
@@ -65,7 +65,7 @@ export function hiscoreDiff(recent: Hiscore, old: Hiscore): Hiscore {
       case 'clueScrolls':
       case 'competitive':
       case 'bountyHunter':
-      case 'miniGames':
+      case 'minigames':
         return [
           hiscoreKey,
           Object.fromEntries(
@@ -126,7 +126,7 @@ export function parseHiscoreString(hiscoreString: string, date: Date): Omit<Hisc
     clueScrolls: {},
     competitive: {},
     bountyHunter: {},
-    miniGames: {},
+    minigames: {},
   } as Hiscore;
 
   // Fill the minigame placeholders
@@ -147,7 +147,7 @@ export function parseHiscoreString(hiscoreString: string, date: Date): Omit<Hisc
       return (hiscore.bountyHunter[miniGame.name as BountyHunterEnum] = miniGame);
 
     if (Object.values(MiniGameEnum).includes(miniGame.name as MiniGameEnum))
-      return (hiscore.miniGames[miniGame.name as MiniGameEnum] = miniGame);
+      return (hiscore.minigames[miniGame.name as MiniGameEnum] = miniGame);
 
     // When a minigame can't be found in the current parse order, throw an error
     throw new Error('Unknown minigame detected:' + miniGame.name);
@@ -167,7 +167,7 @@ function getSkillFromSourceString(sourceString: string, skill: SkillEnum, date: 
 
 function getCurrentParser(dateToParse: Date): ParseOrder {
   for (const [parseDate, parser] of Object.entries(ParseOrderMap)) {
-    if (isAfter(dateToParse, addHours(parseISO(parseDate), 11))) {
+    if (isAfter(dateToParse, parseISO(parseDate))) {
       return parser;
     }
   }

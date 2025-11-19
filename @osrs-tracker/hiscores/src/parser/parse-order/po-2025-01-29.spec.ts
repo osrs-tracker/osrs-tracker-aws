@@ -9,12 +9,12 @@ describe('Parser with 2025-01-29 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2025, 0, 29, 12));
 
-    expect(hiscore.miniGames[MiniGameEnum.ColosseumGlory]).toEqual({
+    expect(hiscore.minigames[MiniGameEnum.ColosseumGlory]).toEqual({
       name: MiniGameEnum.ColosseumGlory,
       rank: 9235,
       score: 43948,
     });
-    expect(hiscore.miniGames[MiniGameEnum.CollectionsLogged]).toEqual({
+    expect(hiscore.minigames[MiniGameEnum.CollectionsLogged]).toEqual({
       name: MiniGameEnum.CollectionsLogged,
       rank: 2,
       score: 1537,

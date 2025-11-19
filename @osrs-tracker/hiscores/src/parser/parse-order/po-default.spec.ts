@@ -110,7 +110,7 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.miniGames).toEqual({
+    expect(hiscore.minigames).toEqual({
       [MiniGameEnum.SoulWarsZeal]: { name: MiniGameEnum.SoulWarsZeal, rank: 3, score: 613379 },
       [MiniGameEnum.RiftsClosed]: { name: MiniGameEnum.RiftsClosed, rank: 187992, score: 58 },
     });

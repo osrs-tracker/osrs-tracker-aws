@@ -56,7 +56,7 @@ export declare enum MiniGameEnum {
 export declare enum RaidEnum {
     ChambersOfXeric = "Chambers of Xeric",
     ChambersOfXericChallengeMode = "Chambers of Xeric: Challenge Mode",
-    TheGauntlet = "TheGauntlet",
+    TheGauntlet = "The Gauntlet",
     TheCorruptedGauntlet = "The Corrupted Gauntlet",
     TheatreOfBlood = "Theatre of Blood",
     TheatreOfBloodHardMode = "Theatre of Blood: Hard Mode",

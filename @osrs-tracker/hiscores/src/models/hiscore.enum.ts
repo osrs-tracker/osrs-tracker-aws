@@ -23,7 +23,7 @@ export enum SkillEnum {
   Runecraft = 'Runecraft',
   Hunter = 'Hunter',
   Construction = 'Construction',
-  Sailing = 'Sailing', // New skill 05/11/2025
+  Sailing = 'Sailing', // New skill 19/11/2025
 }
 
 export enum CompetitiveEnum {
@@ -61,7 +61,7 @@ export enum MiniGameEnum {
 export enum RaidEnum {
   ChambersOfXeric = 'Chambers of Xeric',
   ChambersOfXericChallengeMode = 'Chambers of Xeric: Challenge Mode',
-  TheGauntlet = 'TheGauntlet',
+  TheGauntlet = 'The Gauntlet',
   TheCorruptedGauntlet = 'The Corrupted Gauntlet',
   TheatreOfBlood = 'Theatre of Blood',
   TheatreOfBloodHardMode = 'Theatre of Blood: Hard Mode',

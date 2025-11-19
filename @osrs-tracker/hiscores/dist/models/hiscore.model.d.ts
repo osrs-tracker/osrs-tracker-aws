@@ -24,7 +24,7 @@ export type Hiscore = HiscoreEntry & {
     competitive: {
         [key in CompetitiveEnum]: MiniGame;
     };
-    miniGames: {
+    minigames: {
         [key in MiniGameEnum]: MiniGame;
     };
     bosses: {

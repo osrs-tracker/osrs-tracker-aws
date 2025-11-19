@@ -1,3 +1,16 @@
+## v1.0.1 - 2025/11/19
+
+- Fix issue in hiscoreDiff caused by new skill not existing in previous hiscore (Sailing).
+
+## v1.0.0 - 2025/11/16
+
+- Added new hiscore parse order for Sailing.
+
+### BREAKING CHANGES
+
+- Add missing space to `RaidEnum` value for`TheGauntlet`.
+- Changed `Hiscore` key for minigames from `miniGames` to `minigames`.
+
 ## v0.11.0 - 2025/11/05
 
 - Added new hiscore parse order for Sailing pre-release (Shellbane Gryphon).
