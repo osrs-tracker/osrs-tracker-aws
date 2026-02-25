@@ -78,6 +78,7 @@ export declare enum BossEnum {
     ChaosFanatic = "Chaos Fanatic",
     CommanderZilyana = "Commander Zilyana",
     CorporealBeast = "Corporeal Beast",
+    Brutus = "Brutus",
     CrazyArchaeologist = "Crazy Archaeologist",
     DagannothPrime = "Dagannoth Prime",
     DagannothRex = "Dagannoth Rex",

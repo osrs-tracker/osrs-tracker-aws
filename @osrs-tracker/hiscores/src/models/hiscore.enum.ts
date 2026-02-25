@@ -84,6 +84,7 @@ export enum BossEnum {
   ChaosFanatic = 'Chaos Fanatic',
   CommanderZilyana = 'Commander Zilyana',
   CorporealBeast = 'Corporeal Beast',
+  Brutus = 'Brutus', // New boss 25/02/2026
   CrazyArchaeologist = 'Crazy Archaeologist',
   DagannothPrime = 'Dagannoth Prime',
   DagannothRex = 'Dagannoth Rex',

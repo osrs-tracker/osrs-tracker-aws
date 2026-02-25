@@ -1,3 +1,7 @@
+## v1.1.0 - 2026/02/25
+
+- Added new hiscore parse order for Brutus (Cow Boss).
+
 ## v1.0.1 - 2025/11/19
 
 - Fix issue in hiscoreDiff caused by new skill not existing in previous hiscore (Sailing).

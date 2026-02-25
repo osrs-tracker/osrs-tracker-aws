@@ -85,6 +85,7 @@ export var BossEnum;
     BossEnum["ChaosFanatic"] = "Chaos Fanatic";
     BossEnum["CommanderZilyana"] = "Commander Zilyana";
     BossEnum["CorporealBeast"] = "Corporeal Beast";
+    BossEnum["Brutus"] = "Brutus";
     BossEnum["CrazyArchaeologist"] = "Crazy Archaeologist";
     BossEnum["DagannothPrime"] = "Dagannoth Prime";
     BossEnum["DagannothRex"] = "Dagannoth Rex";
