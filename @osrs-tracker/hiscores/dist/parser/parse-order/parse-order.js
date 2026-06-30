@@ -4,6 +4,7 @@ import * as Parsers_2025 from './2025';
 import * as Parsers_2026 from './2026';
 import { PO_DEFAULT } from './po-default';
 export const ParseOrderMap = {
+    '2026-06-30T11': Parsers_2026.PO_2026_06_30,
     '2026-02-25T11': Parsers_2026.PO_2026_02_25,
     '2025-11-19T08': Parsers_2025.PO_2025_11_19,
     '2025-11-05T11': Parsers_2025.PO_2025_11_05,

@@ -97,6 +97,7 @@ export declare enum BossEnum {
     KrilTsutsaroth = "K'ril Tsutsaroth",
     LunarChests = "Lunar Chests",
     Mimic = "Mimic",
+    MaggotKing = "Maggot King",
     Nex = "Nex",
     Nightmare = "Nightmare",
     PhosanisNightmare = "Phosani's Nightmare",

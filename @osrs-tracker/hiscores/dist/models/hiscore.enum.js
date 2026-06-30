@@ -104,6 +104,7 @@ export var BossEnum;
     BossEnum["KrilTsutsaroth"] = "K'ril Tsutsaroth";
     BossEnum["LunarChests"] = "Lunar Chests";
     BossEnum["Mimic"] = "Mimic";
+    BossEnum["MaggotKing"] = "Maggot King";
     BossEnum["Nex"] = "Nex";
     BossEnum["Nightmare"] = "Nightmare";
     BossEnum["PhosanisNightmare"] = "Phosani's Nightmare";

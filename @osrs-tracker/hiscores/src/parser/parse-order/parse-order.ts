@@ -9,6 +9,7 @@ import { PO_DEFAULT } from './po-default';
 export type ParseOrder = HiscoreLineType[];
 
 export const ParseOrderMap: { [date: string]: ParseOrder } = {
+  '2026-06-30T11': Parsers_2026.PO_2026_06_30,
   '2026-02-25T11': Parsers_2026.PO_2026_02_25,
   '2025-11-19T08': Parsers_2025.PO_2025_11_19,
   '2025-11-05T11': Parsers_2025.PO_2025_11_05,

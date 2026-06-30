@@ -1,3 +1,7 @@
+## v1.2.0 - 2026/06/30
+
+- Added new hiscore parse order for Maggot King.
+
 ## v1.1.0 - 2026/02/25
 
 - Added new hiscore parse order for Brutus (Cow Boss).

@@ -103,6 +103,7 @@ export enum BossEnum {
   KrilTsutsaroth = "K'ril Tsutsaroth",
   LunarChests = 'Lunar Chests', // New boss 20/03/2024
   Mimic = 'Mimic',
+  MaggotKing = 'Maggot King', // New boss 30/06/2026
   Nex = 'Nex',
   Nightmare = 'Nightmare',
   PhosanisNightmare = "Phosani's Nightmare",
