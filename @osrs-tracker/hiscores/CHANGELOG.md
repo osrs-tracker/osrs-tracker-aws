@@ -1,3 +1,7 @@
+## v1.3.0 - 2026/07/29
+
+- Added new hiscore parse order for Mad Angel.
+
 ## v1.2.0 - 2026/06/30
 
 - Added new hiscore parse order for Maggot King.
