@@ -7,7 +7,7 @@ import { AnyBulkWriteOperation, AuthMechanism, BulkWriteResult, MongoClient, Ser
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
-import { getHiscore } from './utils/player.utils';
+import { getHiscore, hiscoreJsonToSourceString } from './utils/player.utils';
 import { createMessage } from './utils/sqs.utils';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
@@ -67,12 +67,18 @@ export const handler = async (event: SQSEvent, context: Context) => {
         // Add 2000ms (2 second) delay for each subsequent request to avoid 503 errors
         if (index > 0) await new Promise((resolve) => setTimeout(resolve, index * 2000));
 
-        const hiscore = await getHiscore(agent, username);
-        if (!hiscore) return mapArrayPush(failedMap, scrapingOffset, username);
+        const hiscoreJson = await getHiscore(agent, username);
+        if (!hiscoreJson) return mapArrayPush(failedMap, scrapingOffset, username);
 
         // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
         bulkUpdateOps.push(
-          MU.hiscoreEntryBulkWriteOp(username, { sourceString: hiscore, date: scrapeTime, scrapingOffset }),
+          MU.hiscoreEntryBulkWriteOp(username, {
+            sourceString: hiscoreJsonToSourceString(hiscoreJson),
+            date: scrapeTime,
+            scrapingOffset,
+            skills: hiscoreJson.skills,
+            activities: hiscoreJson.activities,
+          }),
         );
       }),
     );

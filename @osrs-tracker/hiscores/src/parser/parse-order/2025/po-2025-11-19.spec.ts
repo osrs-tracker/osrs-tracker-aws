@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { ClueScrollsEnum, CompetitiveEnum, SkillEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum, SkillEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2025-11-19 parse order', () => {
@@ -9,25 +9,25 @@ describe('Parser with 2025-11-19 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2025, 10, 19, 9));
 
-    expect(hiscore.skills[SkillEnum.Construction]).toEqual({
+    expect(hiscore.parsedSkills[SkillEnum.Construction]).toEqual({
       name: SkillEnum.Construction,
       level: 84,
       rank: 422493,
       xp: 2977021,
     });
-    expect(hiscore.skills[SkillEnum.Sailing]).toEqual({
+    expect(hiscore.parsedSkills[SkillEnum.Sailing]).toEqual({
       name: SkillEnum.Sailing,
       level: 1,
       rank: -1,
       xp: 0,
     });
-    expect(hiscore.competitive[CompetitiveEnum.GridPoints]).toEqual({
-      name: CompetitiveEnum.GridPoints,
+    expect(hiscore.parsedActivities[ActivityEnum.GridPoints]).toEqual({
+      name: ActivityEnum.GridPoints,
       rank: -1,
       score: 0,
     });
-    expect(hiscore.clueScrolls[ClueScrollsEnum.ClueScrollsAll]).toEqual({
-      name: ClueScrollsEnum.ClueScrollsAll,
+    expect(hiscore.parsedActivities[ActivityEnum.ClueScrollsAll]).toEqual({
+      name: ActivityEnum.ClueScrollsAll,
       rank: 212802,
       score: 337,
     });

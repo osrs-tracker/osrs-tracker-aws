@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BossEnum, BountyHunterEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2024-01-24 parse order', () => {
@@ -9,23 +9,23 @@ describe('Parser with 2024-01-24 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 0, 24, 12));
 
-    expect(hiscore.bountyHunter[BountyHunterEnum.BountyHunterLegacy]).toEqual({
-      name: BountyHunterEnum.BountyHunterLegacy,
+    expect(hiscore.parsedActivities[ActivityEnum.BountyHunterLegacy]).toEqual({
+      name: ActivityEnum.BountyHunterLegacy,
       rank: 159115,
       score: 7,
     });
-    expect(hiscore.bosses[BossEnum.Scorpia]).toEqual({
-      name: BossEnum.Scorpia,
+    expect(hiscore.parsedActivities[ActivityEnum.Scorpia]).toEqual({
+      name: ActivityEnum.Scorpia,
       rank: 104259,
       score: 30,
     });
-    expect(hiscore.bosses[BossEnum.Scurrius]).toEqual({
-      name: BossEnum.Scurrius,
+    expect(hiscore.parsedActivities[ActivityEnum.Scurrius]).toEqual({
+      name: ActivityEnum.Scurrius,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.bosses[BossEnum.Skotizo]).toEqual({
-      name: BossEnum.Skotizo,
+    expect(hiscore.parsedActivities[ActivityEnum.Skotizo]).toEqual({
+      name: ActivityEnum.Skotizo,
       rank: 218294,
       score: 22,
     });

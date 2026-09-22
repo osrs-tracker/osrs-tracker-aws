@@ -1,15 +1,7 @@
 import { HiscoreEntry } from '@osrs-tracker/models';
 import { isAfter, parseISO } from 'date-fns';
-import {
-  BossEnum,
-  BountyHunterEnum,
-  ClueScrollsEnum,
-  CompetitiveEnum,
-  MiniGameEnum,
-  RaidEnum,
-  SkillEnum,
-} from '../models/hiscore.enum';
-import { Hiscore, MiniGame, Skill } from '../models/hiscore.model';
+import { ActivityEnum, SkillEnum } from '../models/hiscore.enum';
+import { Activity, Hiscore, Skill } from '../models/hiscore.model';
 import { ParseOrder, ParseOrderMap } from './parse-order/parse-order';
 import { PO_DEFAULT } from './parse-order/po-default';
 
@@ -45,36 +37,31 @@ export function hiscoreDiff(recent: Hiscore, old: Hiscore): Hiscore {
       case 'sourceString':
       case 'scrapingOffset':
         return [hiscoreKey, old[hiscoreKey]];
-      case 'skills':
+      case 'parsedSkills':
         return [
           hiscoreKey,
           Object.fromEntries(
-            Object.entries<Skill>(recentValue).map(([skillName, skill]) => [
+            (Object.entries(recentValue) as [SkillEnum, Skill][]).map(([skillName, skill]) => [
               skillName,
               {
                 name: skillName,
-                rank: skill.rank - (old.skills[skillName as SkillEnum]?.rank ?? 0), // check if skill exists in previous hiscore (thanks sailing)
-                level: skill.level - (old.skills[skillName as SkillEnum]?.level ?? 0), // check if skill exists in previous hiscore (thanks sailing)
-                xp: diff(skill.xp, old.skills[skillName as SkillEnum]?.xp ?? 0), // check if skill exists in previous hiscore (thanks sailing)
+                rank: skill.rank - (old.parsedSkills[skillName as SkillEnum]?.rank ?? 0), // check if skill exists in previous hiscore (thanks sailing)
+                level: skill.level - (old.parsedSkills[skillName as SkillEnum]?.level ?? 0), // check if skill exists in previous hiscore (thanks sailing)
+                xp: diff(skill.xp, old.parsedSkills[skillName as SkillEnum]?.xp ?? 0), // check if skill exists in previous hiscore (thanks sailing)
               },
             ]),
           ),
         ];
-      case 'bosses':
-      case 'raids':
-      case 'clueScrolls':
-      case 'competitive':
-      case 'bountyHunter':
-      case 'minigames':
+      case 'parsedActivities':
         return [
           hiscoreKey,
           Object.fromEntries(
-            Object.entries<MiniGame>(recentValue).map(([miniGameName, miniGame]) => [
-              miniGameName,
+            (Object.entries(recentValue) as [ActivityEnum, Activity][]).map(([activityName, activity]) => [
+              activityName,
               {
-                name: miniGameName,
-                rank: miniGame.rank - ((old[hiscoreKey] as { [key: string]: MiniGame })[miniGameName]?.rank ?? 0),
-                score: diff(miniGame.score, (old[hiscoreKey] as { [key: string]: MiniGame })[miniGameName]?.score ?? 0),
+                name: activityName,
+                rank: activity.rank - (old.parsedActivities[activityName]?.rank ?? 0),
+                score: diff(activity.score, old.parsedActivities[activityName]?.score ?? 0),
               },
             ]),
           ),
@@ -116,42 +103,13 @@ export function parseHiscoreString(hiscoreString: string, date: Date): Omit<Hisc
 
   // skills are the first entries, after that come the minigames
   const skills = lines.slice(0, skillsInPO).map((line, i) => parseSkillLine(parser, line, i));
-  const minigames = lines.slice(skillsInPO).map((line, i) => parseMiniGameLine(parser, line, i + skillsInPO));
+  const activities = lines.slice(skillsInPO).map((line, i) => parseActivityLine(parser, line, i + skillsInPO));
 
   // Create a new hiscore object with skills and minigame placeholders
   const hiscore = {
-    skills: skills.reduce((acc, val) => (acc = { ...acc, [val.name]: val }), {}),
-    bosses: {},
-    raids: {},
-    clueScrolls: {},
-    competitive: {},
-    bountyHunter: {},
-    minigames: {},
+    parsedSkills: skills.reduce((acc, val) => (acc = { ...acc, [val.name]: val }), {}),
+    parsedActivities: activities.reduce((acc, val) => (acc = { ...acc, [val.name]: val }), {}),
   } as Hiscore;
-
-  // Fill the minigame placeholders
-  minigames.forEach((miniGame) => {
-    if (Object.values(BossEnum).includes(miniGame.name as BossEnum))
-      return (hiscore.bosses[miniGame.name as BossEnum] = miniGame);
-
-    if (Object.values(RaidEnum).includes(miniGame.name as RaidEnum))
-      return (hiscore.raids[miniGame.name as RaidEnum] = miniGame);
-
-    if (Object.values(ClueScrollsEnum).includes(miniGame.name as ClueScrollsEnum))
-      return (hiscore.clueScrolls[miniGame.name as ClueScrollsEnum] = miniGame);
-
-    if (Object.values(CompetitiveEnum).includes(miniGame.name as CompetitiveEnum))
-      return (hiscore.competitive[miniGame.name as CompetitiveEnum] = miniGame);
-
-    if (Object.values(BountyHunterEnum).includes(miniGame.name as BountyHunterEnum))
-      return (hiscore.bountyHunter[miniGame.name as BountyHunterEnum] = miniGame);
-
-    if (Object.values(MiniGameEnum).includes(miniGame.name as MiniGameEnum))
-      return (hiscore.minigames[miniGame.name as MiniGameEnum] = miniGame);
-
-    // When a minigame can't be found in the current parse order, throw an error
-    throw new Error('Unknown minigame detected:' + miniGame.name);
-  });
 
   return hiscore;
 }
@@ -195,11 +153,11 @@ function parseSkillLine(parseOrder: ParseOrder, line: string, lineNo: number): S
   };
 }
 
-function parseMiniGameLine(parseOrder: ParseOrder, line: string, lineNo: number): MiniGame {
+function parseActivityLine(parseOrder: ParseOrder, line: string, lineNo: number): Activity {
   const [rank, score] = line.split(',');
 
   return {
-    name: parseOrder[lineNo] as MiniGameEnum | RaidEnum | BossEnum,
+    name: parseOrder[lineNo] as ActivityEnum,
     rank: parseInt(rank),
     score: parseInt(score),
   };

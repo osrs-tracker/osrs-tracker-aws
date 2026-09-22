@@ -1,13 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import {
-  BossEnum,
-  BountyHunterEnum,
-  ClueScrollsEnum,
-  CompetitiveEnum,
-  MiniGameEnum,
-  RaidEnum,
-  SkillEnum,
-} from '../../models/hiscore.enum';
+import { ActivityEnum, SkillEnum } from '../../models/hiscore.enum';
 import { parseHiscoreString } from '../parser';
 
 describe('Parser with default parse order', () => {
@@ -17,7 +9,7 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.skills).toEqual({
+    expect(hiscore.parsedSkills).toEqual({
       [SkillEnum.Overall]: { name: SkillEnum.Overall, rank: 334156, level: 1914, xp: 99860290 },
       [SkillEnum.Attack]: { name: SkillEnum.Attack, rank: 576406, level: 87, xp: 4188449 },
       [SkillEnum.Defence]: { name: SkillEnum.Defence, rank: 521172, level: 87, xp: 4188465 },
@@ -51,15 +43,17 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.clueScrolls).toEqual({
-      [ClueScrollsEnum.ClueScrollsAll]: { name: ClueScrollsEnum.ClueScrollsAll, rank: 263018, score: 156 },
-      [ClueScrollsEnum.ClueScrollsBeginner]: { name: ClueScrollsEnum.ClueScrollsBeginner, rank: -1, score: -1 },
-      [ClueScrollsEnum.ClueScrollsEasy]: { name: ClueScrollsEnum.ClueScrollsEasy, rank: 71658, score: 62 },
-      [ClueScrollsEnum.ClueScrollsMedium]: { name: ClueScrollsEnum.ClueScrollsMedium, rank: 404405, score: 18 },
-      [ClueScrollsEnum.ClueScrollsHard]: { name: ClueScrollsEnum.ClueScrollsHard, rank: 281515, score: 59 },
-      [ClueScrollsEnum.ClueScrollsElite]: { name: ClueScrollsEnum.ClueScrollsElite, rank: 169031, score: 16 },
-      [ClueScrollsEnum.ClueScrollsMaster]: { name: ClueScrollsEnum.ClueScrollsMaster, rank: 271102, score: 1 },
-    });
+    expect(hiscore.parsedActivities).toEqual(
+      expect.objectContaining({
+        [ActivityEnum.ClueScrollsAll]: { name: ActivityEnum.ClueScrollsAll, rank: 263018, score: 156 },
+        [ActivityEnum.ClueScrollsBeginner]: { name: ActivityEnum.ClueScrollsBeginner, rank: -1, score: -1 },
+        [ActivityEnum.ClueScrollsEasy]: { name: ActivityEnum.ClueScrollsEasy, rank: 71658, score: 62 },
+        [ActivityEnum.ClueScrollsMedium]: { name: ActivityEnum.ClueScrollsMedium, rank: 404405, score: 18 },
+        [ActivityEnum.ClueScrollsHard]: { name: ActivityEnum.ClueScrollsHard, rank: 281515, score: 59 },
+        [ActivityEnum.ClueScrollsElite]: { name: ActivityEnum.ClueScrollsElite, rank: 169031, score: 16 },
+        [ActivityEnum.ClueScrollsMaster]: { name: ActivityEnum.ClueScrollsMaster, rank: 271102, score: 1 },
+      }),
+    );
   });
 
   it('should parse clue scrolls', () => {
@@ -68,15 +62,17 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.clueScrolls).toEqual({
-      [ClueScrollsEnum.ClueScrollsAll]: { name: ClueScrollsEnum.ClueScrollsAll, rank: 263018, score: 156 },
-      [ClueScrollsEnum.ClueScrollsBeginner]: { name: ClueScrollsEnum.ClueScrollsBeginner, rank: -1, score: -1 },
-      [ClueScrollsEnum.ClueScrollsEasy]: { name: ClueScrollsEnum.ClueScrollsEasy, rank: 71658, score: 62 },
-      [ClueScrollsEnum.ClueScrollsMedium]: { name: ClueScrollsEnum.ClueScrollsMedium, rank: 404405, score: 18 },
-      [ClueScrollsEnum.ClueScrollsHard]: { name: ClueScrollsEnum.ClueScrollsHard, rank: 281515, score: 59 },
-      [ClueScrollsEnum.ClueScrollsElite]: { name: ClueScrollsEnum.ClueScrollsElite, rank: 169031, score: 16 },
-      [ClueScrollsEnum.ClueScrollsMaster]: { name: ClueScrollsEnum.ClueScrollsMaster, rank: 271102, score: 1 },
-    });
+    expect(hiscore.parsedActivities).toEqual(
+      expect.objectContaining({
+        [ActivityEnum.ClueScrollsAll]: { name: ActivityEnum.ClueScrollsAll, rank: 263018, score: 156 },
+        [ActivityEnum.ClueScrollsBeginner]: { name: ActivityEnum.ClueScrollsBeginner, rank: -1, score: -1 },
+        [ActivityEnum.ClueScrollsEasy]: { name: ActivityEnum.ClueScrollsEasy, rank: 71658, score: 62 },
+        [ActivityEnum.ClueScrollsMedium]: { name: ActivityEnum.ClueScrollsMedium, rank: 404405, score: 18 },
+        [ActivityEnum.ClueScrollsHard]: { name: ActivityEnum.ClueScrollsHard, rank: 281515, score: 59 },
+        [ActivityEnum.ClueScrollsElite]: { name: ActivityEnum.ClueScrollsElite, rank: 169031, score: 16 },
+        [ActivityEnum.ClueScrollsMaster]: { name: ActivityEnum.ClueScrollsMaster, rank: 271102, score: 1 },
+      }),
+    );
   });
 
   it('should parse bounty hunter', () => {
@@ -85,10 +81,12 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.bountyHunter).toEqual({
-      [BountyHunterEnum.BountyHunter]: { name: BountyHunterEnum.BountyHunter, rank: 4, score: 16726 },
-      [BountyHunterEnum.BountyHunterRogues]: { name: BountyHunterEnum.BountyHunterRogues, rank: 363, score: 991 },
-    });
+    expect(hiscore.parsedActivities).toEqual(
+      expect.objectContaining({
+        [ActivityEnum.BountyHunter]: { name: ActivityEnum.BountyHunter, rank: 4, score: 16726 },
+        [ActivityEnum.BountyHunterRogue]: { name: ActivityEnum.BountyHunterRogue, rank: 363, score: 991 },
+      }),
+    );
   });
 
   it('should parse competitive', () => {
@@ -97,11 +95,13 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.competitive).toEqual({
-      [CompetitiveEnum.LeaguePoints]: { name: CompetitiveEnum.LeaguePoints, rank: -1, score: -1 }, // League points are not available in regular hiscores
-      [CompetitiveEnum.LastManStanding]: { name: CompetitiveEnum.LastManStanding, rank: 1681, score: 8108 },
-      [CompetitiveEnum.PvpArena]: { name: CompetitiveEnum.PvpArena, rank: 18, score: 5310 },
-    });
+    expect(hiscore.parsedActivities).toEqual(
+      expect.objectContaining({
+        [ActivityEnum.LeaguePoints]: { name: ActivityEnum.LeaguePoints, rank: -1, score: -1 }, // League points are not available in regular hiscores
+        [ActivityEnum.LastManStanding]: { name: ActivityEnum.LastManStanding, rank: 1681, score: 8108 },
+        [ActivityEnum.PvpArena]: { name: ActivityEnum.PvpArena, rank: 18, score: 5310 },
+      }),
+    );
   });
 
   it('should parse minigames', () => {
@@ -110,10 +110,12 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.minigames).toEqual({
-      [MiniGameEnum.SoulWarsZeal]: { name: MiniGameEnum.SoulWarsZeal, rank: 3, score: 613379 },
-      [MiniGameEnum.RiftsClosed]: { name: MiniGameEnum.RiftsClosed, rank: 187992, score: 58 },
-    });
+    expect(hiscore.parsedActivities).toEqual(
+      expect.objectContaining({
+        [ActivityEnum.SoulWarsZeal]: { name: ActivityEnum.SoulWarsZeal, rank: 3, score: 613379 },
+        [ActivityEnum.RiftsClosed]: { name: ActivityEnum.RiftsClosed, rank: 187992, score: 58 },
+      }),
+    );
   });
 
   it('should parse bosses and raids', () => {
@@ -122,61 +124,73 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.bosses).toEqual({
-      [BossEnum.AbyssalSire]: { name: BossEnum.AbyssalSire, rank: 13259, score: 1046 },
-      [BossEnum.AlchemicalHydra]: { name: BossEnum.AlchemicalHydra, rank: 3449, score: 3979 },
-      [BossEnum.BarrowsChests]: { name: BossEnum.BarrowsChests, rank: 21890, score: 917 },
-      [BossEnum.Bryophyta]: { name: BossEnum.Bryophyta, rank: 16389, score: 47 },
-      [BossEnum.Callisto]: { name: BossEnum.Callisto, rank: 4766, score: 1207 },
-      [BossEnum.Cerberus]: { name: BossEnum.Cerberus, rank: 869, score: 6436 },
-      [BossEnum.ChaosElemental]: { name: BossEnum.ChaosElemental, rank: 27695, score: 150 },
-      [BossEnum.ChaosFanatic]: { name: BossEnum.ChaosFanatic, rank: 2684, score: 719 },
-      [BossEnum.CommanderZilyana]: { name: BossEnum.CommanderZilyana, rank: 2412, score: 1937 },
-      [BossEnum.CorporealBeast]: { name: BossEnum.CorporealBeast, rank: 149, score: 7940 },
-      [BossEnum.CrazyArchaeologist]: { name: BossEnum.CrazyArchaeologist, rank: 25775, score: 147 },
-      [BossEnum.DagannothPrime]: { name: BossEnum.DagannothPrime, rank: 5301, score: 1939 },
-      [BossEnum.DagannothRex]: { name: BossEnum.DagannothRex, rank: 6606, score: 1955 },
-      [BossEnum.DagannothSupreme]: { name: BossEnum.DagannothSupreme, rank: 5274, score: 1962 },
-      [BossEnum.DerangedArchaeologist]: { name: BossEnum.DerangedArchaeologist, rank: 25016, score: 50 },
-      [BossEnum.GeneralGraardor]: { name: BossEnum.GeneralGraardor, rank: 2620, score: 3000 },
-      [BossEnum.GiantMole]: { name: BossEnum.GiantMole, rank: 6315, score: 2754 },
-      [BossEnum.GrotesqueGuardians]: { name: BossEnum.GrotesqueGuardians, rank: 4222, score: 1369 },
-      [BossEnum.Hespori]: { name: BossEnum.Hespori, rank: 152296, score: 47 },
-      [BossEnum.KalphiteQueen]: { name: BossEnum.KalphiteQueen, rank: 6101, score: 1004 },
-      [BossEnum.KingBlackDragon]: { name: BossEnum.KingBlackDragon, rank: 49014, score: 535 },
-      [BossEnum.Kraken]: { name: BossEnum.Kraken, rank: 59262, score: 2612 },
-      [BossEnum.KreeArra]: { name: BossEnum.KreeArra, rank: 441, score: 5009 },
-      [BossEnum.KrilTsutsaroth]: { name: BossEnum.KrilTsutsaroth, rank: 2519, score: 1250 },
-      [BossEnum.Mimic]: { name: BossEnum.Mimic, rank: 2, score: 337 },
-      [BossEnum.Nex]: { name: BossEnum.Nex, rank: 2200, score: 3243 },
-      [BossEnum.Nightmare]: { name: BossEnum.Nightmare, rank: 838, score: 2243 },
-      [BossEnum.PhosanisNightmare]: { name: BossEnum.PhosanisNightmare, rank: 1032, score: 1035 },
-      [BossEnum.Obor]: { name: BossEnum.Obor, rank: 6946, score: 72 },
-      [BossEnum.PhantomMuspah]: { name: BossEnum.PhantomMuspah, rank: 4073, score: 423 },
-      [BossEnum.Sarachnis]: { name: BossEnum.Sarachnis, rank: 956, score: 3144 },
-      [BossEnum.Scorpia]: { name: BossEnum.Scorpia, rank: 4143, score: 766 },
-      [BossEnum.Skotizo]: { name: BossEnum.Skotizo, rank: 33921, score: 53 },
-      [BossEnum.Tempoross]: { name: BossEnum.Tempoross, rank: 70093, score: 150 },
-      [BossEnum.ThermoNuclearSmokeDevil]: { name: BossEnum.ThermoNuclearSmokeDevil, rank: 3225, score: 3937 },
-      [BossEnum.TzKalZuk]: { name: BossEnum.TzKalZuk, rank: 3111, score: 10 },
-      [BossEnum.TzTokJad]: { name: BossEnum.TzTokJad, rank: 210, score: 175 },
-      [BossEnum.Venenatis]: { name: BossEnum.Venenatis, rank: 17055, score: 447 },
-      [BossEnum.Vetion]: { name: BossEnum.Vetion, rank: 432, score: 2667 },
-      [BossEnum.Vorkath]: { name: BossEnum.Vorkath, rank: 3996, score: 5597 },
-      [BossEnum.Wintertodt]: { name: BossEnum.Wintertodt, rank: 147911, score: 542 },
-      [BossEnum.Zalcano]: { name: BossEnum.Zalcano, rank: 54318, score: 150 },
-      [BossEnum.Zulrah]: { name: BossEnum.Zulrah, rank: 1692, score: 11160 },
-    });
+    expect(hiscore.parsedActivities).toEqual(
+      expect.objectContaining({
+        [ActivityEnum.AbyssalSire]: { name: ActivityEnum.AbyssalSire, rank: 13259, score: 1046 },
+        [ActivityEnum.AlchemicalHydra]: { name: ActivityEnum.AlchemicalHydra, rank: 3449, score: 3979 },
+        [ActivityEnum.BarrowsChests]: { name: ActivityEnum.BarrowsChests, rank: 21890, score: 917 },
+        [ActivityEnum.Bryophyta]: { name: ActivityEnum.Bryophyta, rank: 16389, score: 47 },
+        [ActivityEnum.Callisto]: { name: ActivityEnum.Callisto, rank: 4766, score: 1207 },
+        [ActivityEnum.Cerberus]: { name: ActivityEnum.Cerberus, rank: 869, score: 6436 },
+        [ActivityEnum.ChaosElemental]: { name: ActivityEnum.ChaosElemental, rank: 27695, score: 150 },
+        [ActivityEnum.ChaosFanatic]: { name: ActivityEnum.ChaosFanatic, rank: 2684, score: 719 },
+        [ActivityEnum.CommanderZilyana]: { name: ActivityEnum.CommanderZilyana, rank: 2412, score: 1937 },
+        [ActivityEnum.CorporealBeast]: { name: ActivityEnum.CorporealBeast, rank: 149, score: 7940 },
+        [ActivityEnum.CrazyArchaeologist]: { name: ActivityEnum.CrazyArchaeologist, rank: 25775, score: 147 },
+        [ActivityEnum.DagannothPrime]: { name: ActivityEnum.DagannothPrime, rank: 5301, score: 1939 },
+        [ActivityEnum.DagannothRex]: { name: ActivityEnum.DagannothRex, rank: 6606, score: 1955 },
+        [ActivityEnum.DagannothSupreme]: { name: ActivityEnum.DagannothSupreme, rank: 5274, score: 1962 },
+        [ActivityEnum.DerangedArchaeologist]: { name: ActivityEnum.DerangedArchaeologist, rank: 25016, score: 50 },
+        [ActivityEnum.GeneralGraardor]: { name: ActivityEnum.GeneralGraardor, rank: 2620, score: 3000 },
+        [ActivityEnum.GiantMole]: { name: ActivityEnum.GiantMole, rank: 6315, score: 2754 },
+        [ActivityEnum.GrotesqueGuardians]: { name: ActivityEnum.GrotesqueGuardians, rank: 4222, score: 1369 },
+        [ActivityEnum.Hespori]: { name: ActivityEnum.Hespori, rank: 152296, score: 47 },
+        [ActivityEnum.KalphiteQueen]: { name: ActivityEnum.KalphiteQueen, rank: 6101, score: 1004 },
+        [ActivityEnum.KingBlackDragon]: { name: ActivityEnum.KingBlackDragon, rank: 49014, score: 535 },
+        [ActivityEnum.Kraken]: { name: ActivityEnum.Kraken, rank: 59262, score: 2612 },
+        [ActivityEnum.KreeArra]: { name: ActivityEnum.KreeArra, rank: 441, score: 5009 },
+        [ActivityEnum.KrilTsutsaroth]: { name: ActivityEnum.KrilTsutsaroth, rank: 2519, score: 1250 },
+        [ActivityEnum.Mimic]: { name: ActivityEnum.Mimic, rank: 2, score: 337 },
+        [ActivityEnum.Nex]: { name: ActivityEnum.Nex, rank: 2200, score: 3243 },
+        [ActivityEnum.Nightmare]: { name: ActivityEnum.Nightmare, rank: 838, score: 2243 },
+        [ActivityEnum.PhosanisNightmare]: { name: ActivityEnum.PhosanisNightmare, rank: 1032, score: 1035 },
+        [ActivityEnum.Obor]: { name: ActivityEnum.Obor, rank: 6946, score: 72 },
+        [ActivityEnum.PhantomMuspah]: { name: ActivityEnum.PhantomMuspah, rank: 4073, score: 423 },
+        [ActivityEnum.Sarachnis]: { name: ActivityEnum.Sarachnis, rank: 956, score: 3144 },
+        [ActivityEnum.Scorpia]: { name: ActivityEnum.Scorpia, rank: 4143, score: 766 },
+        [ActivityEnum.Skotizo]: { name: ActivityEnum.Skotizo, rank: 33921, score: 53 },
+        [ActivityEnum.Tempoross]: { name: ActivityEnum.Tempoross, rank: 70093, score: 150 },
+        [ActivityEnum.ThermoNuclearSmokeDevil]: { name: ActivityEnum.ThermoNuclearSmokeDevil, rank: 3225, score: 3937 },
+        [ActivityEnum.TzKalZuk]: { name: ActivityEnum.TzKalZuk, rank: 3111, score: 10 },
+        [ActivityEnum.TzTokJad]: { name: ActivityEnum.TzTokJad, rank: 210, score: 175 },
+        [ActivityEnum.Venenatis]: { name: ActivityEnum.Venenatis, rank: 17055, score: 447 },
+        [ActivityEnum.Vetion]: { name: ActivityEnum.Vetion, rank: 432, score: 2667 },
+        [ActivityEnum.Vorkath]: { name: ActivityEnum.Vorkath, rank: 3996, score: 5597 },
+        [ActivityEnum.Wintertodt]: { name: ActivityEnum.Wintertodt, rank: 147911, score: 542 },
+        [ActivityEnum.Zalcano]: { name: ActivityEnum.Zalcano, rank: 54318, score: 150 },
+        [ActivityEnum.Zulrah]: { name: ActivityEnum.Zulrah, rank: 1692, score: 11160 },
+      }),
+    );
 
-    expect(hiscore.raids).toEqual({
-      [RaidEnum.ChambersOfXeric]: { name: RaidEnum.ChambersOfXeric, rank: 141342, score: 55 },
-      [RaidEnum.ChambersOfXericChallengeMode]: { name: RaidEnum.ChambersOfXericChallengeMode, rank: 22048, score: 36 },
-      [RaidEnum.TheGauntlet]: { name: RaidEnum.TheGauntlet, rank: -1, score: -1 },
-      [RaidEnum.TheCorruptedGauntlet]: { name: RaidEnum.TheCorruptedGauntlet, rank: 117522, score: 10 },
-      [RaidEnum.TheatreOfBlood]: { name: RaidEnum.TheatreOfBlood, rank: 8042, score: 661 },
-      [RaidEnum.TheatreOfBloodHardMode]: { name: RaidEnum.TheatreOfBloodHardMode, rank: 3132, score: 189 },
-      [RaidEnum.TombsOfAmascut]: { name: RaidEnum.TombsOfAmascut, rank: 3226, score: 246 },
-      [RaidEnum.TombsOfAmascutExpertMode]: { name: RaidEnum.TombsOfAmascutExpertMode, rank: 22880, score: 74 },
-    });
+    expect(hiscore.parsedActivities).toEqual(
+      expect.objectContaining({
+        [ActivityEnum.ChambersOfXeric]: { name: ActivityEnum.ChambersOfXeric, rank: 141342, score: 55 },
+        [ActivityEnum.ChambersOfXericChallengeMode]: {
+          name: ActivityEnum.ChambersOfXericChallengeMode,
+          rank: 22048,
+          score: 36,
+        },
+        [ActivityEnum.TheGauntlet]: { name: ActivityEnum.TheGauntlet, rank: -1, score: -1 },
+        [ActivityEnum.TheCorruptedGauntlet]: { name: ActivityEnum.TheCorruptedGauntlet, rank: 117522, score: 10 },
+        [ActivityEnum.TheatreOfBlood]: { name: ActivityEnum.TheatreOfBlood, rank: 8042, score: 661 },
+        [ActivityEnum.TheatreOfBloodHardMode]: { name: ActivityEnum.TheatreOfBloodHardMode, rank: 3132, score: 189 },
+        [ActivityEnum.TombsOfAmascut]: { name: ActivityEnum.TombsOfAmascut, rank: 3226, score: 246 },
+        [ActivityEnum.TombsOfAmascutExpertMode]: {
+          name: ActivityEnum.TombsOfAmascutExpertMode,
+          rank: 22880,
+          score: 74,
+        },
+      }),
+    );
   });
 });

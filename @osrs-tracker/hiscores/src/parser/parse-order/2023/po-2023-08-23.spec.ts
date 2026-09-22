@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BossEnum, CompetitiveEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2023-08-23 parse order', () => {
@@ -9,18 +9,18 @@ describe('Parser with 2023-08-23 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 7, 23, 13));
 
-    expect(hiscore.competitive[CompetitiveEnum.LeaguePoints]).toEqual({
-      name: CompetitiveEnum.LeaguePoints,
+    expect(hiscore.parsedActivities[ActivityEnum.LeaguePoints]).toEqual({
+      name: ActivityEnum.LeaguePoints,
       rank: 11610,
       score: 27665,
     });
-    expect(hiscore.competitive[CompetitiveEnum.Unknown]).toEqual({
-      name: CompetitiveEnum.Unknown,
+    expect(hiscore.parsedActivities[ActivityEnum.DeadmanPoints]).toEqual({
+      name: ActivityEnum.DeadmanPoints,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.bosses[BossEnum.Zulrah]).toEqual({
-      name: BossEnum.Zulrah,
+    expect(hiscore.parsedActivities[ActivityEnum.Zulrah]).toEqual({
+      name: ActivityEnum.Zulrah,
       rank: 22229,
       score: 63,
     });

@@ -25,35 +25,27 @@ export declare enum SkillEnum {
     Construction = "Construction",
     Sailing = "Sailing"
 }
-export declare enum CompetitiveEnum {
+export declare enum ActivityEnum {
     LeaguePoints = "League Points",
     PvpArena = "PvP Arena - Rank",
-    LastManStanding = "Last Man Standing (Rank)",
-    Unknown = "Unknown",
-    GridPoints = "Grid Points"
-}
-export declare enum BountyHunterEnum {
+    LastManStanding = "LMS - Rank",
+    DeadmanPoints = "Deadman Points",
+    GridPoints = "Grid Points",
     BountyHunter = "Bounty Hunter - Hunter",
-    BountyHunterRogues = "Bounty Hunter - Rogues",
+    BountyHunterRogue = "Bounty Hunter - Rogue",
     BountyHunterLegacy = "Bounty Hunter (Legacy) - Hunter",
-    BountyHunterLegacyRogues = "Bounty Hunter (Legacy) - Rogues"
-}
-export declare enum ClueScrollsEnum {
+    BountyHunterLegacyRogue = "Bounty Hunter (Legacy) - Rogue",
     ClueScrollsAll = "Clue Scrolls (all)",
     ClueScrollsBeginner = "Clue Scrolls (beginner)",
     ClueScrollsEasy = "Clue Scrolls (easy)",
     ClueScrollsMedium = "Clue Scrolls (medium)",
     ClueScrollsHard = "Clue Scrolls (hard)",
     ClueScrollsElite = "Clue Scrolls (elite)",
-    ClueScrollsMaster = "Clue Scrolls (master)"
-}
-export declare enum MiniGameEnum {
+    ClueScrollsMaster = "Clue Scrolls (master)",
     SoulWarsZeal = "Soul Wars Zeal",
-    RiftsClosed = "Rifts Closed",
+    RiftsClosed = "Rifts closed",
     ColosseumGlory = "Colosseum Glory",
-    CollectionsLogged = "Collections Logged"
-}
-export declare enum RaidEnum {
+    CollectionsLogged = "Collections Logged",
     ChambersOfXeric = "Chambers of Xeric",
     ChambersOfXericChallengeMode = "Chambers of Xeric: Challenge Mode",
     TheGauntlet = "The Gauntlet",
@@ -61,24 +53,22 @@ export declare enum RaidEnum {
     TheatreOfBlood = "Theatre of Blood",
     TheatreOfBloodHardMode = "Theatre of Blood: Hard Mode",
     TombsOfAmascut = "Tombs of Amascut",
-    TombsOfAmascutExpertMode = "Tombs of Amascut: Expert Mode"
-}
-export declare enum BossEnum {
+    TombsOfAmascutExpertMode = "Tombs of Amascut: Expert Mode",
     AbyssalSire = "Abyssal Sire",
     AlchemicalHydra = "Alchemical Hydra",
-    Araxxor = "Araxxor",
-    Amoxliatl = "Amoxliatl",
+    Araxxor = "Amoxliatl",
+    Amoxliatl = "Araxxor",
     Artio = "Artio",
     BarrowsChests = "Barrows Chests",
-    Bryophyta = "Bryophyta",
-    Callisto = "Callisto",
-    Calvarion = "Cal'varion",
-    Cerberus = "Cerberus",
-    ChaosElemental = "Chaos Elemental",
-    ChaosFanatic = "Chaos Fanatic",
-    CommanderZilyana = "Commander Zilyana",
-    CorporealBeast = "Corporeal Beast",
-    Brutus = "Brutus",
+    Bryophyta = "Brutus",
+    Callisto = "Bryophyta",
+    Calvarion = "Callisto",
+    Cerberus = "Calvar'ion",
+    ChaosElemental = "Cerberus",
+    ChaosFanatic = "Chaos Elemental",
+    CommanderZilyana = "Chaos Fanatic",
+    CorporealBeast = "Commander Zilyana",
+    Brutus = "Corporeal Beast",
     CrazyArchaeologist = "Crazy Archaeologist",
     DagannothPrime = "Dagannoth Prime",
     DagannothRex = "Dagannoth Rex",
@@ -97,8 +87,8 @@ export declare enum BossEnum {
     KrilTsutsaroth = "K'ril Tsutsaroth",
     LunarChests = "Lunar Chests",
     MadAngel = "Mad Angel",
-    Mimic = "Mimic",
-    MaggotKing = "Maggot King",
+    Mimic = "Maggot King",
+    MaggotKing = "Mimic",
     Nex = "Nex",
     Nightmare = "Nightmare",
     PhosanisNightmare = "Phosani's Nightmare",

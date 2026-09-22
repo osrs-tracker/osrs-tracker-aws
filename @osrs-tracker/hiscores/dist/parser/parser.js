@@ -1,5 +1,5 @@
 import { isAfter, parseISO } from 'date-fns';
-import { BossEnum, BountyHunterEnum, ClueScrollsEnum, CompetitiveEnum, MiniGameEnum, RaidEnum, SkillEnum, } from '../models/hiscore.enum';
+import { SkillEnum } from '../models/hiscore.enum';
 import { ParseOrderMap } from './parse-order/parse-order';
 import { PO_DEFAULT } from './parse-order/po-default';
 export function parseHiscores(hiscoreEntries) {
@@ -15,33 +15,28 @@ export function hiscoreDiff(recent, old) {
             case 'sourceString':
             case 'scrapingOffset':
                 return [hiscoreKey, old[hiscoreKey]];
-            case 'skills':
+            case 'parsedSkills':
                 return [
                     hiscoreKey,
                     Object.fromEntries(Object.entries(recentValue).map(([skillName, skill]) => [
                         skillName,
                         {
                             name: skillName,
-                            rank: skill.rank - (old.skills[skillName]?.rank ?? 0),
-                            level: skill.level - (old.skills[skillName]?.level ?? 0),
-                            xp: diff(skill.xp, old.skills[skillName]?.xp ?? 0),
+                            rank: skill.rank - (old.parsedSkills[skillName]?.rank ?? 0),
+                            level: skill.level - (old.parsedSkills[skillName]?.level ?? 0),
+                            xp: diff(skill.xp, old.parsedSkills[skillName]?.xp ?? 0),
                         },
                     ])),
                 ];
-            case 'bosses':
-            case 'raids':
-            case 'clueScrolls':
-            case 'competitive':
-            case 'bountyHunter':
-            case 'minigames':
+            case 'parsedActivities':
                 return [
                     hiscoreKey,
-                    Object.fromEntries(Object.entries(recentValue).map(([miniGameName, miniGame]) => [
-                        miniGameName,
+                    Object.fromEntries(Object.entries(recentValue).map(([activityName, activity]) => [
+                        activityName,
                         {
-                            name: miniGameName,
-                            rank: miniGame.rank - (old[hiscoreKey][miniGameName]?.rank ?? 0),
-                            score: diff(miniGame.score, old[hiscoreKey][miniGameName]?.score ?? 0),
+                            name: activityName,
+                            rank: activity.rank - (old.parsedActivities[activityName]?.rank ?? 0),
+                            score: diff(activity.score, old.parsedActivities[activityName]?.score ?? 0),
                         },
                     ])),
                 ];
@@ -61,31 +56,11 @@ export function parseHiscoreString(hiscoreString, date) {
     const lines = hiscoreString.split('\n').filter((line) => line.length);
     const skillsInPO = parser.filter((val) => Object.values(SkillEnum).includes(val)).length;
     const skills = lines.slice(0, skillsInPO).map((line, i) => parseSkillLine(parser, line, i));
-    const minigames = lines.slice(skillsInPO).map((line, i) => parseMiniGameLine(parser, line, i + skillsInPO));
+    const activities = lines.slice(skillsInPO).map((line, i) => parseActivityLine(parser, line, i + skillsInPO));
     const hiscore = {
-        skills: skills.reduce((acc, val) => (acc = { ...acc, [val.name]: val }), {}),
-        bosses: {},
-        raids: {},
-        clueScrolls: {},
-        competitive: {},
-        bountyHunter: {},
-        minigames: {},
+        parsedSkills: skills.reduce((acc, val) => (acc = { ...acc, [val.name]: val }), {}),
+        parsedActivities: activities.reduce((acc, val) => (acc = { ...acc, [val.name]: val }), {}),
     };
-    minigames.forEach((miniGame) => {
-        if (Object.values(BossEnum).includes(miniGame.name))
-            return (hiscore.bosses[miniGame.name] = miniGame);
-        if (Object.values(RaidEnum).includes(miniGame.name))
-            return (hiscore.raids[miniGame.name] = miniGame);
-        if (Object.values(ClueScrollsEnum).includes(miniGame.name))
-            return (hiscore.clueScrolls[miniGame.name] = miniGame);
-        if (Object.values(CompetitiveEnum).includes(miniGame.name))
-            return (hiscore.competitive[miniGame.name] = miniGame);
-        if (Object.values(BountyHunterEnum).includes(miniGame.name))
-            return (hiscore.bountyHunter[miniGame.name] = miniGame);
-        if (Object.values(MiniGameEnum).includes(miniGame.name))
-            return (hiscore.minigames[miniGame.name] = miniGame);
-        throw new Error('Unknown minigame detected:' + miniGame.name);
-    });
     return hiscore;
 }
 function getSkillFromSourceString(sourceString, skill, date) {
@@ -114,7 +89,7 @@ function parseSkillLine(parseOrder, line, lineNo) {
         xp: parseInt(xp),
     };
 }
-function parseMiniGameLine(parseOrder, line, lineNo) {
+function parseActivityLine(parseOrder, line, lineNo) {
     const [rank, score] = line.split(',');
     return {
         name: parseOrder[lineNo],

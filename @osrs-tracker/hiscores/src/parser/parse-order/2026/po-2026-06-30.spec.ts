@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BossEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2026-06-30 parse order', () => {
@@ -9,23 +9,23 @@ describe('Parser with 2026-06-30 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2026, 5, 30, 12));
 
-    expect(hiscore.bosses[BossEnum.LunarChests]).toEqual({
-      name: BossEnum.LunarChests,
+    expect(hiscore.parsedActivities[ActivityEnum.LunarChests]).toEqual({
+      name: ActivityEnum.LunarChests,
       rank: 51614,
       score: 307,
     });
-    expect(hiscore.bosses[BossEnum.Mimic]).toEqual({
-      name: BossEnum.Mimic,
+    expect(hiscore.parsedActivities[ActivityEnum.Mimic]).toEqual({
+      name: ActivityEnum.Mimic,
       rank: 227521,
       score: 1,
     });
-    expect(hiscore.bosses[BossEnum.MaggotKing]).toEqual({
-      name: BossEnum.MaggotKing,
+    expect(hiscore.parsedActivities[ActivityEnum.MaggotKing]).toEqual({
+      name: ActivityEnum.MaggotKing,
       rank: -1,
       score: 0,
     });
-    expect(hiscore.bosses[BossEnum.Nex]).toEqual({
-      name: BossEnum.Nex,
+    expect(hiscore.parsedActivities[ActivityEnum.Nex]).toEqual({
+      name: ActivityEnum.Nex,
       rank: -1,
       score: 0,
     });

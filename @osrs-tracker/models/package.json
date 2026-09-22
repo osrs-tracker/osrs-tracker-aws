@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/models",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "description": "Typings for OSRS Tracker API",
   "license": "MIT",
   "author": "Freek Mencke",
@@ -28,7 +28,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@types/node": "^22.13.14",
-    "typescript": "^5.8.2"
+    "@types/node": "^24.13.6",
+    "typescript": "5.8.2"
   }
 }

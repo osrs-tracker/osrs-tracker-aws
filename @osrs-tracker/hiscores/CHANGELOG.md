@@ -1,3 +1,15 @@
+## v2.0.1 - 2026/09/22
+
+- Updated `@osrs-tracker/models` to `^0.7.1` to fix typo in `HiscoreSkill` interface.
+
+## v2.0.0 - 2026/09/22
+
+# BREAKING CHANGES
+
+- Removed specific types for activities and replaced them with a generic `Activity` type. This change allows for more
+  flexibility in handling various activities without the need for predefined types. Also conforms more with the json
+  format of the hiscores.
+
 ## v1.3.0 - 2026/07/29
 
 - Added new hiscore parse order for Mad Angel.

@@ -1,3 +1,14 @@
+## 0.7.1 - 2025/09/22
+
+- Fixed `HiscoreSkill` to have `xp` instead of `experience` field. This was a typo in the previous release.
+
+## 0.7.0 - 2025/09/22
+
+- Marked `HiscoreEntry.sourceString` as a deprecated field.
+- Added `HiscoreEntry.skills` and `HiscoreEntry.activities` fields to replace `sourceString`. These fields come from the
+  json response from the hiscores API and provide a more structured representation of the player's skills and
+  activities.
+
 ## 0.6.0 - 2025/04/19
 
 - Added support for both `esm` and `cjs` module formats.

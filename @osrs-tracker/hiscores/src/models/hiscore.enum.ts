@@ -26,22 +26,21 @@ export enum SkillEnum {
   Sailing = 'Sailing', // New skill 19/11/2025
 }
 
-export enum CompetitiveEnum {
+export enum ActivityEnum {
+  // COMPETITIVE
   LeaguePoints = 'League Points',
   PvpArena = 'PvP Arena - Rank',
-  LastManStanding = 'Last Man Standing (Rank)',
-  Unknown = 'Unknown', // something with deadman apocalypse
+  LastManStanding = 'LMS - Rank',
+  DeadmanPoints = 'Deadman Points', // something with deadman apocalypse
   GridPoints = 'Grid Points', // Grid Master 2025/10/15
-}
 
-export enum BountyHunterEnum {
+  // BOUNTY HUNTER
   BountyHunter = 'Bounty Hunter - Hunter',
-  BountyHunterRogues = 'Bounty Hunter - Rogues',
+  BountyHunterRogue = 'Bounty Hunter - Rogue',
   BountyHunterLegacy = 'Bounty Hunter (Legacy) - Hunter',
-  BountyHunterLegacyRogues = 'Bounty Hunter (Legacy) - Rogues',
-}
+  BountyHunterLegacyRogue = 'Bounty Hunter (Legacy) - Rogue',
 
-export enum ClueScrollsEnum {
+  // CLUE SCROLLS
   ClueScrollsAll = 'Clue Scrolls (all)',
   ClueScrollsBeginner = 'Clue Scrolls (beginner)',
   ClueScrollsEasy = 'Clue Scrolls (easy)',
@@ -49,16 +48,14 @@ export enum ClueScrollsEnum {
   ClueScrollsHard = 'Clue Scrolls (hard)',
   ClueScrollsElite = 'Clue Scrolls (elite)',
   ClueScrollsMaster = 'Clue Scrolls (master)',
-}
 
-export enum MiniGameEnum {
+  // MINIGAMES
   SoulWarsZeal = 'Soul Wars Zeal',
-  RiftsClosed = 'Rifts Closed',
+  RiftsClosed = 'Rifts closed',
   ColosseumGlory = 'Colosseum Glory', // New minigame 20/03/2024
   CollectionsLogged = 'Collections Logged', // New minigame 29/01/2025
-}
 
-export enum RaidEnum {
+  // RAIDS
   ChambersOfXeric = 'Chambers of Xeric',
   ChambersOfXericChallengeMode = 'Chambers of Xeric: Challenge Mode',
   TheGauntlet = 'The Gauntlet',
@@ -67,31 +64,30 @@ export enum RaidEnum {
   TheatreOfBloodHardMode = 'Theatre of Blood: Hard Mode',
   TombsOfAmascut = 'Tombs of Amascut',
   TombsOfAmascutExpertMode = 'Tombs of Amascut: Expert Mode',
-}
 
-export enum BossEnum {
+  // BOSSES
   AbyssalSire = 'Abyssal Sire',
   AlchemicalHydra = 'Alchemical Hydra',
-  Araxxor = 'Araxxor', // New boss 28/08/2024
-  Amoxliatl = 'Amoxliatl', // Varlamore P2 25/09/2024
-  Artio = 'Artio', // New boss 13/04/2023
+  Araxxor = 'Amoxliatl',
+  Amoxliatl = 'Araxxor',
+  Artio = 'Artio',
   BarrowsChests = 'Barrows Chests',
-  Bryophyta = 'Bryophyta',
-  Callisto = 'Callisto',
-  Calvarion = "Cal'varion", // New boss 13/04/2023
-  Cerberus = 'Cerberus',
-  ChaosElemental = 'Chaos Elemental',
-  ChaosFanatic = 'Chaos Fanatic',
-  CommanderZilyana = 'Commander Zilyana',
-  CorporealBeast = 'Corporeal Beast',
-  Brutus = 'Brutus', // New boss 25/02/2026
+  Bryophyta = 'Brutus',
+  Callisto = 'Bryophyta',
+  Calvarion = 'Callisto',
+  Cerberus = "Calvar'ion",
+  ChaosElemental = 'Cerberus',
+  ChaosFanatic = 'Chaos Elemental',
+  CommanderZilyana = 'Chaos Fanatic',
+  CorporealBeast = 'Commander Zilyana',
+  Brutus = 'Corporeal Beast',
   CrazyArchaeologist = 'Crazy Archaeologist',
   DagannothPrime = 'Dagannoth Prime',
   DagannothRex = 'Dagannoth Rex',
   DagannothSupreme = 'Dagannoth Supreme',
   DerangedArchaeologist = 'Deranged Archaeologist',
-  DoomOfMokhaiotl = 'Doom of Mokhaiotl', // Varlamore P3 23/07/2025
-  DukeSucellus = 'Duke Sucellus', // New boss 31/07/2023
+  DoomOfMokhaiotl = 'Doom of Mokhaiotl',
+  DukeSucellus = 'Duke Sucellus',
   GeneralGraardor = 'General Graardor',
   GiantMole = 'Giant Mole',
   GrotesqueGuardians = 'Grotesque Guardians',
@@ -101,10 +97,10 @@ export enum BossEnum {
   Kraken = 'Kraken',
   KreeArra = "Kree'Arra",
   KrilTsutsaroth = "K'ril Tsutsaroth",
-  LunarChests = 'Lunar Chests', // New boss 20/03/2024
-  MadAngel = 'Mad Angel', // New boss 29/07/2026
-  Mimic = 'Mimic',
-  MaggotKing = 'Maggot King', // New boss 30/06/2026
+  LunarChests = 'Lunar Chests',
+  MadAngel = 'Mad Angel',
+  Mimic = 'Maggot King',
+  MaggotKing = 'Mimic',
   Nex = 'Nex',
   Nightmare = 'Nightmare',
   PhosanisNightmare = "Phosani's Nightmare",
@@ -112,16 +108,16 @@ export enum BossEnum {
   PhantomMuspah = 'Phantom Muspah',
   Sarachnis = 'Sarachnis',
   Scorpia = 'Scorpia',
-  Scurrius = 'Scurrius', // New boss 24/01/2024
-  ShellbaneGryphon = 'Shellbane Gryphon', // New boss 05/11/2025
+  Scurrius = 'Scurrius',
+  ShellbaneGryphon = 'Shellbane Gryphon',
   Skotizo = 'Skotizo',
-  SolHeredit = 'Sol Heredit', // New boss 20/03/2024
-  Spindel = 'Spindel', // New boss 13/04/2023
+  SolHeredit = 'Sol Heredit',
+  Spindel = 'Spindel',
   Tempoross = 'Tempoross',
-  TheHueycoatl = 'The Hueycoatl', // Varlamore P2 25/09/2024
-  TheLeviathan = 'The Leviathan', // New boss 31/07/2023
-  TheRoyalTitans = 'The Royal Titans', // New boss 05/02/2025
-  TheWhisperer = 'The Whisperer', // New boss 31/07/2023
+  TheHueycoatl = 'The Hueycoatl',
+  TheLeviathan = 'The Leviathan',
+  TheRoyalTitans = 'The Royal Titans',
+  TheWhisperer = 'The Whisperer',
   ThermoNuclearSmokeDevil = 'Thermonuclear Smoke Devil',
   TzKalZuk = 'TzKal-Zuk',
   TzTokJad = 'TzTok-Jad',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BossEnum, MiniGameEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2024-03-20 parse order', () => {
@@ -9,38 +9,38 @@ describe('Parser with 2024-03-20 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 2, 20, 12));
 
-    expect(hiscore.minigames[MiniGameEnum.ColosseumGlory]).toEqual({
-      name: MiniGameEnum.ColosseumGlory,
+    expect(hiscore.parsedActivities[ActivityEnum.ColosseumGlory]).toEqual({
+      name: ActivityEnum.ColosseumGlory,
       rank: 1,
       score: 10050,
     });
-    expect(hiscore.bosses[BossEnum.KrilTsutsaroth]).toEqual({
-      name: BossEnum.KrilTsutsaroth,
+    expect(hiscore.parsedActivities[ActivityEnum.KrilTsutsaroth]).toEqual({
+      name: ActivityEnum.KrilTsutsaroth,
       rank: 23241,
       score: 388,
     });
-    expect(hiscore.bosses[BossEnum.LunarChests]).toEqual({
-      name: BossEnum.LunarChests,
+    expect(hiscore.parsedActivities[ActivityEnum.LunarChests]).toEqual({
+      name: ActivityEnum.LunarChests,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.bosses[BossEnum.Mimic]).toEqual({
-      name: BossEnum.Mimic,
+    expect(hiscore.parsedActivities[ActivityEnum.Mimic]).toEqual({
+      name: ActivityEnum.Mimic,
       rank: 4791,
       score: 19,
     });
-    expect(hiscore.bosses[BossEnum.Scurrius]).toEqual({
-      name: BossEnum.Scurrius,
+    expect(hiscore.parsedActivities[ActivityEnum.Scurrius]).toEqual({
+      name: ActivityEnum.Scurrius,
       rank: 44891,
       score: 127,
     });
-    expect(hiscore.bosses[BossEnum.SolHeredit]).toEqual({
-      name: BossEnum.SolHeredit,
+    expect(hiscore.parsedActivities[ActivityEnum.SolHeredit]).toEqual({
+      name: ActivityEnum.SolHeredit,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.bosses[BossEnum.Skotizo]).toEqual({
-      name: BossEnum.Skotizo,
+    expect(hiscore.parsedActivities[ActivityEnum.Skotizo]).toEqual({
+      name: ActivityEnum.Skotizo,
       rank: 2931,
       score: 114,
     });

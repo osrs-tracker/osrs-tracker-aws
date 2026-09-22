@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BossEnum, RaidEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2024-09-25 parse order', () => {
@@ -9,18 +9,18 @@ describe('Parser with 2024-09-25 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 8, 25, 12));
 
-    expect(hiscore.bosses[BossEnum.AlchemicalHydra]).toEqual({
-      name: BossEnum.AlchemicalHydra,
+    expect(hiscore.parsedActivities[ActivityEnum.AlchemicalHydra]).toEqual({
+      name: ActivityEnum.AlchemicalHydra,
       rank: 27839,
       score: 1809,
     });
-    expect(hiscore.bosses[BossEnum.Amoxliatl]).toEqual({
-      name: BossEnum.Amoxliatl,
+    expect(hiscore.parsedActivities[ActivityEnum.Amoxliatl]).toEqual({
+      name: ActivityEnum.Amoxliatl,
       rank: 1,
       score: 5,
     });
-    expect(hiscore.bosses[BossEnum.Araxxor]).toEqual({
-      name: BossEnum.Araxxor,
+    expect(hiscore.parsedActivities[ActivityEnum.Araxxor]).toEqual({
+      name: ActivityEnum.Araxxor,
       rank: 2644,
       score: 1407,
     });
@@ -32,18 +32,18 @@ describe('Parser with 2024-09-25 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 8, 25, 12));
 
-    expect(hiscore.raids[RaidEnum.TheCorruptedGauntlet]).toEqual({
-      name: RaidEnum.TheCorruptedGauntlet,
+    expect(hiscore.parsedActivities[ActivityEnum.TheCorruptedGauntlet]).toEqual({
+      name: ActivityEnum.TheCorruptedGauntlet,
       rank: 46206,
       score: 457,
     });
-    expect(hiscore.bosses[BossEnum.TheHueycoatl]).toEqual({
-      name: BossEnum.TheHueycoatl,
+    expect(hiscore.parsedActivities[ActivityEnum.TheHueycoatl]).toEqual({
+      name: ActivityEnum.TheHueycoatl,
       rank: 5,
       score: 31,
     });
-    expect(hiscore.bosses[BossEnum.TheLeviathan]).toEqual({
-      name: BossEnum.TheLeviathan,
+    expect(hiscore.parsedActivities[ActivityEnum.TheLeviathan]).toEqual({
+      name: ActivityEnum.TheLeviathan,
       rank: 18840,
       score: 289,
     });

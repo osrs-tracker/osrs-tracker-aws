@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BossEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2025-07-23 parse order', () => {
@@ -9,28 +9,28 @@ describe('Parser with 2025-07-23 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2025, 6, 23, 12));
 
-    expect(hiscore.bosses[BossEnum.DerangedArchaeologist]).toEqual({
-      name: BossEnum.DerangedArchaeologist,
+    expect(hiscore.parsedActivities[ActivityEnum.DerangedArchaeologist]).toEqual({
+      name: ActivityEnum.DerangedArchaeologist,
       rank: 173031,
       score: 25,
     });
-    expect(hiscore.bosses[BossEnum.DoomOfMokhaiotl]).toEqual({
-      name: BossEnum.DoomOfMokhaiotl,
+    expect(hiscore.parsedActivities[ActivityEnum.DoomOfMokhaiotl]).toEqual({
+      name: ActivityEnum.DoomOfMokhaiotl,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.bosses[BossEnum.DukeSucellus]).toEqual({
-      name: BossEnum.DukeSucellus,
+    expect(hiscore.parsedActivities[ActivityEnum.DukeSucellus]).toEqual({
+      name: ActivityEnum.DukeSucellus,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.bosses[BossEnum.GeneralGraardor]).toEqual({
-      name: BossEnum.GeneralGraardor,
+    expect(hiscore.parsedActivities[ActivityEnum.GeneralGraardor]).toEqual({
+      name: ActivityEnum.GeneralGraardor,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.bosses[BossEnum.GiantMole]).toEqual({
-      name: BossEnum.GiantMole,
+    expect(hiscore.parsedActivities[ActivityEnum.GiantMole]).toEqual({
+      name: ActivityEnum.GiantMole,
       rank: 513814,
       score: 10,
     });

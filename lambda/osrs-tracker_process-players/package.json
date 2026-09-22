@@ -24,7 +24,7 @@
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.854.0",
     "@osrs-tracker/discord-webhooks": "^0.0.2",
-    "@osrs-tracker/models": "^0.6.0",
+    "@osrs-tracker/models": "^0.7.1",
     "aws4": "^1.12.0",
     "lodash.chunk": "^4.2.0",
     "mongodb": "^6.18.0",

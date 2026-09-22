@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BountyHunterEnum } from '../../../models/hiscore.enum';
+import { ActivityEnum } from '../../../models/hiscore.enum';
 import { parseHiscoreString } from '../../parser';
 
 describe('Parser with 2023-05-24 parse order', () => {
@@ -9,23 +9,23 @@ describe('Parser with 2023-05-24 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 6, 26));
 
-    expect(hiscore.bountyHunter[BountyHunterEnum.BountyHunter]).toEqual({
-      name: BountyHunterEnum.BountyHunter,
+    expect(hiscore.parsedActivities[ActivityEnum.BountyHunter]).toEqual({
+      name: ActivityEnum.BountyHunter,
       rank: 2928,
       score: 200,
     });
-    expect(hiscore.bountyHunter[BountyHunterEnum.BountyHunterRogues]).toEqual({
-      name: BountyHunterEnum.BountyHunterRogues,
+    expect(hiscore.parsedActivities[ActivityEnum.BountyHunterRogue]).toEqual({
+      name: ActivityEnum.BountyHunterRogue,
       rank: 3674,
       score: 12,
     });
-    expect(hiscore.bountyHunter[BountyHunterEnum.BountyHunterLegacy]).toEqual({
-      name: BountyHunterEnum.BountyHunterLegacy,
+    expect(hiscore.parsedActivities[ActivityEnum.BountyHunterLegacy]).toEqual({
+      name: ActivityEnum.BountyHunterLegacy,
       rank: 3546,
       score: 17,
     });
-    expect(hiscore.bountyHunter[BountyHunterEnum.BountyHunterLegacyRogues]).toEqual({
-      name: BountyHunterEnum.BountyHunterLegacyRogues,
+    expect(hiscore.parsedActivities[ActivityEnum.BountyHunterLegacyRogue]).toEqual({
+      name: ActivityEnum.BountyHunterLegacyRogue,
       rank: 6532,
       score: 3,
     });
