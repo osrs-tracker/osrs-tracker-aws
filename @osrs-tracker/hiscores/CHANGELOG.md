@@ -1,3 +1,7 @@
+## v2.1.1 - 2026/09/24
+
+- Fixed wrong order in ActivityEnum.
+
 ## v2.1.0 - 2026/09/23
 
 - Added coverage for parser helpers including `parseHiscores`, `hiscoreDiff`, `getOverallXpDiff`, and
