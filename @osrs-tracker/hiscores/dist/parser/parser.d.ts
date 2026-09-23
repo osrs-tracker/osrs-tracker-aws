@@ -1,6 +1,9 @@
-import { HiscoreEntry } from '@osrs-tracker/models';
-import { Hiscore } from '../models/hiscore.model';
-export declare function parseHiscores(hiscoreEntries: HiscoreEntry[]): Hiscore[];
-export declare function hiscoreDiff(recent: Hiscore, old: Hiscore): Hiscore;
+import { HiscoreActivity, HiscoreEntry, HiscoreSkill } from '@osrs-tracker/models';
+export declare function parseHiscores(hiscoreEntries: HiscoreEntry[]): HiscoreEntry[];
+export declare function hiscoreDiff(recent: HiscoreEntry, old: HiscoreEntry): HiscoreEntry;
 export declare function getOverallXpDiff(today: HiscoreEntry, recent: HiscoreEntry): number;
-export declare function parseHiscoreString(hiscoreString: string, date: Date): Omit<Hiscore, keyof HiscoreEntry>;
+export declare function hiscoreJsonToSourceString({ skills, activities, }: {
+    skills: HiscoreSkill[];
+    activities: HiscoreActivity[];
+}): string;
+export declare function parseHiscoreString(hiscoreString: string, date: Date): Pick<HiscoreEntry, 'skills' | 'activities'>;

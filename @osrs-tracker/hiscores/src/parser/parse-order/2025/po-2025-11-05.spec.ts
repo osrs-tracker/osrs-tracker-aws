@@ -9,17 +9,17 @@ describe('Parser with 2025-11-05 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2025, 10, 5, 12));
 
-    expect(hiscore.parsedActivities[ActivityEnum.Scurrius]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.Scurrius)).toMatchObject({
       name: ActivityEnum.Scurrius,
       rank: 66952,
       score: 216,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.ShellbaneGryphon]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.ShellbaneGryphon)).toMatchObject({
       name: ActivityEnum.ShellbaneGryphon,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.Skotizo]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.Skotizo)).toMatchObject({
       name: ActivityEnum.Skotizo,
       rank: 416401,
       score: 13,

@@ -1,4 +1,5 @@
-import { describe, expect, it } from '@jest/globals';
+import { expect, it } from '@jest/globals';
+import { describe } from 'node:test';
 import { ActivityEnum, SkillEnum } from '../../models/hiscore.enum';
 import { parseHiscoreString } from '../parser';
 
@@ -9,32 +10,32 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.parsedSkills).toEqual({
-      [SkillEnum.Overall]: { name: SkillEnum.Overall, rank: 334156, level: 1914, xp: 99860290 },
-      [SkillEnum.Attack]: { name: SkillEnum.Attack, rank: 576406, level: 87, xp: 4188449 },
-      [SkillEnum.Defence]: { name: SkillEnum.Defence, rank: 521172, level: 87, xp: 4188465 },
-      [SkillEnum.Strength]: { name: SkillEnum.Strength, rank: 639254, level: 93, xp: 7424420 },
-      [SkillEnum.Hitpoints]: { name: SkillEnum.Hitpoints, rank: 480038, level: 97, xp: 11487417 },
-      [SkillEnum.Ranged]: { name: SkillEnum.Ranged, rank: 307369, level: 99, xp: 14340244 },
-      [SkillEnum.Prayer]: { name: SkillEnum.Prayer, rank: 656770, level: 73, xp: 1067785 },
-      [SkillEnum.Magic]: { name: SkillEnum.Magic, rank: 640753, level: 90, xp: 5737370 },
-      [SkillEnum.Cooking]: { name: SkillEnum.Cooking, rank: 284117, level: 99, xp: 13034960 },
-      [SkillEnum.Woodcutting]: { name: SkillEnum.Woodcutting, rank: 606830, level: 77, xp: 1529619 },
-      [SkillEnum.Fletching]: { name: SkillEnum.Fletching, rank: 326206, level: 90, xp: 5347263 },
-      [SkillEnum.Fishing]: { name: SkillEnum.Fishing, rank: 324192, level: 85, xp: 3530138 },
-      [SkillEnum.Firemaking]: { name: SkillEnum.Firemaking, rank: 486289, level: 86, xp: 3613313 },
-      [SkillEnum.Crafting]: { name: SkillEnum.Crafting, rank: 213225, level: 90, xp: 5346364 },
-      [SkillEnum.Smithing]: { name: SkillEnum.Smithing, rank: 582223, level: 73, xp: 995180 },
-      [SkillEnum.Mining]: { name: SkillEnum.Mining, rank: 638045, level: 73, xp: 1051903 },
-      [SkillEnum.Herblore]: { name: SkillEnum.Herblore, rank: 698786, level: 69, xp: 722346 },
-      [SkillEnum.Agility]: { name: SkillEnum.Agility, rank: 396600, level: 76, xp: 1429094 },
-      [SkillEnum.Thieving]: { name: SkillEnum.Thieving, rank: 469133, level: 75, xp: 1210560 },
-      [SkillEnum.Slayer]: { name: SkillEnum.Slayer, rank: 244821, level: 93, xp: 7492488 },
-      [SkillEnum.Farming]: { name: SkillEnum.Farming, rank: 495070, level: 81, xp: 2220596 },
-      [SkillEnum.Runecraft]: { name: SkillEnum.Runecraft, rank: 400195, level: 68, xp: 654647 },
-      [SkillEnum.Hunter]: { name: SkillEnum.Hunter, rank: 595927, level: 71, xp: 819574 },
-      [SkillEnum.Construction]: { name: SkillEnum.Construction, rank: 429584, level: 82, xp: 2428095 },
-    });
+    expect(hiscore.skills).toEqual([
+      { id: 0, name: SkillEnum.Overall, rank: 334156, level: 1914, xp: 99860290 },
+      { id: 1, name: SkillEnum.Attack, rank: 576406, level: 87, xp: 4188449 },
+      { id: 2, name: SkillEnum.Defence, rank: 521172, level: 87, xp: 4188465 },
+      { id: 3, name: SkillEnum.Strength, rank: 639254, level: 93, xp: 7424420 },
+      { id: 4, name: SkillEnum.Hitpoints, rank: 480038, level: 97, xp: 11487417 },
+      { id: 5, name: SkillEnum.Ranged, rank: 307369, level: 99, xp: 14340244 },
+      { id: 6, name: SkillEnum.Prayer, rank: 656770, level: 73, xp: 1067785 },
+      { id: 7, name: SkillEnum.Magic, rank: 640753, level: 90, xp: 5737370 },
+      { id: 8, name: SkillEnum.Cooking, rank: 284117, level: 99, xp: 13034960 },
+      { id: 9, name: SkillEnum.Woodcutting, rank: 606830, level: 77, xp: 1529619 },
+      { id: 10, name: SkillEnum.Fletching, rank: 326206, level: 90, xp: 5347263 },
+      { id: 11, name: SkillEnum.Fishing, rank: 324192, level: 85, xp: 3530138 },
+      { id: 12, name: SkillEnum.Firemaking, rank: 486289, level: 86, xp: 3613313 },
+      { id: 13, name: SkillEnum.Crafting, rank: 213225, level: 90, xp: 5346364 },
+      { id: 14, name: SkillEnum.Smithing, rank: 582223, level: 73, xp: 995180 },
+      { id: 15, name: SkillEnum.Mining, rank: 638045, level: 73, xp: 1051903 },
+      { id: 16, name: SkillEnum.Herblore, rank: 698786, level: 69, xp: 722346 },
+      { id: 17, name: SkillEnum.Agility, rank: 396600, level: 76, xp: 1429094 },
+      { id: 18, name: SkillEnum.Thieving, rank: 469133, level: 75, xp: 1210560 },
+      { id: 19, name: SkillEnum.Slayer, rank: 244821, level: 93, xp: 7492488 },
+      { id: 20, name: SkillEnum.Farming, rank: 495070, level: 81, xp: 2220596 },
+      { id: 21, name: SkillEnum.Runecraft, rank: 400195, level: 68, xp: 654647 },
+      { id: 22, name: SkillEnum.Hunter, rank: 595927, level: 71, xp: 819574 },
+      { id: 23, name: SkillEnum.Construction, rank: 429584, level: 82, xp: 2428095 },
+    ]);
   });
 
   it('should parse clue scrolls', () => {
@@ -43,35 +44,16 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.parsedActivities).toEqual(
-      expect.objectContaining({
-        [ActivityEnum.ClueScrollsAll]: { name: ActivityEnum.ClueScrollsAll, rank: 263018, score: 156 },
-        [ActivityEnum.ClueScrollsBeginner]: { name: ActivityEnum.ClueScrollsBeginner, rank: -1, score: -1 },
-        [ActivityEnum.ClueScrollsEasy]: { name: ActivityEnum.ClueScrollsEasy, rank: 71658, score: 62 },
-        [ActivityEnum.ClueScrollsMedium]: { name: ActivityEnum.ClueScrollsMedium, rank: 404405, score: 18 },
-        [ActivityEnum.ClueScrollsHard]: { name: ActivityEnum.ClueScrollsHard, rank: 281515, score: 59 },
-        [ActivityEnum.ClueScrollsElite]: { name: ActivityEnum.ClueScrollsElite, rank: 169031, score: 16 },
-        [ActivityEnum.ClueScrollsMaster]: { name: ActivityEnum.ClueScrollsMaster, rank: 271102, score: 1 },
-      }),
-    );
-  });
-
-  it('should parse clue scrolls', () => {
-    const hiscoreString =
-      '334156,1914,99860290\n576406,87,4188449\n521172,87,4188465\n639254,93,7424420\n480038,97,11487417\n307369,99,14340244\n656770,73,1067785\n640753,90,5737370\n284117,99,13034960\n606830,77,1529619\n326206,90,5347263\n324192,85,3530138\n486289,86,3613313\n213225,90,5346364\n582223,73,995180\n638045,73,1051903\n698786,69,722346\n396600,76,1429094\n469133,75,1210560\n244821,93,7492488\n495070,81,2220596\n400195,68,654647\n595927,71,819574\n429584,82,2428095\n-1,-1\n-1,-1\n-1,-1\n263018,156\n-1,-1\n71658,62\n404405,18\n281515,59\n169031,16\n271102,1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n126053,87\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n130741,52\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n248567,52\n-1,-1\n-1,-1\n454256,7\n-1,-1\n150960,194\n200821,963\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n200431,20\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n-1,-1\n334308,73\n511614,140\n-1,-1\n218039,224';
-
-    const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
-
-    expect(hiscore.parsedActivities).toEqual(
-      expect.objectContaining({
-        [ActivityEnum.ClueScrollsAll]: { name: ActivityEnum.ClueScrollsAll, rank: 263018, score: 156 },
-        [ActivityEnum.ClueScrollsBeginner]: { name: ActivityEnum.ClueScrollsBeginner, rank: -1, score: -1 },
-        [ActivityEnum.ClueScrollsEasy]: { name: ActivityEnum.ClueScrollsEasy, rank: 71658, score: 62 },
-        [ActivityEnum.ClueScrollsMedium]: { name: ActivityEnum.ClueScrollsMedium, rank: 404405, score: 18 },
-        [ActivityEnum.ClueScrollsHard]: { name: ActivityEnum.ClueScrollsHard, rank: 281515, score: 59 },
-        [ActivityEnum.ClueScrollsElite]: { name: ActivityEnum.ClueScrollsElite, rank: 169031, score: 16 },
-        [ActivityEnum.ClueScrollsMaster]: { name: ActivityEnum.ClueScrollsMaster, rank: 271102, score: 1 },
-      }),
+    expect(hiscore.activities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: ActivityEnum.ClueScrollsAll, rank: 263018, score: 156 }),
+        expect.objectContaining({ name: ActivityEnum.ClueScrollsBeginner, rank: -1, score: -1 }),
+        expect.objectContaining({ name: ActivityEnum.ClueScrollsEasy, rank: 71658, score: 62 }),
+        expect.objectContaining({ name: ActivityEnum.ClueScrollsMedium, rank: 404405, score: 18 }),
+        expect.objectContaining({ name: ActivityEnum.ClueScrollsHard, rank: 281515, score: 59 }),
+        expect.objectContaining({ name: ActivityEnum.ClueScrollsElite, rank: 169031, score: 16 }),
+        expect.objectContaining({ name: ActivityEnum.ClueScrollsMaster, rank: 271102, score: 1 }),
+      ]),
     );
   });
 
@@ -81,11 +63,11 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.parsedActivities).toEqual(
-      expect.objectContaining({
-        [ActivityEnum.BountyHunter]: { name: ActivityEnum.BountyHunter, rank: 4, score: 16726 },
-        [ActivityEnum.BountyHunterRogue]: { name: ActivityEnum.BountyHunterRogue, rank: 363, score: 991 },
-      }),
+    expect(hiscore.activities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: ActivityEnum.BountyHunter, rank: 4, score: 16726 }),
+        expect.objectContaining({ name: ActivityEnum.BountyHunterRogue, rank: 363, score: 991 }),
+      ]),
     );
   });
 
@@ -95,12 +77,12 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.parsedActivities).toEqual(
-      expect.objectContaining({
-        [ActivityEnum.LeaguePoints]: { name: ActivityEnum.LeaguePoints, rank: -1, score: -1 }, // League points are not available in regular hiscores
-        [ActivityEnum.LastManStanding]: { name: ActivityEnum.LastManStanding, rank: 1681, score: 8108 },
-        [ActivityEnum.PvpArena]: { name: ActivityEnum.PvpArena, rank: 18, score: 5310 },
-      }),
+    expect(hiscore.activities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: ActivityEnum.LeaguePoints, rank: -1, score: -1 }), // League points are not available in regular hiscores
+        expect.objectContaining({ name: ActivityEnum.LastManStanding, rank: 1681, score: 8108 }),
+        expect.objectContaining({ name: ActivityEnum.PvpArena, rank: 18, score: 5310 }),
+      ]),
     );
   });
 
@@ -110,11 +92,11 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.parsedActivities).toEqual(
-      expect.objectContaining({
-        [ActivityEnum.SoulWarsZeal]: { name: ActivityEnum.SoulWarsZeal, rank: 3, score: 613379 },
-        [ActivityEnum.RiftsClosed]: { name: ActivityEnum.RiftsClosed, rank: 187992, score: 58 },
-      }),
+    expect(hiscore.activities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: ActivityEnum.SoulWarsZeal, rank: 3, score: 613379 }),
+        expect.objectContaining({ name: ActivityEnum.RiftsClosed, rank: 187992, score: 58 }),
+      ]),
     );
   });
 
@@ -124,73 +106,60 @@ describe('Parser with default parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 3, 10));
 
-    expect(hiscore.parsedActivities).toEqual(
-      expect.objectContaining({
-        [ActivityEnum.AbyssalSire]: { name: ActivityEnum.AbyssalSire, rank: 13259, score: 1046 },
-        [ActivityEnum.AlchemicalHydra]: { name: ActivityEnum.AlchemicalHydra, rank: 3449, score: 3979 },
-        [ActivityEnum.BarrowsChests]: { name: ActivityEnum.BarrowsChests, rank: 21890, score: 917 },
-        [ActivityEnum.Bryophyta]: { name: ActivityEnum.Bryophyta, rank: 16389, score: 47 },
-        [ActivityEnum.Callisto]: { name: ActivityEnum.Callisto, rank: 4766, score: 1207 },
-        [ActivityEnum.Cerberus]: { name: ActivityEnum.Cerberus, rank: 869, score: 6436 },
-        [ActivityEnum.ChaosElemental]: { name: ActivityEnum.ChaosElemental, rank: 27695, score: 150 },
-        [ActivityEnum.ChaosFanatic]: { name: ActivityEnum.ChaosFanatic, rank: 2684, score: 719 },
-        [ActivityEnum.CommanderZilyana]: { name: ActivityEnum.CommanderZilyana, rank: 2412, score: 1937 },
-        [ActivityEnum.CorporealBeast]: { name: ActivityEnum.CorporealBeast, rank: 149, score: 7940 },
-        [ActivityEnum.CrazyArchaeologist]: { name: ActivityEnum.CrazyArchaeologist, rank: 25775, score: 147 },
-        [ActivityEnum.DagannothPrime]: { name: ActivityEnum.DagannothPrime, rank: 5301, score: 1939 },
-        [ActivityEnum.DagannothRex]: { name: ActivityEnum.DagannothRex, rank: 6606, score: 1955 },
-        [ActivityEnum.DagannothSupreme]: { name: ActivityEnum.DagannothSupreme, rank: 5274, score: 1962 },
-        [ActivityEnum.DerangedArchaeologist]: { name: ActivityEnum.DerangedArchaeologist, rank: 25016, score: 50 },
-        [ActivityEnum.GeneralGraardor]: { name: ActivityEnum.GeneralGraardor, rank: 2620, score: 3000 },
-        [ActivityEnum.GiantMole]: { name: ActivityEnum.GiantMole, rank: 6315, score: 2754 },
-        [ActivityEnum.GrotesqueGuardians]: { name: ActivityEnum.GrotesqueGuardians, rank: 4222, score: 1369 },
-        [ActivityEnum.Hespori]: { name: ActivityEnum.Hespori, rank: 152296, score: 47 },
-        [ActivityEnum.KalphiteQueen]: { name: ActivityEnum.KalphiteQueen, rank: 6101, score: 1004 },
-        [ActivityEnum.KingBlackDragon]: { name: ActivityEnum.KingBlackDragon, rank: 49014, score: 535 },
-        [ActivityEnum.Kraken]: { name: ActivityEnum.Kraken, rank: 59262, score: 2612 },
-        [ActivityEnum.KreeArra]: { name: ActivityEnum.KreeArra, rank: 441, score: 5009 },
-        [ActivityEnum.KrilTsutsaroth]: { name: ActivityEnum.KrilTsutsaroth, rank: 2519, score: 1250 },
-        [ActivityEnum.Mimic]: { name: ActivityEnum.Mimic, rank: 2, score: 337 },
-        [ActivityEnum.Nex]: { name: ActivityEnum.Nex, rank: 2200, score: 3243 },
-        [ActivityEnum.Nightmare]: { name: ActivityEnum.Nightmare, rank: 838, score: 2243 },
-        [ActivityEnum.PhosanisNightmare]: { name: ActivityEnum.PhosanisNightmare, rank: 1032, score: 1035 },
-        [ActivityEnum.Obor]: { name: ActivityEnum.Obor, rank: 6946, score: 72 },
-        [ActivityEnum.PhantomMuspah]: { name: ActivityEnum.PhantomMuspah, rank: 4073, score: 423 },
-        [ActivityEnum.Sarachnis]: { name: ActivityEnum.Sarachnis, rank: 956, score: 3144 },
-        [ActivityEnum.Scorpia]: { name: ActivityEnum.Scorpia, rank: 4143, score: 766 },
-        [ActivityEnum.Skotizo]: { name: ActivityEnum.Skotizo, rank: 33921, score: 53 },
-        [ActivityEnum.Tempoross]: { name: ActivityEnum.Tempoross, rank: 70093, score: 150 },
-        [ActivityEnum.ThermoNuclearSmokeDevil]: { name: ActivityEnum.ThermoNuclearSmokeDevil, rank: 3225, score: 3937 },
-        [ActivityEnum.TzKalZuk]: { name: ActivityEnum.TzKalZuk, rank: 3111, score: 10 },
-        [ActivityEnum.TzTokJad]: { name: ActivityEnum.TzTokJad, rank: 210, score: 175 },
-        [ActivityEnum.Venenatis]: { name: ActivityEnum.Venenatis, rank: 17055, score: 447 },
-        [ActivityEnum.Vetion]: { name: ActivityEnum.Vetion, rank: 432, score: 2667 },
-        [ActivityEnum.Vorkath]: { name: ActivityEnum.Vorkath, rank: 3996, score: 5597 },
-        [ActivityEnum.Wintertodt]: { name: ActivityEnum.Wintertodt, rank: 147911, score: 542 },
-        [ActivityEnum.Zalcano]: { name: ActivityEnum.Zalcano, rank: 54318, score: 150 },
-        [ActivityEnum.Zulrah]: { name: ActivityEnum.Zulrah, rank: 1692, score: 11160 },
-      }),
-    );
-
-    expect(hiscore.parsedActivities).toEqual(
-      expect.objectContaining({
-        [ActivityEnum.ChambersOfXeric]: { name: ActivityEnum.ChambersOfXeric, rank: 141342, score: 55 },
-        [ActivityEnum.ChambersOfXericChallengeMode]: {
-          name: ActivityEnum.ChambersOfXericChallengeMode,
-          rank: 22048,
-          score: 36,
-        },
-        [ActivityEnum.TheGauntlet]: { name: ActivityEnum.TheGauntlet, rank: -1, score: -1 },
-        [ActivityEnum.TheCorruptedGauntlet]: { name: ActivityEnum.TheCorruptedGauntlet, rank: 117522, score: 10 },
-        [ActivityEnum.TheatreOfBlood]: { name: ActivityEnum.TheatreOfBlood, rank: 8042, score: 661 },
-        [ActivityEnum.TheatreOfBloodHardMode]: { name: ActivityEnum.TheatreOfBloodHardMode, rank: 3132, score: 189 },
-        [ActivityEnum.TombsOfAmascut]: { name: ActivityEnum.TombsOfAmascut, rank: 3226, score: 246 },
-        [ActivityEnum.TombsOfAmascutExpertMode]: {
-          name: ActivityEnum.TombsOfAmascutExpertMode,
-          rank: 22880,
-          score: 74,
-        },
-      }),
+    expect(hiscore.activities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: ActivityEnum.AbyssalSire, rank: 13259, score: 1046 }),
+        expect.objectContaining({ name: ActivityEnum.AlchemicalHydra, rank: 3449, score: 3979 }),
+        expect.objectContaining({ name: ActivityEnum.BarrowsChests, rank: 21890, score: 917 }),
+        expect.objectContaining({ name: ActivityEnum.Bryophyta, rank: 16389, score: 47 }),
+        expect.objectContaining({ name: ActivityEnum.Callisto, rank: 4766, score: 1207 }),
+        expect.objectContaining({ name: ActivityEnum.Cerberus, rank: 869, score: 6436 }),
+        expect.objectContaining({ name: ActivityEnum.ChaosElemental, rank: 27695, score: 150 }),
+        expect.objectContaining({ name: ActivityEnum.ChaosFanatic, rank: 2684, score: 719 }),
+        expect.objectContaining({ name: ActivityEnum.CommanderZilyana, rank: 2412, score: 1937 }),
+        expect.objectContaining({ name: ActivityEnum.CorporealBeast, rank: 149, score: 7940 }),
+        expect.objectContaining({ name: ActivityEnum.CrazyArchaeologist, rank: 25775, score: 147 }),
+        expect.objectContaining({ name: ActivityEnum.DagannothPrime, rank: 5301, score: 1939 }),
+        expect.objectContaining({ name: ActivityEnum.DagannothRex, rank: 6606, score: 1955 }),
+        expect.objectContaining({ name: ActivityEnum.DagannothSupreme, rank: 5274, score: 1962 }),
+        expect.objectContaining({ name: ActivityEnum.DerangedArchaeologist, rank: 25016, score: 50 }),
+        expect.objectContaining({ name: ActivityEnum.GeneralGraardor, rank: 2620, score: 3000 }),
+        expect.objectContaining({ name: ActivityEnum.GiantMole, rank: 6315, score: 2754 }),
+        expect.objectContaining({ name: ActivityEnum.GrotesqueGuardians, rank: 4222, score: 1369 }),
+        expect.objectContaining({ name: ActivityEnum.Hespori, rank: 152296, score: 47 }),
+        expect.objectContaining({ name: ActivityEnum.KalphiteQueen, rank: 6101, score: 1004 }),
+        expect.objectContaining({ name: ActivityEnum.KingBlackDragon, rank: 49014, score: 535 }),
+        expect.objectContaining({ name: ActivityEnum.Kraken, rank: 59262, score: 2612 }),
+        expect.objectContaining({ name: ActivityEnum.KreeArra, rank: 441, score: 5009 }),
+        expect.objectContaining({ name: ActivityEnum.KrilTsutsaroth, rank: 2519, score: 1250 }),
+        expect.objectContaining({ name: ActivityEnum.Mimic, rank: 2, score: 337 }),
+        expect.objectContaining({ name: ActivityEnum.Nex, rank: 2200, score: 3243 }),
+        expect.objectContaining({ name: ActivityEnum.Nightmare, rank: 838, score: 2243 }),
+        expect.objectContaining({ name: ActivityEnum.PhosanisNightmare, rank: 1032, score: 1035 }),
+        expect.objectContaining({ name: ActivityEnum.Obor, rank: 6946, score: 72 }),
+        expect.objectContaining({ name: ActivityEnum.PhantomMuspah, rank: 4073, score: 423 }),
+        expect.objectContaining({ name: ActivityEnum.Sarachnis, rank: 956, score: 3144 }),
+        expect.objectContaining({ name: ActivityEnum.Scorpia, rank: 4143, score: 766 }),
+        expect.objectContaining({ name: ActivityEnum.Skotizo, rank: 33921, score: 53 }),
+        expect.objectContaining({ name: ActivityEnum.Tempoross, rank: 70093, score: 150 }),
+        expect.objectContaining({ name: ActivityEnum.ThermoNuclearSmokeDevil, rank: 3225, score: 3937 }),
+        expect.objectContaining({ name: ActivityEnum.TzKalZuk, rank: 3111, score: 10 }),
+        expect.objectContaining({ name: ActivityEnum.TzTokJad, rank: 210, score: 175 }),
+        expect.objectContaining({ name: ActivityEnum.Venenatis, rank: 17055, score: 447 }),
+        expect.objectContaining({ name: ActivityEnum.Vetion, rank: 432, score: 2667 }),
+        expect.objectContaining({ name: ActivityEnum.Vorkath, rank: 3996, score: 5597 }),
+        expect.objectContaining({ name: ActivityEnum.Wintertodt, rank: 147911, score: 542 }),
+        expect.objectContaining({ name: ActivityEnum.Zalcano, rank: 54318, score: 150 }),
+        expect.objectContaining({ name: ActivityEnum.Zulrah, rank: 1692, score: 11160 }),
+        expect.objectContaining({ name: ActivityEnum.ChambersOfXeric, rank: 141342, score: 55 }),
+        expect.objectContaining({ name: ActivityEnum.ChambersOfXericChallengeMode, rank: 22048, score: 36 }),
+        expect.objectContaining({ name: ActivityEnum.TheGauntlet, rank: -1, score: -1 }),
+        expect.objectContaining({ name: ActivityEnum.TheCorruptedGauntlet, rank: 117522, score: 10 }),
+        expect.objectContaining({ name: ActivityEnum.TheatreOfBlood, rank: 8042, score: 661 }),
+        expect.objectContaining({ name: ActivityEnum.TheatreOfBloodHardMode, rank: 3132, score: 189 }),
+        expect.objectContaining({ name: ActivityEnum.TombsOfAmascut, rank: 3226, score: 246 }),
+        expect.objectContaining({ name: ActivityEnum.TombsOfAmascutExpertMode, rank: 22880, score: 74 }),
+      ]),
     );
   });
 });

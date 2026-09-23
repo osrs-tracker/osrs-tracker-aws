@@ -1,3 +1,11 @@
+## v2.1.0 - 2026/09/23
+
+- Added coverage for parser helpers including `parseHiscores`, `hiscoreDiff`, `getOverallXpDiff`, and
+  `hiscoreJsonToSourceString`.
+- Improved hiscore parsing and diff behavior around source-string fallback, overall XP deltas, and JSON-to-source
+  conversion.
+- Cleaned up hiscore model/export usage in the package to align with the current parsed hiscore structure.
+
 ## v2.0.1 - 2026/09/22
 
 - Updated `@osrs-tracker/models` to `^0.7.1` to fix typo in `HiscoreSkill` interface.

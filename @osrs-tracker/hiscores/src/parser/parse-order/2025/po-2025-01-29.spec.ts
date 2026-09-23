@@ -9,17 +9,17 @@ describe('Parser with 2025-01-29 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2025, 0, 29, 12));
 
-    expect(hiscore.parsedActivities[ActivityEnum.ColosseumGlory]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.ColosseumGlory)).toMatchObject({
       name: ActivityEnum.ColosseumGlory,
       rank: 9235,
       score: 43948,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.CollectionsLogged]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.CollectionsLogged)).toMatchObject({
       name: ActivityEnum.CollectionsLogged,
       rank: 2,
       score: 1537,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.AbyssalSire]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.AbyssalSire)).toMatchObject({
       name: ActivityEnum.AbyssalSire,
       rank: 112,
       score: 6682,

@@ -9,22 +9,22 @@ describe('Parser with 2023-05-24 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2023, 6, 26));
 
-    expect(hiscore.parsedActivities[ActivityEnum.BountyHunter]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.BountyHunter)).toMatchObject({
       name: ActivityEnum.BountyHunter,
       rank: 2928,
       score: 200,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.BountyHunterRogue]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.BountyHunterRogue)).toMatchObject({
       name: ActivityEnum.BountyHunterRogue,
       rank: 3674,
       score: 12,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.BountyHunterLegacy]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.BountyHunterLegacy)).toMatchObject({
       name: ActivityEnum.BountyHunterLegacy,
       rank: 3546,
       score: 17,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.BountyHunterLegacyRogue]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.BountyHunterLegacyRogue)).toMatchObject({
       name: ActivityEnum.BountyHunterLegacyRogue,
       rank: 6532,
       score: 3,

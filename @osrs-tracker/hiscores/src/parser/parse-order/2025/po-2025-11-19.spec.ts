@@ -9,24 +9,24 @@ describe('Parser with 2025-11-19 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2025, 10, 19, 9));
 
-    expect(hiscore.parsedSkills[SkillEnum.Construction]).toEqual({
+    expect(hiscore.skills.find((a) => a.name === SkillEnum.Construction)).toMatchObject({
       name: SkillEnum.Construction,
       level: 84,
       rank: 422493,
       xp: 2977021,
     });
-    expect(hiscore.parsedSkills[SkillEnum.Sailing]).toEqual({
+    expect(hiscore.skills.find((a) => a.name === SkillEnum.Sailing)).toMatchObject({
       name: SkillEnum.Sailing,
       level: 1,
       rank: -1,
       xp: 0,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.GridPoints]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.GridPoints)).toMatchObject({
       name: ActivityEnum.GridPoints,
       rank: -1,
       score: 0,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.ClueScrollsAll]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.ClueScrollsAll)).toMatchObject({
       name: ActivityEnum.ClueScrollsAll,
       rank: 212802,
       score: 337,

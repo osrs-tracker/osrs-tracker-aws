@@ -9,17 +9,17 @@ describe('Parser with 2024-09-25 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 8, 25, 12));
 
-    expect(hiscore.parsedActivities[ActivityEnum.AlchemicalHydra]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.AlchemicalHydra)).toMatchObject({
       name: ActivityEnum.AlchemicalHydra,
       rank: 27839,
       score: 1809,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.Amoxliatl]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.Amoxliatl)).toMatchObject({
       name: ActivityEnum.Amoxliatl,
       rank: 1,
       score: 5,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.Araxxor]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.Araxxor)).toMatchObject({
       name: ActivityEnum.Araxxor,
       rank: 2644,
       score: 1407,
@@ -32,17 +32,17 @@ describe('Parser with 2024-09-25 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 8, 25, 12));
 
-    expect(hiscore.parsedActivities[ActivityEnum.TheCorruptedGauntlet]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.TheCorruptedGauntlet)).toMatchObject({
       name: ActivityEnum.TheCorruptedGauntlet,
       rank: 46206,
       score: 457,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.TheHueycoatl]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.TheHueycoatl)).toMatchObject({
       name: ActivityEnum.TheHueycoatl,
       rank: 5,
       score: 31,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.TheLeviathan]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.TheLeviathan)).toMatchObject({
       name: ActivityEnum.TheLeviathan,
       rank: 18840,
       score: 289,

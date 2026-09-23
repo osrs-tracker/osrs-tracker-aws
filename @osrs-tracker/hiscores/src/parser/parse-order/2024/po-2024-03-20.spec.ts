@@ -9,37 +9,37 @@ describe('Parser with 2024-03-20 parse order', () => {
 
     const hiscore = parseHiscoreString(hiscoreString, new Date(2024, 2, 20, 12));
 
-    expect(hiscore.parsedActivities[ActivityEnum.ColosseumGlory]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.ColosseumGlory)).toMatchObject({
       name: ActivityEnum.ColosseumGlory,
       rank: 1,
       score: 10050,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.KrilTsutsaroth]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.KrilTsutsaroth)).toMatchObject({
       name: ActivityEnum.KrilTsutsaroth,
       rank: 23241,
       score: 388,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.LunarChests]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.LunarChests)).toMatchObject({
       name: ActivityEnum.LunarChests,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.Mimic]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.Mimic)).toMatchObject({
       name: ActivityEnum.Mimic,
       rank: 4791,
       score: 19,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.Scurrius]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.Scurrius)).toMatchObject({
       name: ActivityEnum.Scurrius,
       rank: 44891,
       score: 127,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.SolHeredit]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.SolHeredit)).toMatchObject({
       name: ActivityEnum.SolHeredit,
       rank: -1,
       score: -1,
     });
-    expect(hiscore.parsedActivities[ActivityEnum.Skotizo]).toEqual({
+    expect(hiscore.activities.find((a) => a.name === ActivityEnum.Skotizo)).toMatchObject({
       name: ActivityEnum.Skotizo,
       rank: 2931,
       score: 114,
