@@ -112,7 +112,7 @@ export const PO_2025_07_23: ParseOrder = [
   ActivityEnum.TheatreOfBlood,
   ActivityEnum.TheatreOfBloodHardMode,
 
-  ActivityEnum.ThermoNuclearSmokeDevil,
+  ActivityEnum.ThermonuclearSmokeDevil,
 
   ActivityEnum.TombsOfAmascut,
   ActivityEnum.TombsOfAmascutExpertMode,

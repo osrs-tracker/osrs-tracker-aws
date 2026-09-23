@@ -1,3 +1,7 @@
+## v2.1.2 - 2026/09/24
+
+- Fixed wrong order in ActivityEnum.
+
 ## v2.1.1 - 2026/09/24
 
 - Fixed wrong order in ActivityEnum.

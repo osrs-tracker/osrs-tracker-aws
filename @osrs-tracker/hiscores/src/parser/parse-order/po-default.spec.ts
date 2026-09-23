@@ -142,7 +142,7 @@ describe('Parser with default parse order', () => {
         expect.objectContaining({ name: ActivityEnum.Scorpia, rank: 4143, score: 766 }),
         expect.objectContaining({ name: ActivityEnum.Skotizo, rank: 33921, score: 53 }),
         expect.objectContaining({ name: ActivityEnum.Tempoross, rank: 70093, score: 150 }),
-        expect.objectContaining({ name: ActivityEnum.ThermoNuclearSmokeDevil, rank: 3225, score: 3937 }),
+        expect.objectContaining({ name: ActivityEnum.ThermonuclearSmokeDevil, rank: 3225, score: 3937 }),
         expect.objectContaining({ name: ActivityEnum.TzKalZuk, rank: 3111, score: 10 }),
         expect.objectContaining({ name: ActivityEnum.TzTokJad, rank: 210, score: 175 }),
         expect.objectContaining({ name: ActivityEnum.Venenatis, rank: 17055, score: 447 }),
