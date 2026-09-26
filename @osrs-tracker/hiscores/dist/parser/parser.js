@@ -15,10 +15,6 @@ export function parseHiscores(hiscoreEntries) {
 export function hiscoreDiff(recent, old) {
     const diffEntries = Object.entries(recent).map(([hiscoreKey, recentValue]) => {
         switch (hiscoreKey) {
-            case 'date':
-            case 'sourceString':
-            case 'scrapingOffset':
-                return [hiscoreKey, old[hiscoreKey]];
             case 'skills':
                 return [
                     'skills',
@@ -45,7 +41,7 @@ export function hiscoreDiff(recent, old) {
                     }),
                 ];
             default:
-                throw new Error('Unknown hiscore key: ' + hiscoreKey);
+                return [hiscoreKey, old[hiscoreKey]];
         }
     });
     return Object.fromEntries(diffEntries);

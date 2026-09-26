@@ -1,3 +1,7 @@
+## v2.1.3 - 2026/09/26
+
+- Kept the hiscore activity ordering aligned with the current OSRS parse expectations.
+
 ## v2.1.2 - 2026/09/24
 
 - Fixed wrong order in ActivityEnum.
