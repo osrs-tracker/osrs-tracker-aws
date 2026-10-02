@@ -76,7 +76,7 @@ in the console, so this repo has no diff to review.
     - osrs-tracker-api, server-side, for the news RSS and hiscores (`OSRS_API_BASE_URL=…/rs`);
     - process-players.
   - **Any change to the route, headers or CORS affects all three**, so get a check from the Web and API agents too.
-- **EventBridge rules**: `Hourly`, `daily`, `bihourly` and `four-hourly`.
+- **EventBridge rules**: `Hourly` (queue-players, refresh-items) and `daily` (clean-hiscores).
 - **SQS**: `osrs-tracker_players-to-scrape` (redrive to `osrs-tracker_players-to-scrape-dead` after 3 receives) and the
   DLQ `osrs-tracker_players-to-scrape-dead`.
 - **MongoDB Atlas** (not AWS): cluster `shared-cluster.tf5uvgy.mongodb.net`, database `osrs-tracker` (`players` and
