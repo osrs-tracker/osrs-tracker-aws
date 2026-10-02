@@ -44,6 +44,9 @@ export const handler = async (event: SQSEvent, context: Context) => {
   // usernames that are not on the hiscores (404), these are skipped without retry
   const notFoundUsernames: string[] = [];
 
+  // usernames whose scraping got paused in this run (not on the hiscores for 7 days in a row)
+  const pausedUsernames: string[] = [];
+
   // array of promises for bulk writes
   const bulkWrites: Promise<number>[] = [];
 
@@ -63,7 +66,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
         if (index > 0) await new Promise((resolve) => setTimeout(resolve, index * 2000));
 
         const result = await getHiscore(agent, username);
-        if (result.status === 'notFound') return notFoundUsernames.push(username);
+        if (result.status === 'notFound') {
+          notFoundUsernames.push(username);
+          if (await MU.recordHiscoreNotFound(client, username)) pausedUsernames.push(username);
+          return;
+        }
         if (result.status === 'failed') return mapArrayPush(failedMap, scrapingOffset, username);
 
         const hiscoreJson = result.hiscore;
@@ -127,6 +134,19 @@ export const handler = async (event: SQSEvent, context: Context) => {
     `Failed to update ${failedMessagesCount} players.`,
     `Skipped ${notFoundUsernames.length} players not on the hiscores.`,
   );
+
+  if (pausedUsernames.length) {
+    console.log(
+      `Paused scraping for ${pausedUsernames.length} players not on the hiscores for 7 days:`,
+      pausedUsernames,
+    );
+    await discordAlert(
+      'Paused scraping',
+      pausedUsernames,
+      context,
+      'Not on the hiscores for 7 days, paused scraping for',
+    );
+  }
 
   if (failedMessagesCount && maxReceiveCount > 1) {
     await discordAlert('Failed to process some players', [...failedMap.values()].flat(), context);

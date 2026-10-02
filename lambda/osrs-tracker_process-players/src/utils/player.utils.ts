@@ -13,7 +13,8 @@ const HISCORE_FETCH_TIMEOUT_MS = 10_000;
 
 /**
  * - `found`: the hiscore was fetched.
- * - `notFound`: HTTP 404, the player is not on the hiscores (renamed, banned or unranked). Permanent, so don't retry.
+ * - `notFound`: HTTP 404 (or 400 for an invalid name), the player is not on the hiscores (renamed, banned or unranked).
+ *   Permanent, so don't retry.
  * - `failed`: 5xx, network error, timeout or unexpected response. Worth retrying.
  */
 export type HiscoreResult = { status: 'found'; hiscore: JsonResponse } | { status: 'notFound' } | { status: 'failed' };
@@ -28,8 +29,8 @@ export async function getHiscore(agent: Agent, username: string): Promise<Hiscor
       signal: AbortSignal.timeout(HISCORE_FETCH_TIMEOUT_MS),
     });
 
-    if (response.status === 404) {
-      console.log(`Not on the hiscores (HTTP 404), skipping without retry: ${username}`);
+    if (response.status === 404 || response.status === 400) {
+      console.log(`Not on the hiscores (HTTP ${response.status}), skipping without retry: ${username}`);
       return { status: 'notFound' };
     }
 

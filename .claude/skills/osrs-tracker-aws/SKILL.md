@@ -42,9 +42,11 @@ copy values into code, commits or messages.
 - **queue-players** derives the UTC offset (-12…11) from the event time, finds players whose `scrapingOffsets` contain
   it, and sends batches of usernames to SQS.
 - **process-players** fetches `${OSRS_API_BASE_URL}/m=hiscore_oldschool/index_lite.json?player=…` with a 2 s stagger per
-  username, and `$push`es a `HiscoreEntry` at position 0. Players that return 404 (not on the hiscores) are logged and
-  skipped. It re-queues retryable failures (5xx, network, 10 s timeout), and throws without re-queuing when nobody was
-  updated, to avoid a retry loop. On a redelivery it sends a Discord alert.
+  username, and `$push`es a `HiscoreEntry` at position 0 (ending any "not found" streak). Players that return 404 or 400
+  (not on the hiscores) are skipped and their streak is recorded (`hiscoreNotFoundSince`/`hiscoreNotFoundCount`); after
+  7 days in a row their `scrapingOffsets` move to `pausedScrapingOffsets` (one Discord message). The API's successful
+  player refresh restores them. It re-queues retryable failures (5xx, network, 10 s timeout), and throws without
+  re-queuing when nobody was updated, to avoid a retry loop. On a redelivery it sends a Discord alert.
 - **clean-hiscores** `$pull`s hiscore entries older than `MAX_AGE_IN_DAYS`.
 
 Locally, each Lambda has a gitignored `.env` with these vars plus `MONGODB_USERNAME`/`MONGODB_PASSWORD` (an Atlas
@@ -52,10 +54,10 @@ database user). The committed `.env.example` lists the names. Never commit `.env
 
 ### Packages and their consumers
 
-- `@osrs-tracker/models` 0.7.1: shared types (`Player`, `HiscoreEntry`, `Item`, …), built as cjs, esm and types.
-  - Web, API and all 4 Lambdas use `^0.7.1`.
-- `@osrs-tracker/hiscores` 2.1.3: the hiscore parser, XP levels and diffs. It peer-depends on models `^0.7.1`. Web uses
-  `^2.1.3`; no Lambda uses it.
+- `@osrs-tracker/models` 0.8.0: shared types (`Player`, `HiscoreEntry`, `Item`, …), built as cjs, esm and types.
+  - Used by the web, the API and all 4 Lambdas (`^0.8.0` here; check the other repos' `package.json` for theirs).
+- `@osrs-tracker/hiscores` 2.1.4: the hiscore parser, XP levels and diffs. It peer-depends on models `^0.7.1 || ^0.8.0`.
+  Web uses `^2.1.4`; no Lambda uses it.
 - `@osrs-tracker/discord-webhooks` 0.1.0: `DiscordWebhook.dispatch()` POSTs to `WEBHOOK_URL` with global fetch; types
   come from `discord-api-types`. Used (`^0.1.0`) by clean-hiscores, process-players and queue-players.
 

@@ -5,6 +5,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/02
 
+- `osrs-tracker_process-players` now pauses scraping for players that haven't been on the hiscores for 7 days in a row:
+  their `scrapingOffsets` move to `pausedScrapingOffsets` and their data is kept. It sends one Discord message per
+  paused player. A successful scrape ends the streak, and the API resumes scraping when the player is found again. HTTP
+  400 (invalid name) is now treated like 404.
+- Updated `@osrs-tracker/models` to `^0.8.0` in all Lambdas.
 - Deployed `osrs-tracker_process-players` with the Node 24 upgrade, `DRY_RUN` support, `@osrs-tracker/discord-webhooks`
   0.1.0 and the 404/timeout fix, and switched its runtime to `nodejs24.x`. All 4 Lambdas now run on Node 24.
 - Lowered the `osrs-tracker_process-players` timeout from 300 s to 60 s (normal batches take about 19–23 s).
