@@ -1,24 +1,20 @@
-import { SendMessageBatchCommand, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
+import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Player, PlayerScrapeMessageBody } from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
 import { Agent } from 'https';
 import chunk from 'lodash.chunk';
-import { AnyBulkWriteOperation, AuthMechanism, BulkWriteResult, MongoClient, ServerApiVersion } from 'mongodb';
+import { AnyBulkWriteOperation, ServerApiVersion } from 'mongodb';
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
 import { getHiscore, hiscoreJsonToSourceString } from './utils/player.utils';
-import { createMessage } from './utils/sqs.utils';
+import { createMessage, sendMessageBatch } from './utils/sqs.utils';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
-const client = new MongoClient(process.env.MONGODB_URI!, {
-  serverApi: { version: ServerApiVersion.v1, deprecationErrors: true },
-  authMechanism: AuthMechanism.MONGODB_AWS,
-  authSource: '$external',
-});
+const client = MU.client({ serverApi: { version: ServerApiVersion.v1, deprecationErrors: true } });
 
 const agent = new Agent({
   keepAlive: true,
@@ -46,10 +42,10 @@ export const handler = async (event: SQSEvent, context: Context) => {
   const failedMap: Map<number, string[]> = new Map();
 
   // array of promises for bulk writes
-  const bulkWrites: Promise<BulkWriteResult>[] = [];
+  const bulkWrites: Promise<number>[] = [];
 
   // ensure index is created
-  await MU.col(client).createIndex({ username: 1 }, { unique: true });
+  await MU.ensureIndex(client, { username: 1 }, { unique: true });
 
   // scrape each message body sequentially
   for (const messageBody of messageBodies) {
@@ -80,12 +76,12 @@ export const handler = async (event: SQSEvent, context: Context) => {
     );
 
     // Only bulk update if there are any updates, can be empty if all usernames failed
-    if (bulkUpdateOps.length) bulkWrites.push(MU.col(client).bulkWrite(bulkUpdateOps));
+    if (bulkUpdateOps.length) bulkWrites.push(MU.bulkWrite(client, bulkUpdateOps));
   }
 
   // wait for all bulk writes to finish
-  const bulkWriteResults = await Promise.all(bulkWrites);
-  const updatedPlayerCount = bulkWriteResults.reduce((acc, result) => acc + result.modifiedCount, 0);
+  const modifiedCounts = await Promise.all(bulkWrites);
+  const updatedPlayerCount = modifiedCounts.reduce((acc, count) => acc + count, 0);
   const failedMessagesCount = [...failedMap.values()].flat().length;
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
@@ -110,9 +106,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
     // send failed messages in batches
     await Promise.all(
-      chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) =>
-        sqsClient.send(new SendMessageBatchCommand({ QueueUrl: process.env.SQS_QUEUE_URL!, Entries: messageBatch })),
-      ),
+      chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) => sendMessageBatch(sqsClient, messageBatch)),
     );
   }
 

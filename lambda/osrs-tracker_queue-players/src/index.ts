@@ -1,6 +1,5 @@
 import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
-import { AuthMechanism, MongoClient } from 'mongodb';
 import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
@@ -9,17 +8,14 @@ const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
-const client = new MongoClient(process.env.MONGODB_URI!, {
-  authMechanism: AuthMechanism.MONGODB_AWS,
-  authSource: '$external',
-});
+const client = MU.client();
 
 export const handler = async (event: ScheduledEvent, context: Context) => {
   // current scrapeOffset, -12 to 11
   const scrapingOffset = ((12 + new Date(event.time).getUTCHours()) % 24) - 12;
 
   // ensure index on scrapingOffsets
-  await MU.col(client).createIndex({ scrapingOffsets: 1 }, { sparse: true, background: true });
+  await MU.ensureIndex(client, { scrapingOffsets: 1 }, { sparse: true, background: true });
 
   // get usernames for scrapingOffset as cursor
   const usernameCursor = MU.getAllUsernamesForOffset(client, scrapingOffset);

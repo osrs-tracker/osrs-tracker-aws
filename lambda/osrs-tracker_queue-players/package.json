@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
-    "start": "node ./build/esbuild.js --dev --watch --run"
+    "start": "node ./build/esbuild.js --dev --watch --run",
+    "invoke:dry": "node ./build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
   },
   "config": {
     "commitizen": {
@@ -24,7 +25,7 @@
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.1145.0",
     "@aws-sdk/credential-providers": "^3.1145.0",
-    "@osrs-tracker/discord-webhooks": "^0.0.2",
+    "@osrs-tracker/discord-webhooks": "^0.1.0",
     "@osrs-tracker/models": "^0.7.1",
     "mongodb": "^7.7.0"
   },

@@ -1,13 +1,9 @@
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { Agent } from 'https';
-import { AuthMechanism, MongoClient } from 'mongodb';
 import { fetchItems } from './utils/item.utils';
 import { MU } from './utils/mongo.utils';
 
-const client = new MongoClient(process.env.MONGODB_URI!, {
-  authMechanism: AuthMechanism.MONGODB_AWS,
-  authSource: '$external',
-});
+const client = MU.client();
 
 const agent = new Agent({
   keepAlive: true,
@@ -19,7 +15,7 @@ const agent = new Agent({
 export const handler = async (_event: ScheduledEvent, context: Context) => {
   const startFetching = process.hrtime();
 
-  const [items] = await Promise.all([fetchItems(agent), MU.col(client).createIndex({ id: 1 }, { unique: true })]);
+  const [items] = await Promise.all([fetchItems(agent), MU.ensureIndex(client, { id: 1 }, { unique: true })]);
 
   console.info(
     `Fetched ${items.length} items in ${Math.trunc(

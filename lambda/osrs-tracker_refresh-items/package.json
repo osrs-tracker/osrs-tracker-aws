@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
-    "start": "node ./build/esbuild.js --dev --watch --run"
+    "start": "node ./build/esbuild.js --dev --watch --run",
+    "invoke:dry": "node ./build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
   },
   "config": {
     "commitizen": {

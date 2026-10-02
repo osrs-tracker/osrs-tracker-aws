@@ -1,5 +1,6 @@
-import { DiscordWebhook } from '@osrs-tracker/discord-webhooks';
+import { DiscordWebhook, DiscordWebhookMessage } from '@osrs-tracker/discord-webhooks';
 import { Context } from 'aws-lambda/handler';
+import { DRY_RUN, logDryRun } from './dry-run.utils';
 
 export function discordAlert(title: string, failedPlayers: string[], context: Context) {
   const region = context.invokedFunctionArn.split(':')[3];
@@ -7,7 +8,7 @@ export function discordAlert(title: string, failedPlayers: string[], context: Co
   let description = `Failed to update ${failedPlayers.length} player${failedPlayers.length > 1 ? 's:' : ':'}\n`;
   description += failedPlayers.map((username) => `- ${username}`).join('\n');
 
-  return DiscordWebhook.dispatch({
+  const message: DiscordWebhookMessage = {
     embeds: [
       {
         title,
@@ -21,5 +22,9 @@ export function discordAlert(title: string, failedPlayers: string[], context: Co
         timestamp: new Date().toISOString(),
       },
     ],
-  });
+  };
+
+  if (DRY_RUN) return logDryRun('send Discord alert', message);
+
+  return DiscordWebhook.dispatch(message);
 }

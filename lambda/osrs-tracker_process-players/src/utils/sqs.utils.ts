@@ -1,5 +1,6 @@
 import { SendMessageBatchCommand, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { randomUUID } from 'crypto';
+import { DRY_RUN, logDryRun } from './dry-run.utils';
 
 export function createMessage(usernames: string[], scrapingOffset: number) {
   return {
@@ -8,6 +9,8 @@ export function createMessage(usernames: string[], scrapingOffset: number) {
   };
 }
 
-export function sendMessageBatch(sqsClient: SQSClient, messageBatch: SendMessageBatchRequestEntry[]) {
+export async function sendMessageBatch(sqsClient: SQSClient, messageBatch: SendMessageBatchRequestEntry[]) {
+  if (DRY_RUN) return logDryRun(`send ${messageBatch.length} SQS messages`, messageBatch);
+
   return sqsClient.send(new SendMessageBatchCommand({ QueueUrl: process.env.SQS_QUEUE_URL!, Entries: messageBatch }));
 }

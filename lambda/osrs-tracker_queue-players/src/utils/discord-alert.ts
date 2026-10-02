@@ -1,10 +1,11 @@
-import { DiscordWebhook } from '@osrs-tracker/discord-webhooks';
+import { DiscordWebhook, DiscordWebhookMessage } from '@osrs-tracker/discord-webhooks';
 import { Context } from 'aws-lambda/handler';
+import { DRY_RUN, logDryRun } from './dry-run.utils';
 
 export function discordAlert(title: string, errors: Error[], context: Context) {
   const region = context.invokedFunctionArn.split(':')[3];
 
-  return DiscordWebhook.dispatch({
+  const message: DiscordWebhookMessage = {
     embeds: [
       {
         title,
@@ -18,5 +19,9 @@ export function discordAlert(title: string, errors: Error[], context: Context) {
         timestamp: new Date().toISOString(),
       },
     ],
-  });
+  };
+
+  if (DRY_RUN) return logDryRun('send Discord alert', message);
+
+  return DiscordWebhook.dispatch(message);
 }

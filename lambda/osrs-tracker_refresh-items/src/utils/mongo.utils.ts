@@ -1,5 +1,14 @@
 import { Item } from '@osrs-tracker/models';
-import { Collection, Db, MongoClient } from 'mongodb';
+import {
+  AuthMechanism,
+  Collection,
+  CreateIndexesOptions,
+  Db,
+  IndexSpecification,
+  MongoClient,
+  MongoClientOptions,
+} from 'mongodb';
+import { DRY_RUN, logDryRun } from './dry-run.utils';
 
 /**
  * Short for MongoUtils.
@@ -7,6 +16,30 @@ import { Collection, Db, MongoClient } from 'mongodb';
  * Collection of helper functions for MongoDB.
  */
 export class MU {
+  /**
+   * Creates the MongoClient. Locally (`MONGODB_USERNAME` set) it authenticates with SCRAM using an Atlas database user;
+   * in production with MONGODB-AWS, using the role credentials from the AWS SDK credential chain.
+   */
+  static client(options: MongoClientOptions = {}): MongoClient {
+    return new MongoClient(process.env.MONGODB_URI!, {
+      ...options,
+      ...(process.env.MONGODB_USERNAME
+        ? { auth: { username: process.env.MONGODB_USERNAME, password: process.env.MONGODB_PASSWORD } }
+        : { authMechanism: AuthMechanism.MONGODB_AWS, authSource: '$external' }),
+    });
+  }
+
+  /** Ensures an index exists. Skipped when `DRY_RUN` is set. */
+  static async ensureIndex(
+    mongo: MongoClient,
+    spec: IndexSpecification,
+    options: CreateIndexesOptions = {},
+  ): Promise<void> {
+    if (DRY_RUN) return logDryRun('create index', { spec, options });
+
+    await this.col(mongo).createIndex(spec, options);
+  }
+
   static db(mongo: MongoClient): Db {
     return mongo.db(process.env.MONGODB_DATABASE!);
   }
@@ -15,7 +48,12 @@ export class MU {
     return this.db(mongo).collection(process.env.MONGODB_COLLECTION!);
   }
 
-  static upsertItems(mongo: MongoClient, item: Item[]): Promise<number> {
+  static async upsertItems(mongo: MongoClient, item: Item[]): Promise<number> {
+    if (DRY_RUN) {
+      logDryRun(`upsert ${item.length} items, e.g.`, item.slice(0, 3));
+      return item.length;
+    }
+
     return MU.col(mongo)
       .bulkWrite(
         item.map((item) => ({

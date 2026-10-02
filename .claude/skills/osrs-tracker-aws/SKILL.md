@@ -46,18 +46,17 @@ copy values into code, commits or messages.
   when nobody was updated, to avoid a retry loop. On a redelivery it sends a Discord alert.
 - **clean-hiscores** `$pull`s hiscore entries older than `MAX_AGE_IN_DAYS`.
 
-Locally, `lambda/osrs-tracker_process-players/.env` holds these vars plus AWS keys. It is gitignored; never commit it or
-print its values.
+Locally, each Lambda has a gitignored `.env` with these vars plus `MONGODB_USERNAME`/`MONGODB_PASSWORD` (an Atlas
+database user). The committed `.env.example` lists the names. Never commit `.env` or print its values.
 
 ### Packages and their consumers
 
 - `@osrs-tracker/models` 0.7.1: shared types (`Player`, `HiscoreEntry`, `Item`, …), built as cjs, esm and types.
-  - Web `^0.7.1`, API `^0.7.1`, process-players `^0.7.1`.
-  - Older versions are still in use: queue-players `^0.6.0`, clean-hiscores `^0.4.0`, refresh-items `^0.3.3`.
+  - Web, API and all 4 Lambdas use `^0.7.1`.
 - `@osrs-tracker/hiscores` 2.1.3: the hiscore parser, XP levels and diffs. It peer-depends on models `^0.7.1`. Web uses
   `^2.1.3`; no Lambda uses it.
-- `@osrs-tracker/discord-webhooks` 0.0.2: `DiscordWebhook.dispatch()` POSTs to `WEBHOOK_URL` with global fetch. Used by
-  clean-hiscores, process-players and queue-players.
+- `@osrs-tracker/discord-webhooks` 0.1.0: `DiscordWebhook.dispatch()` POSTs to `WEBHOOK_URL` with global fetch; types
+  come from `discord-api-types`. Used (`^0.1.0`) by clean-hiscores, process-players and queue-players.
 
 ## Infra (console-managed, no IaC)
 
@@ -81,7 +80,8 @@ in the console, so this repo has no diff to review.
   DLQ `osrs-tracker_players-to-scrape-dead`.
 - **MongoDB Atlas** (not AWS): cluster `shared-cluster.tf5uvgy.mongodb.net`, database `osrs-tracker` (`players` and
   items collections).
-  - Lambdas authenticate with `MONGODB-AWS` (the role's credentials, `authSource: '$external'`).
+  - Lambdas authenticate with `MONGODB-AWS`: `mongodb` 7 takes the role's credentials from the AWS SDK credential chain
+    (`@aws-sdk/credential-providers`), and rejects an explicit username/password for this mechanism.
   - The API uses the same database, but with SCRAM username/password: its k8s secret `aws-mongodb-credentials` holds an
     Atlas database user despite the name, not IAM keys.
   - So rotating the Lambda IAM credentials doesn't affect the API, and vice versa.
@@ -105,13 +105,16 @@ Match the surrounding code:
   `tsconfig.json` extends `../tsconfig.lambda.json` (es2022, strict, `noUnusedLocals`).
 - Create clients (`MongoClient`, `SQSClient`, the https keep-alive `Agent`) at module scope, so warm invocations reuse
   them.
-- Use the `MU` helpers for Mongo access, with `hint` for indexed queries and `projection` to exclude `_id`. Ensure
-  indexes with `createIndex` at the start of the handler.
+- Use the `MU` helpers for Mongo access, with `hint` for indexed queries and `projection` to exclude `_id`. Create the
+  client with `MU.client()` (SCRAM when `MONGODB_USERNAME` is set, otherwise MONGODB-AWS). Ensure indexes with
+  `MU.ensureIndex` at the start of the handler.
+- **Every write goes through a helper that respects `DRY_RUN`** (`src/utils/dry-run.utils.ts`): Mongo writes in `MU`,
+  `sendMessageBatch` for SQS, and `discordAlert`. When adding a write, guard it with `if (DRY_RUN) return logDryRun(…)`.
+  Neither `DRY_RUN` nor `MONGODB_USERNAME` is set in production.
 - Return `context.logStreamName`. Throw to mark a run as failed (SQS will then retry). Use `discordAlert` for
   operator-visible failures.
 - Prettier and eslint are configured per project. Run them inside the Lambda's directory.
-- **Target runtime is Node 24 (`nodejs24.x`).** Production is still `nodejs22.x` and `update:runtime` scripts still say
-  `nodejs22.x` until they're migrated. Don't use APIs newer than Node 22 before that migration.
+- **Runtime is Node 24 (`nodejs24.x`)**, set with `npm run update:runtime`, with `engines.node >=24`.
 
 ## Package conventions
 
@@ -160,6 +163,26 @@ From the repo root:
 ```bash
 npm run prettier:ci
 ```
+
+### Run a Lambda locally (safely)
+
+`npm run invoke:dry` makes a dev build and runs the handler once against the real services with `DRY_RUN=true`:
+
+- Reads and external fetches still happen (Atlas, the hiscore proxy, prices.runescape.wiki).
+- Every write is logged as `[DRY_RUN] Would …` instead: Mongo writes and index creation, SQS sends and re-queues, and
+  Discord alerts.
+- `build/invoke.js` refuses to run without `DRY_RUN=true`. Never run the handler locally any other way: there is no
+  staging database.
+- `.env` needs `MONGODB_USERNAME`/`MONGODB_PASSWORD` (an Atlas database user, SCRAM).
+
+```bash
+npm run invoke:dry
+```
+
+- Scheduled Lambdas take an optional event time, e.g. `npm run invoke:dry -- 2026-10-02T18:00:00Z` to queue the players
+  of that hour's offset.
+- process-players takes the usernames for one SQS message: `npm run invoke:dry -- Zezima "Lynx Titan"`.
+- The dev build overwrites `dist/`, so `npm run build` again before comparing bundles. `npm run deploy` always rebuilds.
 
 CI (`.github/workflows/main.yml`, Node 24) runs on every push to `main`:
 
