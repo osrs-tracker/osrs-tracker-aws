@@ -5,10 +5,6 @@ import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
 
 const client = new MongoClient(process.env.MONGODB_URI!, {
-  auth: {
-    username: process.env.AWS_ACCESS_KEY_ID,
-    password: process.env.AWS_SECRET_ACCESS_KEY,
-  },
   authMechanism: AuthMechanism.MONGODB_AWS,
   authSource: '$external',
 });

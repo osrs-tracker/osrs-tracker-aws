@@ -10,10 +10,6 @@ const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
 const client = new MongoClient(process.env.MONGODB_URI!, {
-  auth: {
-    username: process.env.AWS_ACCESS_KEY_ID,
-    password: process.env.AWS_SECRET_ACCESS_KEY,
-  },
   authMechanism: AuthMechanism.MONGODB_AWS,
   authSource: '$external',
 });
