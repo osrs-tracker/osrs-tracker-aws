@@ -1,3 +1,9 @@
+## 0.8.0 - 2026/10/02
+
+- Added `Player.pausedScrapingOffsets`, `Player.hiscoreNotFoundCount` and `Player.hiscoreNotFoundSince`. Scraping is
+  paused (offsets moved to `pausedScrapingOffsets`) when a player hasn't been on the hiscores for 7 days in a row, and
+  resumed when the player is found again.
+
 ## 0.7.1 - 2025/09/22
 
 - Fixed `HiscoreSkill` to have `xp` instead of `experience` field. This was a typo in the previous release.

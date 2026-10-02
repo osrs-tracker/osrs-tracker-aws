@@ -19,6 +19,9 @@ export interface Player {
     lastModified: Date;
     lastHiscoreFetch?: Date;
     scrapingOffsets?: number[];
+    pausedScrapingOffsets?: number[];
+    hiscoreNotFoundCount?: number;
+    hiscoreNotFoundSince?: Date;
     hiscoreEntries?: HiscoreEntry[];
 }
 //# sourceMappingURL=player.d.ts.map
