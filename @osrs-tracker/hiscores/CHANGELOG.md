@@ -1,3 +1,8 @@
+## v2.1.4 - 2026/10/02
+
+- Widened the `@osrs-tracker/models` peer dependency to `^0.7.1 || ^0.8.0`, so it can be installed together with models
+  0.8.0.
+
 ## v2.1.3 - 2026/09/26
 
 - Kept the hiscore activity ordering aligned with the current OSRS parse expectations.
