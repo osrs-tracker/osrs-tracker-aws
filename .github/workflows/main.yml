@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
-          node-version: '18.x'
+          node-version: '24.x'
           cache: 'npm'
 
       - name: Install
@@ -28,6 +28,46 @@ jobs:
 
       - name: Prettier
         run: npm run prettier:ci
+
+  packages:
+    name: Package CI
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - models
+          - hiscores
+          - discord-webhooks
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Use Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+          cache-dependency-path: '@osrs-tracker/${{ matrix.package }}/package-lock.json'
+
+      - name: Install
+        run: npm ci
+        working-directory: '@osrs-tracker/${{ matrix.package }}'
+
+      - name: Test
+        if: matrix.package == 'hiscores'
+        run: npx jest --ci
+        working-directory: '@osrs-tracker/${{ matrix.package }}'
+
+      - name: Build
+        run: npm run build
+        working-directory: '@osrs-tracker/${{ matrix.package }}'
+
+      - name: Committed dist is up to date
+        run: git diff --exit-code -- dist
+        working-directory: '@osrs-tracker/${{ matrix.package }}'
 
   lambda:
     name: Lambda CI
@@ -44,13 +84,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
-          node-version: '18.x'
+          node-version: '24.x'
           cache: 'npm'
+          cache-dependency-path: lambda/${{ matrix.lambda_function }}/package-lock.json
 
       - name: Install
         run: npm ci

@@ -161,8 +161,18 @@ From the repo root:
 npm run prettier:ci
 ```
 
-CI (`.github/workflows/main.yml`) runs root prettier, then lint, prettier and build for each of the 4 Lambdas on every
-push to `main`. It does **not** build or test the packages, so run those checks yourself.
+CI (`.github/workflows/main.yml`, Node 24) runs on every push to `main`:
+
+- root prettier;
+- lint, prettier and build for each of the 4 Lambdas;
+- for the packages: the hiscores jest tests, a build of each package, and a check that the committed `dist/` matches the
+  build. So rebuild and commit `dist/` together with any package source change.
+
+Check the run after pushing:
+
+```bash
+gh run watch --exit-status
+```
 
 ## Deploy a Lambda
 
@@ -198,7 +208,6 @@ push to `main`. It does **not** build or test the packages, so run those checks 
 
 - No IaC: infra is changed only by hand with approved CLI commands, so record the before state every time.
 - Lambda deploys go live on `$LATEST` immediately, with no staging and no alias.
-- CI doesn't cover the `@osrs-tracker/*` packages.
 - The default AWS CLI credentials have broad account access. Treat every mutating `aws` command as production.
 
 ## Commit and push
