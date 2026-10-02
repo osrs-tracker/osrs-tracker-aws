@@ -5,6 +5,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/02
 
+- `osrs-tracker_process-players` no longer retries players that aren't on the hiscores (HTTP 404, e.g. renamed or
+  banned). They are logged and skipped, so they no longer end up in the dead-letter queue or trigger Discord alerts.
+  Only 5xx, network errors and timeouts are retried.
+- Each hiscore request in `osrs-tracker_process-players` now times out after 10 seconds, so a slow response can't
+  stretch a batch past the queue's visibility timeout.
 - Rewrote the README in plain language: what each background job does, the shared packages, how the repo fits with the
   website and API, and how to run a job locally.
 - Updated `@osrs-tracker/discord-webhooks` to `^0.1.0` in the Lambdas, which removes the unused `discord.js` install.

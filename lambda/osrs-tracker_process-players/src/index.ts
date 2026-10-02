@@ -38,8 +38,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
     return context.logStreamName;
   }
 
-  // map of failed usernames by scrapingOffset
+  // map of failed (retryable) usernames by scrapingOffset
   const failedMap: Map<number, string[]> = new Map();
+
+  // usernames that are not on the hiscores (404), these are skipped without retry
+  const notFoundUsernames: string[] = [];
 
   // array of promises for bulk writes
   const bulkWrites: Promise<number>[] = [];
@@ -59,8 +62,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
         // Add 2000ms (2 second) delay for each subsequent request to avoid 503 errors
         if (index > 0) await new Promise((resolve) => setTimeout(resolve, index * 2000));
 
-        const hiscoreJson = await getHiscore(agent, username);
-        if (!hiscoreJson) return mapArrayPush(failedMap, scrapingOffset, username);
+        const result = await getHiscore(agent, username);
+        if (result.status === 'notFound') return notFoundUsernames.push(username);
+        if (result.status === 'failed') return mapArrayPush(failedMap, scrapingOffset, username);
+
+        const hiscoreJson = result.hiscore;
 
         // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
         bulkUpdateOps.push(
@@ -83,9 +89,15 @@ export const handler = async (event: SQSEvent, context: Context) => {
   const modifiedCounts = await Promise.all(bulkWrites);
   const updatedPlayerCount = modifiedCounts.reduce((acc, count) => acc + count, 0);
   const failedMessagesCount = [...failedMap.values()].flat().length;
+  const attemptedPlayerCount =
+    messageBodies.reduce((acc, body) => acc + body.usernames.length, 0) - notFoundUsernames.length;
+
+  if (notFoundUsernames.length)
+    console.log(`Skipped ${notFoundUsernames.length} players not on the hiscores:`, notFoundUsernames);
 
   // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
-  if (updatedPlayerCount === 0) {
+  // (a message where every player is not on the hiscores completes normally, there's nothing to retry)
+  if (attemptedPlayerCount > 0 && updatedPlayerCount === 0) {
     if (maxReceiveCount > 1) await discordAlert('No players were updated', [...failedMap.values()].flat(), context);
 
     throw new Error(`No players were updated. Failed to update ${failedMessagesCount} players.`);
@@ -113,6 +125,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
   console.log(
     `Updated ${updatedPlayerCount} players successfully.`,
     `Failed to update ${failedMessagesCount} players.`,
+    `Skipped ${notFoundUsernames.length} players not on the hiscores.`,
   );
 
   if (failedMessagesCount && maxReceiveCount > 1) {
