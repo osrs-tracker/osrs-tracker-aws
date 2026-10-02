@@ -1,4 +1,4 @@
-import { BaseMessageOptions, MessageMentionOptions } from 'discord.js';
+import { RESTPostAPIWebhookWithTokenJSONBody } from 'discord-api-types/v10';
 
 /**
  * Optional parameters for the Discord webhook.
@@ -18,10 +18,4 @@ export interface DiscordWebhookOptions {
  *
  * @see https://discord.com/developers/docs/resources/webhook#execute-webhook
  */
-export interface DiscordWebhookMessage extends Omit<BaseMessageOptions, 'allowedMentions'> {
-  // changed from allowedMentions to allowed_mentions to match discord api
-  allowed_mentions?: Omit<MessageMentionOptions, 'repliedUser'> & { replied_user: boolean };
-
-  username?: string;
-  avatar_url?: string;
-}
+export type DiscordWebhookMessage = RESTPostAPIWebhookWithTokenJSONBody;
