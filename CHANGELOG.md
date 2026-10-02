@@ -5,6 +5,10 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/02
 
+- Restructured the project skill: `SKILL.md` keeps the rules, local runs, verification and commit workflow; infra,
+  package publishing and deploy details moved to `INFRA.md`, `PACKAGES.md` and `DEPLOY.md` next to it. Removed account
+  and resource IDs, hard-coded versions and duplicated content, and documented the API resume path and npm 2FA flow.
+- Deployed the 7-day pause to `osrs-tracker_process-players` (version 41).
 - `osrs-tracker_process-players` now pauses scraping for players that haven't been on the hiscores for 7 days in a row:
   their `scrapingOffsets` move to `pausedScrapingOffsets` and their data is kept. It sends one Discord message per
   paused player. A successful scrape ends the streak, and the API resumes scraping when the player is found again. HTTP
