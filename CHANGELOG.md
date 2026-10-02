@@ -5,6 +5,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/02
 
+- Rewrote the README in plain language: what each background job does, the shared packages, how the repo fits with the
+  website and API, and how to run a job locally.
 - Updated `@osrs-tracker/discord-webhooks` to `^0.1.0` in the Lambdas, which removes the unused `discord.js` install.
 - Added a safe local run for all Lambdas: `npm run invoke:dry` runs the handler once with `DRY_RUN=true`, which logs
   every write (Mongo writes and indexes, SQS sends, Discord alerts) instead of executing it, while reads and fetches
