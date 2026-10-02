@@ -27,8 +27,8 @@ this one.
 
 ### Lambdas
 
-All run in eu-central-1, arm64, 128 MB, with IAM role `AWS_Lambda`. Env var names below; never copy values into code,
-commits or messages.
+All run in eu-central-1, arm64, 256 MB (clean-hiscores: 128 MB), with IAM role `AWS_Lambda`. Env var names below; never
+copy values into code, commits or messages.
 
 | Function                       | Trigger                                                   | Env vars                                                                                    |
 | ------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |

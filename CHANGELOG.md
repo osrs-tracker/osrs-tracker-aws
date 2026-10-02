@@ -5,6 +5,12 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/02
 
+- Raised memory from 128 MB to 256 MB for `osrs-tracker_refresh-items`, `osrs-tracker_queue-players` and
+  `osrs-tracker_process-players`, which peaked at 86–90% of 128 MB over the last 7 days. `osrs-tracker_clean-hiscores`
+  (76%) stays at 128 MB.
+- Added the missing `WEBHOOK_URL` to `osrs-tracker_queue-players`, so its error alerts reach Discord.
+- Deployed the Node 24 upgrade of `osrs-tracker_refresh-items`, `osrs-tracker_clean-hiscores` and
+  `osrs-tracker_queue-players` and switched their runtime to `nodejs24.x`.
 - CI now runs on Node 24 with `actions/checkout@v7` and `actions/setup-node@v7`, and the npm cache is keyed per project.
 - Added a CI job for the `@osrs-tracker/*` packages: it runs the `hiscores` jest tests, builds `models`, `hiscores` and
   `discord-webhooks`, and checks that the committed `dist/` matches the build.
