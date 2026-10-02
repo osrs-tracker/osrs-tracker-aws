@@ -30,20 +30,21 @@ this one.
 All run in eu-central-1, arm64, 256 MB (clean-hiscores: 128 MB), with IAM role `AWS_Lambda`. Env var names below; never
 copy values into code, commits or messages.
 
-| Function                       | Trigger                                                   | Env vars                                                                                    |
-| ------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `osrs-tracker_refresh-items`   | EventBridge `Hourly` (`cron(0 * * * ? *)`)                | `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`                                     |
-| `osrs-tracker_queue-players`   | EventBridge `Hourly`                                      | `MONGODB_*`, `SQS_QUEUE_URL`, `PLAYERS_PER_SQS_MESSAGE`, `OSRS_API_BASE_URL`                |
-| `osrs-tracker_process-players` | SQS `osrs-tracker_players-to-scrape` (batch 1), 300 s max | `MONGODB_*`, `SQS_QUEUE_URL`, `PLAYERS_PER_SQS_MESSAGE`, `OSRS_API_BASE_URL`, `WEBHOOK_URL` |
-| `osrs-tracker_clean-hiscores`  | EventBridge `daily` (`cron(0 0 * * ? *)`)                 | `MONGODB_*`, `MAX_AGE_IN_DAYS`, `WEBHOOK_URL`                                               |
+| Function                       | Trigger                                                                         | Env vars                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `osrs-tracker_refresh-items`   | EventBridge `Hourly` (`cron(0 * * * ? *)`)                                      | `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`                                     |
+| `osrs-tracker_queue-players`   | EventBridge `Hourly`                                                            | `MONGODB_*`, `SQS_QUEUE_URL`, `PLAYERS_PER_SQS_MESSAGE`, `OSRS_API_BASE_URL`                |
+| `osrs-tracker_process-players` | SQS `osrs-tracker_players-to-scrape` (batch 1, max concurrency 5), 60 s timeout | `MONGODB_*`, `SQS_QUEUE_URL`, `PLAYERS_PER_SQS_MESSAGE`, `OSRS_API_BASE_URL`, `WEBHOOK_URL` |
+| `osrs-tracker_clean-hiscores`  | EventBridge `daily` (`cron(0 0 * * ? *)`)                                       | `MONGODB_*`, `MAX_AGE_IN_DAYS`, `WEBHOOK_URL`                                               |
 
 - **refresh-items** fetches `prices.runescape.wiki/api/v1/osrs/mapping` (with a descriptive `user-agent`, as the wiki
   requires) and upserts it into the items collection.
 - **queue-players** derives the UTC offset (-12…11) from the event time, finds players whose `scrapingOffsets` contain
   it, and sends batches of usernames to SQS.
 - **process-players** fetches `${OSRS_API_BASE_URL}/m=hiscore_oldschool/index_lite.json?player=…` with a 2 s stagger per
-  username, and `$push`es a `HiscoreEntry` at position 0. It re-queues failed usernames, and throws without re-queuing
-  when nobody was updated, to avoid a retry loop. On a redelivery it sends a Discord alert.
+  username, and `$push`es a `HiscoreEntry` at position 0. Players that return 404 (not on the hiscores) are logged and
+  skipped. It re-queues retryable failures (5xx, network, 10 s timeout), and throws without re-queuing when nobody was
+  updated, to avoid a retry loop. On a redelivery it sends a Discord alert.
 - **clean-hiscores** `$pull`s hiscore entries older than `MAX_AGE_IN_DAYS`.
 
 Locally, each Lambda has a gitignored `.env` with these vars plus `MONGODB_USERNAME`/`MONGODB_PASSWORD` (an Atlas
@@ -76,8 +77,12 @@ in the console, so this repo has no diff to review.
     - process-players.
   - **Any change to the route, headers or CORS affects all three**, so get a check from the Web and API agents too.
 - **EventBridge rules**: `Hourly` (queue-players, refresh-items) and `daily` (clean-hiscores).
-- **SQS**: `osrs-tracker_players-to-scrape` (redrive to `osrs-tracker_players-to-scrape-dead` after 3 receives) and the
-  DLQ `osrs-tracker_players-to-scrape-dead`.
+- **SQS**: `osrs-tracker_players-to-scrape` (visibility timeout 120 s, which is 2× process-players' 60 s timeout so a
+  message never reappears while it's still being processed; redrive after 3 receives) and the DLQ
+  `osrs-tracker_players-to-scrape-dead`.
+  - A normal batch of 10 players takes about 19–23 s (2 s stagger per player, 10 s timeout per hiscore request). Keep
+    the visibility timeout above the function timeout when changing either.
+  - Players that return 404 are skipped, not retried, so DLQ messages point to real failures (5xx, network, timeouts).
 - **MongoDB Atlas** (not AWS): cluster `shared-cluster.tf5uvgy.mongodb.net`, database `osrs-tracker` (`players` and
   items collections).
   - Lambdas authenticate with `MONGODB-AWS`: `mongodb` 7 takes the role's credentials from the AWS SDK credential chain

@@ -5,6 +5,12 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/02
 
+- Deployed `osrs-tracker_process-players` with the Node 24 upgrade, `DRY_RUN` support, `@osrs-tracker/discord-webhooks`
+  0.1.0 and the 404/timeout fix, and switched its runtime to `nodejs24.x`. All 4 Lambdas now run on Node 24.
+- Lowered the `osrs-tracker_process-players` timeout from 300 s to 60 s (normal batches take about 19–23 s).
+- Raised the `osrs-tracker_players-to-scrape` visibility timeout from 30 s to 120 s, so a message can't be delivered
+  again while it's still being processed.
+- Purged the 2 messages from the dead-letter queue. Both were for players that are no longer on the hiscores.
 - `osrs-tracker_process-players` no longer retries players that aren't on the hiscores (HTTP 404, e.g. renamed or
   banned). They are logged and skipped, so they no longer end up in the dead-letter queue or trigger Discord alerts.
   Only 5xx, network errors and timeouts are retried.
