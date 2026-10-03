@@ -90,9 +90,10 @@ commands still need their own approval (see Rules). Stop and report only if a st
 
 ## Commit and push
 
-- For releases, follow the flow above. Otherwise, **ask the user whether to commit straight to `main` or open a PR**,
-  every time, before committing. `main` requires a PR and the passing `CI` check (no approvals), which the user's admin
-  account can bypass, so a direct push works and shows a "bypassed rule violations" notice.
+- For releases, follow the flow above. Documentation-only changes (skills, docs, no code or deploy) go straight to
+  `main`. Otherwise, **ask the user whether to commit straight to `main` or open a PR**, every time, before committing.
+  `main` requires a PR and the passing `CI` check (no approvals), which the user's admin account can bypass, so a direct
+  push works and shows a "bypassed rule violations" notice.
   - Straight to `main`: push, then watch the CI run (`gh run watch --exit-status`).
   - PR: commit on a `<type>/<short-name>` branch, push it, `gh pr create --base main` and check `gh pr checks`. Once the
     user says it's merged, `git switch main && git pull --ff-only`, delete the local branch with `git branch -d` and
