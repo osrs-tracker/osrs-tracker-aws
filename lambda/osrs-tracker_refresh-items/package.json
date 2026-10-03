@@ -16,11 +16,6 @@
     "start": "node ./build/esbuild.js --dev --watch --run",
     "invoke:dry": "node ./build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
   },
-  "config": {
-    "commitizen": {
-      "path": "node_modules/cz-conventional-changelog"
-    }
-  },
   "prettier": "./.prettierrc.json",
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.1145.0",

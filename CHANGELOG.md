@@ -5,6 +5,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/03
 
+- Removed the unused `commitizen` and `cz-conventional-changelog` dev dependencies and their `config.commitizen` blocks
+  (root and all 4 Lambdas). Nothing used them, and they were the only source of the remaining root `npm audit` findings,
+  so the root now reports 0 vulnerabilities.
 - Ran `npm audit fix` in the repo root and all 4 Lambdas to patch vulnerable dev dependencies (eslint and commitizen
   dependencies such as `lodash`, `@humanfs/node`, `minimatch`, `js-yaml` and `tmp`). Production dependencies are
   unchanged, so no deploy is needed. The root still reports 6 high findings from `braces` through commitizen: every
