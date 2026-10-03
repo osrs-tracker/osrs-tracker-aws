@@ -5,6 +5,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/03
 
+- Project skill: documented the release flow (PR, review, deploy and publish, update the PR, merge).
 - Removed the unused `commitizen` and `cz-conventional-changelog` dev dependencies and their `config.commitizen` blocks
   (root and all 4 Lambdas). Nothing used them, and they were the only source of the remaining root `npm audit` findings,
   so the root now reports 0 vulnerabilities.
