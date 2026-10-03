@@ -8,6 +8,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - CI only checks the packages and Lambdas a PR or push changed, found from the repo's folders so new ones are picked up
   automatically. Manual runs, workflow changes and an unknown base still check everything. A single `CI` job sums up the
   result, so it's the only check branch protection needs to require.
+- Project skill: ask whether to commit straight to `main` or open a PR, and how to clean up after a merge.
 
 ## 2026/10/02
 

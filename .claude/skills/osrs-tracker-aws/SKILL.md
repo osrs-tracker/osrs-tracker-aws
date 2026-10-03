@@ -72,8 +72,17 @@ change. After pushing, check the run with `gh run watch --exit-status`.
 
 ## Commit and push
 
-- Conventional commits straight to `main`. Scopes: `@osrs-tracker/<package>` (or `hiscores`), `lambda` or
-  `osrs-tracker_<function>`, `ci(actions)`, `docs(skill)`.
+- **Ask the user whether to commit straight to `main` or open a PR**, every time, before committing. `main` requires a
+  PR and the passing `CI` check (no approvals), which the user's admin account can bypass, so a direct push works and
+  shows a "bypassed rule violations" notice.
+  - Straight to `main`: push, then watch the CI run (`gh run watch --exit-status`).
+  - PR: commit on a `<type>/<short-name>` branch, push it, `gh pr create --base main` and check `gh pr checks`. Once the
+    user says it's merged, `git switch main && git pull --ff-only`, delete the local branch with `git branch -d` and
+    `git fetch --prune` (GitHub deletes the remote branch on merge).
+  - Deploying or publishing from a PR branch leaves production running unmerged code: tell the user, and don't deploy
+    from `main` until the PR is merged.
+- Conventional commits. Scopes: `@osrs-tracker/<package>` (or `hiscores`), `lambda` or `osrs-tracker_<function>`,
+  `ci(actions)`, `docs(skill)`.
 - **Every change gets a changelog entry in the same commit**: Lambda, infra and CI changes under a `## YYYY/MM/DD`
   heading in the root `CHANGELOG.md` (newest first, reuse today's heading); package changes in that package's
   `CHANGELOG.md` with its versioned heading.
