@@ -3,6 +3,12 @@
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
 `CHANGELOG.md`.
 
+## 2026/10/03
+
+- CI only checks the packages and Lambdas a PR or push changed, found from the repo's folders so new ones are picked up
+  automatically. Manual runs, workflow changes and an unknown base still check everything. A single `CI` job sums up the
+  result, so it's the only check branch protection needs to require.
+
 ## 2026/10/02
 
 - Restructured the project skill: `SKILL.md` keeps the rules, local runs, verification and commit workflow; infra,

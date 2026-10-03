@@ -9,6 +9,45 @@ on:
   workflow_dispatch:
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+
+    outputs:
+      packages: ${{ steps.changes.outputs.packages }}
+      lambdas: ${{ steps.changes.outputs.lambdas }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed folders
+        id: changes
+        env:
+          # A PR is checked out as a merge commit, its first parent is the current main
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: |
+          # Every package and lambda folder, new ones are picked up automatically
+          folders=$(ls -d @osrs-tracker/*/ lambda/*/ | sed 's:/$::')
+
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] \
+            || ! changed=$(git diff --name-only "$BASE" HEAD) \
+            || grep -q '^\.github/workflows/' <<< "$changed"; then
+            # Manual run, unknown base or a workflow change: check everything
+            selected=$folders
+          else
+            selected=$(grep -Fxf <(cut -d/ -f1-2 <<< "$changed" | sort -u) <<< "$folders" || true)
+          fi
+
+          to_json() { { grep "^$1/" <<< "$selected" || true; } | cut -d/ -f2 | jq -Rnc '[inputs]'; }
+          # Assigned first so a failure fails the step, instead of passing an empty output
+          packages=$(to_json @osrs-tracker)
+          lambdas=$(to_json lambda)
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+          echo "lambdas=$lambdas" >> "$GITHUB_OUTPUT"
+
   root:
     name: Global Prettier
     runs-on: ubuntu-latest
@@ -31,15 +70,14 @@ jobs:
 
   packages:
     name: Package CI
+    needs: changes
+    if: needs.changes.outputs.packages != '[]'
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        package:
-          - models
-          - hiscores
-          - discord-webhooks
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
 
     steps:
       - name: Checkout
@@ -71,16 +109,14 @@ jobs:
 
   lambda:
     name: Lambda CI
+    needs: changes
+    if: needs.changes.outputs.lambdas != '[]'
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        lambda_function:
-          - osrs-tracker_clean-hiscores
-          - osrs-tracker_process-players
-          - osrs-tracker_queue-players
-          - osrs-tracker_refresh-items
+        lambda_function: ${{ fromJSON(needs.changes.outputs.lambdas) }}
 
     steps:
       - name: Checkout
@@ -108,3 +144,15 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: lambda/${{ matrix.lambda_function }}
+
+  # The only required check: skipped jobs pass, failed or cancelled ones (including change detection) don't
+  ci:
+    name: CI
+    if: always()
+    needs: [changes, root, packages, lambda]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: All checks passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
