@@ -4,7 +4,7 @@ description:
   Rules and workflow for osrs-tracker-aws (AWS Lambdas and the `@osrs-tracker/*` npm packages). Use when writing or
   reviewing Lambda or package code, running a Lambda locally, adding a hiscores parse order, publishing a package,
   deploying a Lambda, inspecting or changing AWS resources (API Gateway proxy, EventBridge, SQS, Lambda config), or
-  committing and pushing this repo.
+  committing, pushing, releasing or shipping this repo.
 ---
 
 # osrs-tracker-aws
@@ -70,11 +70,29 @@ comparing bundles.
 CI checks that each package's committed `dist/` matches its build, so commit the rebuilt `dist/` with any package source
 change. After pushing, check the run with `gh run watch --exit-status`.
 
+## Release ("release it", "ship it")
+
+When the user asks to release or ship, run the whole flow without asking for confirmation between steps. The request is
+the go-ahead for deploying the Lambdas and publishing the packages that the change touches; mutating AWS infrastructure
+commands still need their own approval (see Rules). Stop and report only if a step fails.
+
+1. **PR**: commit on a `<type>/<short-name>` branch (code and changelogs), push it and `gh pr create --base main`.
+2. **Review the PR's code** (`gh pr diff`): look for bugs, convention violations and leftovers, fix what you find, and
+   re-run the verification steps.
+3. **Deploy to production**: deploy the changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish the changed packages
+   ([PACKAGES.md](PACKAGES.md)), then check that they work.
+4. **Update the PR** with the deploy changes: commit any version bumps or lockfile changes to the branch, push, and
+   record what was deployed or published and the check results in the PR description. `gh pr edit` can fail on a
+   Projects (classic) GraphQL error; use `gh api -X PATCH repos/osrs-tracker/osrs-tracker-aws/pulls/<n> -F body=@<file>`
+   instead.
+5. **Merge** once everything is fine and all checks pass (`gh pr checks <n> --watch`): `gh pr merge <n> --merge`, then
+   `git switch main && git pull --ff-only`, `git branch -d <branch>` and `git fetch --prune`.
+
 ## Commit and push
 
-- **Ask the user whether to commit straight to `main` or open a PR**, every time, before committing. `main` requires a
-  PR and the passing `CI` check (no approvals), which the user's admin account can bypass, so a direct push works and
-  shows a "bypassed rule violations" notice.
+- For releases, follow the flow above. Otherwise, **ask the user whether to commit straight to `main` or open a PR**,
+  every time, before committing. `main` requires a PR and the passing `CI` check (no approvals), which the user's admin
+  account can bypass, so a direct push works and shows a "bypassed rule violations" notice.
   - Straight to `main`: push, then watch the CI run (`gh run watch --exit-status`).
   - PR: commit on a `<type>/<short-name>` branch, push it, `gh pr create --base main` and check `gh pr checks`. Once the
     user says it's merged, `git switch main && git pull --ff-only`, delete the local branch with `git branch -d` and
