@@ -1,3 +1,8 @@
+## Unreleased
+
+- Upgraded `jest` to `^30.5.2` and `ts-jest` to `^29.4.14`, and ran `npm audit fix`, clearing all 35 dev dependency
+  vulnerabilities. Dev-only, so the published package is unchanged.
+
 ## v2.1.4 - 2026/10/02
 
 - Widened the `@osrs-tracker/models` peer dependency to `^0.7.1 || ^0.8.0`, so it can be installed together with models
