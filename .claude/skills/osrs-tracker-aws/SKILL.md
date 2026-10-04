@@ -11,104 +11,78 @@ description:
 
 Scheduled and SQS-driven Lambdas (`lambda/<function>/`, one npm project each) that keep OSRS Tracker's MongoDB data
 fresh, plus the published packages in `@osrs-tracker/`. The consumers are `../osrs-tracker-web` and
-`../osrs-tracker-api`. Those repos have their own skills; when a separate session owns one, send changes there instead
-of editing it from here.
+`../osrs-tracker-api`, which have their own skills.
 
-**This repo is public.** Never write secret values, account IDs or resource IDs into code, docs or commits. Env var
-names are in each Lambda's `.env.example`; the gitignored `.env` holds the values and is never printed or committed.
+**This repo is public.** Never write secret values, account IDs or resource IDs into code, docs or commits, and never
+print `.env` values.
 
 Reference, load when needed:
 
-- [INFRA.md](INFRA.md): the API Gateway proxy, EventBridge, SQS, Atlas auth and the infra-change procedure.
-- [PACKAGES.md](PACKAGES.md): adding a hiscores parse order, versioning, publish order and npm 2FA.
+- [INFRA.md](INFRA.md): the AWS resources, Atlas auth and the infra-change procedure.
+- [PACKAGES.md](PACKAGES.md): adding a hiscores parse order, versioning and publishing.
 - [DEPLOY.md](DEPLOY.md): deploying and rolling back a Lambda.
 
 ## Rules
 
-- **Infra changes** (Lambda config or env, API Gateway, EventBridge, SQS, IAM): record the before state, show the user
-  the exact CLI command, wait for their approval, re-read afterwards, log it in the root `CHANGELOG.md`. Read-only
-  `get-*`/`list-*`/`describe-*` calls are fine. There is no IaC and the default CLI profile has broad access, so treat
-  every mutating `aws` command as production. Details in [INFRA.md](INFRA.md).
-- **Deploys** go live on `$LATEST` immediately (no staging, no alias): get the user's explicit go-ahead first.
-- **npm publishes** are public and irreversible: get the user's explicit go-ahead first.
-- **Every write goes through a `DRY_RUN`-aware helper** (`src/utils/dry-run.utils.ts`): Mongo writes and index creation
-  in `MU`, `sendMessageBatch` for SQS, and `discordAlert`. When adding a write, guard it with
-  `if (DRY_RUN) return logDryRun(…)`.
-- **Never run a handler locally except via `npm run invoke:dry`.** There is no staging database.
+- **Mutating `aws` commands** are production (no IaC, broad default profile): follow [INFRA.md](INFRA.md) and get the
+  user's approval of the exact command. Read-only calls are fine.
+- **Lambda deploys** go live immediately and **npm publishes** are public and irreversible: get the user's explicit
+  go-ahead first.
+- **Every write goes through a `DRY_RUN`-aware helper** (`src/utils/dry-run.utils.ts`): Mongo writes in `MU`,
+  `sendMessageBatch`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
+- **Only run a handler locally via `npm run invoke:dry`.** There is no staging database.
 
 ## Lambda notes
 
-- Create clients at module scope so warm invocations reuse them. Use `MU.client()`: SCRAM when `MONGODB_USERNAME` is set
-  (local only), otherwise `MONGODB-AWS` from the role. Neither `DRY_RUN` nor `MONGODB_USERNAME` is set in production.
-- Throw to mark a run as failed (SQS retries it); use `discordAlert` for operator-visible failures.
-- process-players' contract with the API: a 404/400 hiscore is skipped (not retried) and starts a date-based streak;
-  after 7 days the player's `scrapingOffsets` move to `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores
-  them. Only this Lambda counts 404s.
-- Runtime is Node 24 (`npm run update:runtime`, `engines.node >=24`).
+- Create clients at module scope so warm invocations reuse them. `MU.client()` uses SCRAM when `MONGODB_USERNAME` is set
+  (local only), otherwise `MONGODB-AWS` from the role.
+- Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures.
+- process-players is the only place that counts 404s: a 404/400 hiscore is skipped and starts a date-based streak; after
+  7 days the player's `scrapingOffsets` move to `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores them.
 
 ## Run a Lambda locally
 
-From `lambda/<function>/`, with `.env` filled in (an Atlas database user in `MONGODB_USERNAME`/`MONGODB_PASSWORD`):
-
-```bash
-npm run invoke:dry
-```
-
-It makes a dev build and runs the handler once with `DRY_RUN=true`: reads and external fetches happen, every write is
-logged as `[DRY_RUN] Would …`. Scheduled Lambdas take an optional event time
-(`npm run invoke:dry -- 2026-10-02T18:00:00Z`); process-players takes usernames
-(`npm run invoke:dry -- Zezima "Lynx Titan"`). The dev build overwrites `dist/`, so run `npm run build` again before
-comparing bundles.
+From `lambda/<function>/`, with `.env` filled in: `npm run invoke:dry`. It runs the handler once with `DRY_RUN=true`;
+reads and fetches happen, writes are logged as `[DRY_RUN] Would …`. Scheduled Lambdas take an optional event time
+(`-- 2026-10-02T18:00:00Z`), process-players takes usernames (`-- Zezima "Lynx Titan"`). It overwrites `dist/` with a
+dev build, so run `npm run build` before comparing bundles.
 
 ## Verify before handing off
 
-- Each Lambda you touched, inside its directory: `npm run lint && npm run prettier:ci && npm run build`
-- `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is `jest --watch` and never exits)
+- Each Lambda you touched: `npm run lint && npm run prettier:ci && npm run build`
+- `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode and never exits)
 - `@osrs-tracker/models` or `discord-webhooks`: `npm run build`
 - Repo root: `npm run prettier:ci`
 
-CI checks that each package's committed `dist/` matches its build, so commit the rebuilt `dist/` with any package source
-change. After pushing, check the run with `gh run watch --exit-status`.
+CI checks that each package's committed `dist/` matches its build, so commit the rebuilt `dist/`.
 
 ## Release ("release it", "ship it")
 
-When the user asks to release or ship, run the whole flow without asking for confirmation between steps. The request is
-the go-ahead for deploying the Lambdas and publishing the packages that the change touches; mutating AWS infrastructure
-commands still need their own approval (see Rules). Stop and report only if a step fails.
+Run the whole flow without asking between steps; stop only if a step fails. The request is the go-ahead for deploying
+and publishing what the change touches, but mutating infra commands still need their own approval. Verify locally once
+before committing; after that CI is the gate (builds a deploy or `dist/` needs still run).
 
-The local verification steps run once, before committing. After that, CI is the gate: don't re-run lint, prettier, tests
-or builds locally just to check later commits (builds that a deploy or a package's `dist/` needs still run).
-
-1. **PR**: commit on a `<type>/<short-name>` branch (code and changelogs), push it and `gh pr create --base main`.
-2. **Review the PR's code** (`gh pr diff`): look for bugs, convention violations and leftovers. Fix what you find and
-   push; CI checks the fix (`gh pr checks <n> --watch` in the background).
-3. **Deploy to production** once CI passes: deploy the changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish the changed
-   packages ([PACKAGES.md](PACKAGES.md)), then check that they work.
-4. **Update the PR** with the deploy changes: commit any version bumps or lockfile changes to the branch, push, and
-   record what was deployed or published and the check results in the PR description. `gh pr edit` can fail on a
-   Projects (classic) GraphQL error; use `gh api -X PATCH repos/osrs-tracker/osrs-tracker-aws/pulls/<n> -F body=@<file>`
-   instead.
-5. **Merge** once the checks on the last commit pass (`gh pr checks <n> --watch`): `gh pr merge <n> --merge`, then
-   `git switch main && git pull --ff-only`, `git branch -d <branch>` and `git fetch --prune`.
+1. Commit on a `<type>/<short-name>` branch, push, `gh pr create --base main`.
+2. Review `gh pr diff` for bugs and leftovers; fix and push.
+3. Once CI passes, deploy the changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish the changed packages
+   ([PACKAGES.md](PACKAGES.md)), and check they work.
+4. Commit any version or lockfile bumps to the branch, push, and record what shipped and the check results in the PR
+   description.
+5. Once the checks pass, `gh pr merge <n> --merge`, then switch to `main`, pull, `git branch -d <branch>`,
+   `git fetch --prune`.
 
 ## Commit and push
 
-- For releases, follow the flow above. Documentation-only changes (skills, docs, no code or deploy) go straight to
-  `main`. Otherwise, **ask the user whether to commit straight to `main` or open a PR**, every time, before committing.
-  `main` requires a PR and the passing `CI` check (no approvals), which the user's admin account can bypass, so a direct
-  push works and shows a "bypassed rule violations" notice.
-  - Straight to `main`: push, then watch the CI run (`gh run watch --exit-status`).
-  - PR: commit on a `<type>/<short-name>` branch, push it, `gh pr create --base main` and check `gh pr checks`. Once the
-    user says it's merged, `git switch main && git pull --ff-only`, delete the local branch with `git branch -d` and
-    `git fetch --prune` (GitHub deletes the remote branch on merge).
-  - Deploying or publishing from a PR branch leaves production running unmerged code: tell the user, and don't deploy
-    from `main` until the PR is merged.
-- Conventional commits. Scopes: `@osrs-tracker/<package>` (or `hiscores`), `lambda` or `osrs-tracker_<function>`,
-  `ci(actions)`, `docs(skill)`.
-- **Every change gets a changelog entry in the same commit**: Lambda, infra and CI changes under a `## YYYY/MM/DD`
-  heading in the root `CHANGELOG.md` (newest first, reuse today's heading); package changes in that package's
-  `CHANGELOG.md` with its versioned heading.
-- Commits are GPG-signed. If signing fails with "Inappropriate ioctl for device", ask the user to unlock the key with
-  `echo test | gpg --clearsign > /dev/null`; never use `--no-gpg-sign`.
-- Push via `gh`. Commit and push in the same session as any deploy or publish, so production never runs code that isn't
-  on GitHub.
+- Doc-only changes (skills, docs) go straight to `main`. Otherwise, outside a release, **ask every time** whether to
+  commit to `main` or open a PR. The admin account bypasses `main`'s PR rule; after a direct push, watch CI with
+  `gh run watch --exit-status`. After a PR merges, do the switch-back from release step 5.
+- A deploy or publish from a PR branch ships unmerged code: tell the user, and don't deploy from `main` until it's
+  merged.
+- Conventional commits. Scopes: `hiscores`/`models`/…, `lambda` or `osrs-tracker_<function>`, `ci(actions)`,
+  `docs(skill)`. Commit and push in the same session as any deploy or publish.
+- **Every change gets a changelog entry**: Lambda, infra and CI changes in the root `CHANGELOG.md` under a
+  `## YYYY/MM/DD` heading (newest first); package changes in that package's `CHANGELOG.md` (see PACKAGES.md).
+- If GPG signing fails with "Inappropriate ioctl for device", ask the user to run
+  `echo test | gpg --clearsign > /dev/null` in their terminal. Never use `--no-gpg-sign`.
+- `gh pr edit` can fail on a Projects (classic) error; use
+  `gh api -X PATCH repos/osrs-tracker/osrs-tracker-aws/pulls/<n> -F body=@<file>`.
