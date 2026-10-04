@@ -76,16 +76,19 @@ When the user asks to release or ship, run the whole flow without asking for con
 the go-ahead for deploying the Lambdas and publishing the packages that the change touches; mutating AWS infrastructure
 commands still need their own approval (see Rules). Stop and report only if a step fails.
 
+The local verification steps run once, before committing. After that, CI is the gate: don't re-run lint, prettier, tests
+or builds locally just to check later commits (builds that a deploy or a package's `dist/` needs still run).
+
 1. **PR**: commit on a `<type>/<short-name>` branch (code and changelogs), push it and `gh pr create --base main`.
-2. **Review the PR's code** (`gh pr diff`): look for bugs, convention violations and leftovers, fix what you find, and
-   re-run the verification steps.
-3. **Deploy to production**: deploy the changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish the changed packages
-   ([PACKAGES.md](PACKAGES.md)), then check that they work.
+2. **Review the PR's code** (`gh pr diff`): look for bugs, convention violations and leftovers. Fix what you find and
+   push; CI checks the fix (`gh pr checks <n> --watch` in the background).
+3. **Deploy to production** once CI passes: deploy the changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish the changed
+   packages ([PACKAGES.md](PACKAGES.md)), then check that they work.
 4. **Update the PR** with the deploy changes: commit any version bumps or lockfile changes to the branch, push, and
    record what was deployed or published and the check results in the PR description. `gh pr edit` can fail on a
    Projects (classic) GraphQL error; use `gh api -X PATCH repos/osrs-tracker/osrs-tracker-aws/pulls/<n> -F body=@<file>`
    instead.
-5. **Merge** once everything is fine and all checks pass (`gh pr checks <n> --watch`): `gh pr merge <n> --merge`, then
+5. **Merge** once the checks on the last commit pass (`gh pr checks <n> --watch`): `gh pr merge <n> --merge`, then
    `git switch main && git pull --ff-only`, `git branch -d <branch>` and `git fetch --prune`.
 
 ## Commit and push
