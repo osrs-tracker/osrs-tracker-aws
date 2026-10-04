@@ -3,6 +3,10 @@
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
 `CHANGELOG.md`.
 
+## 2026/10/04
+
+- Project skill: documented the changelog conventions (`###` subtitles on busy days, no near-duplicate entries).
+
 ## 2026/10/03
 
 - Project skill: documented the release flow (PR, review, deploy and publish, update the PR, merge).

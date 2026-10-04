@@ -81,7 +81,9 @@ before committing; after that CI is the gate (builds a deploy or `dist/` needs s
 - Conventional commits. Scopes: `hiscores`/`models`/…, `lambda` or `osrs-tracker_<function>`, `ci(actions)`,
   `docs(skill)`. Commit and push in the same session as any deploy or publish.
 - **Every change gets a changelog entry**: Lambda, infra and CI changes in the root `CHANGELOG.md` under a
-  `## YYYY/MM/DD` heading (newest first); package changes in that package's `CHANGELOG.md` (see PACKAGES.md).
+  `## YYYY/MM/DD` heading (newest first); package changes in that package's `CHANGELOG.md` (see PACKAGES.md). Busy days
+  get `###` subtitles (by area, "Behind the scenes" last); extend an existing entry rather than add a near-duplicate,
+  and don't repeat the subtitle in its entries.
 - If GPG signing fails with "Inappropriate ioctl for device", ask the user to run
   `echo test | gpg --clearsign > /dev/null` in their terminal. Never use `--no-gpg-sign`.
 - `gh pr edit` can fail on a Projects (classic) error; use
