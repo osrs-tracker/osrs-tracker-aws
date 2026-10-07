@@ -20,9 +20,16 @@ export interface Player {
   status: PlayerStatus;
   diedAsHardcore: boolean;
 
-  /** Last time the player type and status was determined. Will only update after at minimum 2 hours have passed. */
+  /**
+   * Last time osrs-tracker-api determined the player type and status. Refreshed on a lookup at most every
+   * `minPlayerRefreshTime` hours (2), or sooner when the player lacks the requested scraping offset.
+   */
   lastModified: Date;
-  /** Last time the hiscores were fetched for this player. Optional because it only exists when the player is tracked. */
+  /**
+   * Last time a visitor looked the player up; orders the recent players list. Set by osrs-tracker-api on every lookup
+   * of a stored player, tracked or not. Not the last hiscores scrape: that is the newest `hiscoreEntries` entry's
+   * `date` for the offset.
+   */
   lastHiscoreFetch?: Date;
 
   /** offsets for scraping hiscores compared to UTC midnight, between -12 and +11. */

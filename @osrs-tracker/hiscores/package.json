@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/hiscores",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Logic for parsing OSRS hiscores",
   "license": "MIT",
   "author": "Freek Mencke",

@@ -1,3 +1,9 @@
+## 0.9.1 - 2026/10/07
+
+- Corrected the `Player.lastHiscoreFetch` doc comment: it is the last visitor lookup (ordering the recent players list),
+  not the last hiscores scrape, and exists on any looked-up stored player, tracked or not. The last scrape is the newest
+  `hiscoreEntries` entry's `date` for the offset. Clarified `Player.lastModified` too. Doc-only.
+
 ## 0.9.0 - 2026/10/07
 
 - Added response-only `Player.trackedSince` (date of the oldest stored hiscore entry for the requested scraping offset)
