@@ -10,6 +10,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   lockfile bump doesn't recheck the whole PR; a change under `.github/` (workflow or action) still checks everything. If
   CI didn't pass on the previous push, a PR is checked against its base again and a push to `main` checks everything, so
   a failed folder can't turn green by pushing an unrelated change on top.
+- Claude Code: edited files are formatted with Prettier automatically, a push is blocked when the Prettier check or a
+  Lambda's lint fails, and a `conventions-reviewer` agent reviews PRs against the project skill during a release.
 
 ## 2026/10/04
 
