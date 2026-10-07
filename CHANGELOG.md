@@ -3,6 +3,14 @@
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
 `CHANGELOG.md`.
 
+## 2026/10/07
+
+- CI reuses each project's installed `node_modules` until its `package-lock.json` changes, instead of running `npm ci`
+  every time. A new push to a PR only checks the packages and Lambdas changed since the previous push, so a version or
+  lockfile bump doesn't recheck the whole PR; a change under `.github/` (workflow or action) still checks everything. If
+  CI didn't pass on the previous push, a PR is checked against its base again and a push to `main` checks everything, so
+  a failed folder can't turn green by pushing an unrelated change on top.
+
 ## 2026/10/04
 
 - Project skill: documented the changelog conventions (`###` subtitles on busy days, no near-duplicate entries).
