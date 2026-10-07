@@ -1,0 +1,35 @@
+name: Set up Node and dependencies
+description:
+  Installs Node and restores one project's node_modules from the cache, running npm ci only when its package-lock.json
+  (or the Node major) changed. The cache is saved right after npm ci, so it never contains what later steps write into
+  node_modules.
+
+inputs:
+  working-directory:
+    description: The npm project to install (the repo root, a Lambda or a package folder)
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '24.x'
+    - id: cache
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ inputs.working-directory }}/node_modules
+        # Each Lambda and package is its own npm project with its own lock file and cache entry
+        key:
+          node-modules-${{ runner.os }}-${{ runner.arch }}-node24-${{ inputs.working-directory }}-${{
+          hashFiles(format('{0}/package-lock.json', inputs.working-directory)) }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm ci
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+    # Parallel jobs that all missed race to save the same key; the losers only log a warning
+    - if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ inputs.working-directory }}/node_modules
+        key: ${{ steps.cache.outputs.cache-primary-key }}

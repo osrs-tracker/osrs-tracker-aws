@@ -12,6 +12,9 @@ jobs:
   changes:
     name: Detect changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
 
     outputs:
       packages: ${{ steps.changes.outputs.packages }}
@@ -26,16 +29,41 @@ jobs:
       - name: Detect changed folders
         id: changes
         env:
-          # A PR is checked out as a merge commit, its first parent is the current main
-          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+          # A new push to a PR compares with the previous push, not the base branch, so a version or lockfile bump
+          # doesn't recheck the folders the PR's earlier pushes already checked
+          BASE:
+            ${{ (github.event_name == 'push' || github.event.action == 'synchronize') && github.event.before ||
+            github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
           # Every package and lambda folder, new ones are picked up automatically
           folders=$(ls -d @osrs-tracker/*/ lambda/*/ | sed 's:/$::')
 
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] \
-            || ! changed=$(git diff --name-only "$BASE" HEAD) \
-            || grep -q '^\.github/workflows/' <<< "$changed"; then
-            # Manual run, unknown base or a workflow change: check everything
+          # The previous push is only a safe base if CI passed on it; otherwise a folder that failed there and isn't
+          # touched again would be skipped and turn the required check green. Fall back to the PR's base (everything the
+          # PR changes), or to everything on a push to main
+          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] && [ -n "$BASE" ] && [ "$BASE" != "$PR_BASE" ] \
+            && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
+            ci=$(gh api "repos/$REPO/commits/$BASE/check-runs?filter=latest&per_page=100" \
+              --jq '[.check_runs[] | select(.name == "CI") | .conclusion // .status] | join(" ")' 2>/dev/null) || ci=
+            if [ "$ci" = success ]; then
+              echo "CI passed on $BASE, checking the folders changed since then."
+            else
+              fallback="checking everything"
+              [ -z "$PR_BASE" ] || fallback="comparing with the PR base $PR_BASE"
+              echo "CI didn't pass on $BASE (${ci:-no result}), $fallback."
+              BASE=$PR_BASE
+            fi
+          fi
+
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || [ -z "$BASE" ] \
+            || ! changed=$(git diff --name-only "$BASE" "$HEAD") \
+            || grep -q '^\.github/' <<< "$changed"; then
+            # Manual run, unknown base (new branch, force push, previous push without passing CI on main) or a workflow
+            # or action change: check everything
             selected=$folders
           else
             selected=$(grep -Fxf <(cut -d/ -f1-2 <<< "$changed" | sort -u) <<< "$folders" || true)
@@ -56,14 +84,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Use Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24.x'
-          cache: 'npm'
-
       - name: Install
-        run: npm ci
+        uses: ./.github/actions/setup-deps
 
       - name: Prettier
         run: npm run prettier:ci
@@ -83,16 +105,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Use Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24.x'
-          cache: 'npm'
-          cache-dependency-path: '@osrs-tracker/${{ matrix.package }}/package-lock.json'
-
       - name: Install
-        run: npm ci
-        working-directory: '@osrs-tracker/${{ matrix.package }}'
+        uses: ./.github/actions/setup-deps
+        with:
+          working-directory: '@osrs-tracker/${{ matrix.package }}'
 
       - name: Test
         if: matrix.package == 'hiscores'
@@ -122,16 +138,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Use Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24.x'
-          cache: 'npm'
-          cache-dependency-path: lambda/${{ matrix.lambda_function }}/package-lock.json
-
       - name: Install
-        run: npm ci
-        working-directory: lambda/${{ matrix.lambda_function }}
+        uses: ./.github/actions/setup-deps
+        with:
+          working-directory: lambda/${{ matrix.lambda_function }}
 
       - name: ESlint
         run: npm run lint

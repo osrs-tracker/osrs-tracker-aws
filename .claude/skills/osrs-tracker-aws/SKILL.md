@@ -17,7 +17,8 @@ skills.
 print `.env` values.
 
 Load when needed: [INFRA.md](INFRA.md) (AWS resources, infra changes), [PACKAGES.md](PACKAGES.md) (parse orders,
-versioning, publishing), [DEPLOY.md](DEPLOY.md) (deploy and rollback).
+versioning, publishing), [DEPLOY.md](DEPLOY.md) (deploy and rollback). The `conventions-reviewer` agent reviews diffs
+against these files at runtime, so keep rules here, not in the agent.
 
 ## Rules
 
@@ -56,7 +57,7 @@ what the change touches; mutating infra commands still need their own approval. 
 after that CI is the gate (builds needed for a deploy or `dist/` still run).
 
 1. Commit on a `<type>/<short-name>` branch, push, `gh pr create --base main`.
-2. Review `gh pr diff` for bugs and leftovers; fix and push.
+2. Review `gh pr diff` for bugs and leftovers while the `conventions-reviewer` agent checks the PR; fix both and push.
 3. Once CI passes, deploy changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish changed packages
    ([PACKAGES.md](PACKAGES.md)), and check they work.
 4. Commit version or lockfile bumps, push, and record what shipped and the check results in the PR description.
