@@ -1,3 +1,7 @@
+## v2.1.6 - 2026/10/07
+
+- Upgraded the `@osrs-tracker/models` dev dependency to `^0.9.1` (doc comment fix). No code changes.
+
 ## v2.1.5 - 2026/10/07
 
 - Changed the `@osrs-tracker/models` peer dependency to `^0.8.0 || ^0.9.0`, so it can be installed together with models
