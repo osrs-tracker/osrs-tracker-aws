@@ -23,5 +23,7 @@ export interface Player {
     hiscoreNotFoundCount?: number;
     hiscoreNotFoundSince?: Date;
     hiscoreEntries?: HiscoreEntry[];
+    trackedSince?: Date | null;
+    refreshFailed?: boolean;
 }
 //# sourceMappingURL=player.d.ts.map

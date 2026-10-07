@@ -1,3 +1,9 @@
+## 0.9.0 - 2026/10/07
+
+- Added response-only `Player.trackedSince` (date of the oldest stored hiscore entry for the requested scraping offset)
+  and `Player.refreshFailed` (the hiscores didn't respond, so the data may be stale). Both are set by osrs-tracker-api's
+  `GET /players/:username` and never stored.
+
 ## 0.8.0 - 2026/10/02
 
 - Added `Player.pausedScrapingOffsets`, `Player.hiscoreNotFoundCount` and `Player.hiscoreNotFoundSince`. Scraping is

@@ -37,4 +37,15 @@ export interface Player {
   /** Date of the first hiscore fetch in the current "not found" streak. Reset on the next successful fetch. */
   hiscoreNotFoundSince?: Date;
   hiscoreEntries?: HiscoreEntry[];
+
+  /**
+   * Date of the oldest stored hiscore entry for the requested `scrapingOffset`, `null` when there are none.
+   * Computed by `GET /players/:username` in osrs-tracker-api, never stored.
+   */
+  trackedSince?: Date | null;
+  /**
+   * True when osrs-tracker-api couldn't refresh the player because the hiscores didn't respond (outage, rate limit,
+   * timeout), so the returned data may be stale. Set by `GET /players/:username`, never stored.
+   */
+  refreshFailed?: boolean;
 }
