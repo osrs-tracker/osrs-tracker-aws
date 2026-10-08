@@ -1,3 +1,8 @@
+## Unreleased
+
+- Overrode `js-yaml` to `^4.1.0` under `@istanbuljs/load-nyc-config` (pulled in by `ts-jest`), dropping `sprintf-js`
+  (GHSA-hp3w-g68c-fv3c, no patched release). Dev-only, so the published package is unchanged.
+
 ## v2.1.6 - 2026/10/07
 
 - Upgraded the `@osrs-tracker/models` dev dependency to `^0.9.1` (doc comment fix). No code changes.
