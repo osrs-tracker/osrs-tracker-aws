@@ -55,12 +55,3 @@ export async function getHiscore(agent: Agent, username: string): Promise<Hiscor
     return { status: 'failed' };
   }
 }
-
-export function hiscoreJsonToSourceString({ skills, activities }: JsonResponse): string {
-  return [
-    skills.flatMap((skill) => [skill.rank, skill.level, skill.xp].join(',')),
-    activities.flatMap((activity) => [activity.rank, activity.score].join(',')),
-  ]
-    .flat()
-    .join('\n');
-}

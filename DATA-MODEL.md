@@ -99,12 +99,12 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 ## Legacy
 
 - **`hiscoreEntries[].sourceString`**: the hiscores as the old CSV-like text, from before the JSON hiscores. Marked
-  `@deprecated` in the models. process-players still writes the real string next to `skills`/`activities`
-  ([osrs-tracker-aws#17](https://github.com/osrs-tracker/osrs-tracker-aws/issues/17) stops that); the API writes
-  `'LEGACY'` and replaces it with `'LEGACY'` on every read when the entry has `skills`. On entries with `skills` nothing
-  reads the real string. Entries scraped before 2026-09-22 have **only** the string: the API passes it through and
-  `@osrs-tracker/hiscores` parses it when `skills` is missing. Those entries age out by about 2026-11-21 (60 days);
-  until then the string must stay readable on them.
+  `@deprecated` in the models. Both writers store `'LEGACY'` (process-players since 2026-10-08,
+  [osrs-tracker-aws#17](https://github.com/osrs-tracker/osrs-tracker-aws/issues/17); its entries scraped 2026-09-22 to
+  2026-10-08 still hold the real string next to `skills`). The API replaces it with `'LEGACY'` on every read when the
+  entry has `skills`. On entries with `skills` nothing reads the real string. Entries scraped before 2026-09-22 have
+  **only** the string: the API passes it through and `@osrs-tracker/hiscores` parses it when `skills` is missing. Those
+  entries age out by about 2026-11-21 (60 days); until then the string must stay readable on them.
 
 ## Where the models and storage differ
 
