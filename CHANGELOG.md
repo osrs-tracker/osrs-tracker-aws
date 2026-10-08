@@ -20,6 +20,16 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   index, the pause/resume contract with the API, and what's legacy. Linked from the README and the project skill.
   Checked against the live database, which found leftovers from older code. Dropped the two `players` indexes the check
   found unused and created by no code (`username` + `hiscoreEntries.scrapingOffset`, and `lastFetch`).
+- process-players no longer creates `players.username` and refresh-items no longer creates `items.id` on every run; the
+  API owns both indexes and creates them at startup.
+
+### Shared hiscore client
+
+- process-players fetches hiscores with `getHiscore` from `@osrs-tracker/hiscores` 3.1.0 (new dependency) instead of its
+  own copy, which the API is moving to as well. Names are now URL-encoded, and a response counts as valid when it has
+  `skills` and `activities` arrays. The old check that the returned `name` equals the queried one is gone: Jagex echoes
+  the name exactly as queried, so it never caught anything. Still `node-fetch` with the keep-alive agent; failure logs
+  now include the reason. Deployed as process-players version 44 and refresh-items version 6 (index cleanup).
 
 ### Behind the scenes
 

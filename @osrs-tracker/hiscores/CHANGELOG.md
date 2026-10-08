@@ -1,3 +1,11 @@
+## v3.1.0 - 2026/10/08
+
+- Added `getHiscore({ baseUrl, username, table?, fetch?, timeoutMs? })`, the hiscore HTTP client the API and the
+  process-players Lambda each had their own copy of. It returns `found` (with Jagex's JSON), `notFound` (HTTP 404/400,
+  don't retry) or `failed` (other non-2xx, network error, timeout or a body without `skills`/`activities` arrays, with a
+  `reason` to log). It URL-encodes the name, covers the four `HiscoreTable`s, never throws, doesn't log and doesn't read
+  `process.env`. Uses the global `fetch` unless you pass one (e.g. `node-fetch` with your own agent).
+
 ## v3.0.0 - 2026/10/08
 
 - **Breaking:** removed parsing of the old CSV-like hiscore string, now that every stored entry has `skills` and

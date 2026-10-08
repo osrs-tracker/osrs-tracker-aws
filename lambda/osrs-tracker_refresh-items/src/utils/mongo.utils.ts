@@ -1,13 +1,5 @@
 import { Item } from '@osrs-tracker/models';
-import {
-  AuthMechanism,
-  Collection,
-  CreateIndexesOptions,
-  Db,
-  IndexSpecification,
-  MongoClient,
-  MongoClientOptions,
-} from 'mongodb';
+import { AuthMechanism, Collection, Db, MongoClient, MongoClientOptions } from 'mongodb';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
 
 /**
@@ -27,17 +19,6 @@ export class MU {
         ? { auth: { username: process.env.MONGODB_USERNAME, password: process.env.MONGODB_PASSWORD } }
         : { authMechanism: AuthMechanism.MONGODB_AWS, authSource: '$external' }),
     });
-  }
-
-  /** Ensures an index exists. Skipped when `DRY_RUN` is set. */
-  static async ensureIndex(
-    mongo: MongoClient,
-    spec: IndexSpecification,
-    options: CreateIndexesOptions = {},
-  ): Promise<void> {
-    if (DRY_RUN) return logDryRun('create index', { spec, options });
-
-    await this.col(mongo).createIndex(spec, options);
   }
 
   static db(mongo: MongoClient): Db {

@@ -1,8 +1,8 @@
 # @osrs-tracker/hiscores &middot; [![NPM package](https://img.shields.io/npm/v/@osrs-tracker/hiscores.svg)](https://www.npmjs.com/package/@osrs-tracker/hiscores) [![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/main/LICENSE)
 
 Helpers for Old School RuneScape hiscores in [OSRS Tracker](https://osrs-tracker.freekmencke.com): the skill and
-activity names, comparing two hiscore snapshots, and XP calculations. Snapshots come from Jagex's JSON hiscores as
-`skills` and `activities` (see `HiscoreEntry` in `@osrs-tracker/models`).
+activity names, comparing two hiscore snapshots, and XP calculations, plus a client for Jagex's JSON hiscores. Snapshots
+come from Jagex's JSON hiscores as `skills` and `activities` (see `HiscoreEntry` in `@osrs-tracker/models`).
 
 ## Install
 
@@ -21,6 +21,20 @@ const overallXpGained = getOverallXpDiff(todayEntry, lastWeekEntry);
 
 calculateXPForSkillLevel(99); // 13034431
 ```
+
+Fetching a hiscore (Node 18+ or a browser; pass `fetch` to use your own client):
+
+```ts
+import { getHiscore } from '@osrs-tracker/hiscores';
+
+const result = await getHiscore({ baseUrl: 'https://secure.runescape.com', username: 'Lynx Titan' });
+if (result.status === 'found') console.log(result.hiscore.skills);
+else if (result.status === 'notFound')
+  console.log('Not on the hiscores'); // HTTP 404/400, don't retry
+else console.log(`Failed: ${result.reason}`); // worth retrying
+```
+
+Pass `table: 'hiscore_oldschool_ironman'` (or `_ultimate`, `_hardcore_ironman`) for the ironman tables.
 
 ## Development
 

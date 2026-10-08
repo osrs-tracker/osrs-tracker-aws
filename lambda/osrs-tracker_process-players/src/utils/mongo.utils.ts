@@ -4,10 +4,8 @@ import {
   AnyBulkWriteOperation,
   AuthMechanism,
   Collection,
-  CreateIndexesOptions,
   Db,
   Document,
-  IndexSpecification,
   MongoClient,
   MongoClientOptions,
 } from 'mongodb';
@@ -33,17 +31,6 @@ export class MU {
         ? { auth: { username: process.env.MONGODB_USERNAME, password: process.env.MONGODB_PASSWORD } }
         : { authMechanism: AuthMechanism.MONGODB_AWS, authSource: '$external' }),
     });
-  }
-
-  /** Ensures an index exists. Skipped when `DRY_RUN` is set. */
-  static async ensureIndex(
-    mongo: MongoClient,
-    spec: IndexSpecification,
-    options: CreateIndexesOptions = {},
-  ): Promise<void> {
-    if (DRY_RUN) return logDryRun('create index', { spec, options });
-
-    await this.col(mongo).createIndex(spec, options);
   }
 
   static db(mongo: MongoClient): Db {
