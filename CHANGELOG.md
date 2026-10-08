@@ -22,6 +22,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   found unused and created by no code (`username` + `hiscoreEntries.scrapingOffset`, and `lastFetch`).
 - process-players no longer creates `players.username` and refresh-items no longer creates `items.id` on every run; the
   API owns both indexes and creates them at startup.
+- `DATA-MODEL.md`: the API no longer writes `name` on its initial hiscore entries (it moved to the shared client) or
+  `sourceString: 'LEGACY'`; older entries with `name` age out.
 
 ### Shared hiscore client
 

@@ -38,8 +38,8 @@ Each entry:
 | `date`                 | Scrape time. One time per process-players SQS message, so every player in a message shares it.                                       |
 | `scrapingOffset`       | The offset it was scraped for. Usually one entry per offset per day (the API's initial entry can add a second on the first day).     |
 | `skills`, `activities` | Parsed hiscores (JSON hiscores API). The only hiscore data. Activity `id` is the position in the list, as the JSON hiscores give it. |
-| `sourceString`         | **Removed**, see [Legacy](#legacy). The API still writes `'LEGACY'` until it updates to models 0.10.0.                               |
-| `name`                 | Only on the API's initial entries: the player name from the hiscores JSON, spread in with `skills`/`activities`. Not in the models.  |
+| `sourceString`         | **Removed** from every entry, see [Legacy](#legacy).                                                                                 |
+| `name`                 | **No longer written.** API initial entries from before 2026-10-08 have it (echoed by the hiscores JSON) until they age out.          |
 
 Scraping offsets are hours relative to UTC midnight, -12 to +11 (the API rejects anything else). queue-players also
 queues offset `12` together with `-12` (the same time); nothing writes `12` today.
@@ -97,25 +97,27 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 ## Legacy
 
 - **`hiscoreEntries[].sourceString`**: the hiscores as the old CSV-like text, from before the JSON hiscores
-  (2026-09-22). Being removed ([osrs-tracker-aws#17](https://github.com/osrs-tracker/osrs-tracker-aws/issues/17)):
+  (2026-09-22). Removed ([osrs-tracker-aws#17](https://github.com/osrs-tracker/osrs-tracker-aws/issues/17)):
   - 2026-10-08, one-off migration: the 23,164 entries that only had the string (2026-08-09 to 2026-09-22) were converted
     to `skills`/`activities` with `@osrs-tracker/hiscores`' parser, and `sourceString` was removed from every entry.
     Checked first: parsing the real strings of the 8,610 entries that had both reproduced their stored values exactly.
     The original strings are in an off-site backup kept by the owner, not in the database.
   - 2026-10-08, `@osrs-tracker/models` 0.10.0 removed the field and `@osrs-tracker/hiscores` 3.0.0 the string parsing
     (parse orders included); process-players stopped writing it.
-  - The API still writes `'LEGACY'` on its initial entries and replaces the field on read until it updates
-    ([osrs-tracker-api#55](https://github.com/osrs-tracker/osrs-tracker-api/issues/55)); the web sets it on the entry it
-    builds in the browser ([osrs-tracker-web#126](https://github.com/osrs-tracker/osrs-tracker-web/issues/126)). After
-    the API's deploy, a final `$unset` removes the remaining `'LEGACY'` values.
+  - 2026-10-08, the API stopped writing `'LEGACY'` on its initial entries and returning the field
+    ([osrs-tracker-api#55](https://github.com/osrs-tracker/osrs-tracker-api/issues/55)), and the web stopped setting it
+    ([osrs-tracker-web#126](https://github.com/osrs-tracker/osrs-tracker-web/issues/126)). A final `$unset` removed the
+    last `'LEGACY'` value; no stored entry has `sourceString`.
 
 ## Where the models and storage differ
 
 - `Player.hiscoreEntries` is optional in the models, while the API can return `null` for it (tracked in
   [osrs-tracker-api#37](https://github.com/osrs-tracker/osrs-tracker-api/issues/37)).
 - `Item.members` is typed `true`; stored values are `true` or `false`.
-- The API's initial entries carry an extra `name`, and some still have `sourceString: 'LEGACY'` until the API updates
-  (see [Legacy](#legacy)); neither is in the models.
+- Some API initial entries written before 2026-10-08 carry an extra `name` (not in the models). The API stopped writing
+  it when it moved to `getHiscore` from `@osrs-tracker/hiscores`
+  ([osrs-tracker-api#56](https://github.com/osrs-tracker/osrs-tracker-api/issues/56)); no migration, clean-hiscores ages
+  them out within 60 days.
 - One player has `type: 'CLEARED'`, which isn't a `PlayerType`, with `lastModified` set to 1900 and no `combatLevel`: a
   record cleared by hand.
 - Nothing checks stored documents against the models. A Mongo `$jsonSchema` validator (in `moderate` mode) could, later.
