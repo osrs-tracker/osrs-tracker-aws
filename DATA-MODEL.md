@@ -83,11 +83,9 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | `items`    | `{ name: 'text' }`                              | API, at startup                                                                    | API `searchItems` (`$text`).                                                                                                          |
 | `items`    | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                    | API `getLastFetchedItems` (`hint`).                                                                                                   |
 
-Known redundant creations, harmless (`createIndex` on an existing identical index is a no-op) but to be removed:
-
-- process-players creates `players.username` and refresh-items creates `items.id` on every run.
-- The API's `PlayersService` creates `players.username` again on every `getPlayer`, `getPlayerHiscores` and
-  `recordLookup` call.
+Known redundant creation, harmless (`createIndex` on an existing identical index is a no-op) but to be removed: the
+API's `PlayersService` creates `players.username` again on every `getPlayer`, `getPlayerHiscores` and `recordLookup`
+call. process-players (`players.username`) and refresh-items (`items.id`) stopped creating theirs on 2026-10-08.
 
 A `hint` on a missing index fails the query, so don't drop an index without checking this table.
 

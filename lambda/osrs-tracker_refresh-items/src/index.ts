@@ -15,7 +15,7 @@ const agent = new Agent({
 export const handler = async (_event: ScheduledEvent, context: Context) => {
   const startFetching = process.hrtime();
 
-  const [items] = await Promise.all([fetchItems(agent), MU.ensureIndex(client, { id: 1 }, { unique: true })]);
+  const items = await fetchItems(agent);
 
   console.info(
     `Fetched ${items.length} items in ${Math.trunc(

@@ -1,13 +1,12 @@
 import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Player, PlayerScrapeMessageBody } from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
-import { Agent } from 'https';
 import chunk from 'lodash.chunk';
 import { AnyBulkWriteOperation, ServerApiVersion } from 'mongodb';
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
-import { getHiscore } from './utils/player.utils';
+import { fetchHiscore } from './utils/player.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
@@ -15,13 +14,6 @@ const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
 const client = MU.client({ serverApi: { version: ServerApiVersion.v1, deprecationErrors: true } });
-
-const agent = new Agent({
-  keepAlive: true,
-  maxFreeSockets: 10,
-  maxSockets: 50,
-  timeout: 30000,
-});
 
 export const handler = async (event: SQSEvent, context: Context) => {
   // Parse message bodies
@@ -50,9 +42,6 @@ export const handler = async (event: SQSEvent, context: Context) => {
   // array of promises for bulk writes
   const bulkWrites: Promise<number>[] = [];
 
-  // ensure index is created
-  await MU.ensureIndex(client, { username: 1 }, { unique: true });
-
   // scrape each message body sequentially
   for (const messageBody of messageBodies) {
     const { usernames, scrapingOffset } = messageBody;
@@ -65,7 +54,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
         // Add 2000ms (2 second) delay for each subsequent request to avoid 503 errors
         if (index > 0) await new Promise((resolve) => setTimeout(resolve, index * 2000));
 
-        const result = await getHiscore(agent, username);
+        const result = await fetchHiscore(username);
         if (result.status === 'notFound') {
           notFoundUsernames.push(username);
           if (await MU.recordHiscoreNotFound(client, username)) pausedUsernames.push(username);
