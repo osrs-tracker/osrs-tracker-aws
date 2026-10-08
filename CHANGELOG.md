@@ -29,7 +29,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   own copy, which the API is moving to as well. Names are now URL-encoded, and a response counts as valid when it has
   `skills` and `activities` arrays. The old check that the returned `name` equals the queried one is gone: Jagex echoes
   the name exactly as queried, so it never caught anything. Still `node-fetch` with the keep-alive agent; failure logs
-  now include the reason.
+  now include the reason. Deployed as process-players version 44 and refresh-items version 6 (index cleanup).
 
 ### Behind the scenes
 
