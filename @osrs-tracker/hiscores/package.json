@@ -1,11 +1,19 @@
 {
   "name": "@osrs-tracker/hiscores",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Helpers for OSRS hiscores: a hiscore client, skill and activity names, snapshot diffs and XP",
   "license": "MIT",
   "author": "Freek Mencke",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/osrs-tracker/osrs-tracker-aws.git",
@@ -13,7 +21,10 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
+    "build:esm": "tsc --module ESNext --outDir dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist/types",
     "prepublishOnly": "npm run build",
     "test": "jest --watch"
   },

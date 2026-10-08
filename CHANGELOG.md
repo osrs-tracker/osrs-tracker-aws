@@ -30,6 +30,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   `skills` and `activities` arrays. The old check that the returned `name` equals the queried one is gone: Jagex echoes
   the name exactly as queried, so it never caught anything. Still `node-fetch` with the keep-alive agent; failure logs
   now include the reason. Deployed as process-players version 44 and refresh-items version 6 (index cleanup).
+- Bumped process-players to `@osrs-tracker/hiscores` 3.1.1 (CommonJS build so the API can load it in plain Node). Its
+  bundle is byte-identical, so it isn't redeployed.
 
 ### Behind the scenes
 

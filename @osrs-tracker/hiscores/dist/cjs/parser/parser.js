@@ -1,5 +1,9 @@
-import { SkillEnum } from '../models/hiscore.enum';
-export function hiscoreDiff(recent, old) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.hiscoreDiff = hiscoreDiff;
+exports.getOverallXpDiff = getOverallXpDiff;
+const hiscore_enum_js_1 = require("../models/hiscore.enum.js");
+function hiscoreDiff(recent, old) {
     const diffEntries = Object.entries(recent).map(([hiscoreKey, recentValue]) => {
         switch (hiscoreKey) {
             case 'skills':
@@ -33,9 +37,9 @@ export function hiscoreDiff(recent, old) {
     });
     return Object.fromEntries(diffEntries);
 }
-export function getOverallXpDiff(today, recent) {
-    const todayOverall = today.skills.find((s) => s.name === SkillEnum.Overall);
-    const recentOverall = recent.skills.find((s) => s.name === SkillEnum.Overall);
+function getOverallXpDiff(today, recent) {
+    const todayOverall = today.skills.find((s) => s.name === hiscore_enum_js_1.SkillEnum.Overall);
+    const recentOverall = recent.skills.find((s) => s.name === hiscore_enum_js_1.SkillEnum.Overall);
     return diff(todayOverall?.xp ?? 0, recentOverall?.xp ?? 0);
 }
 function diff(a, b) {
