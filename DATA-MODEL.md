@@ -33,13 +33,13 @@ it ages out (see [Stored data](#stored-data-2026-10-08)).
 
 Each entry:
 
-| Field                  | Notes                                                                                                                               |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `date`                 | Scrape time. One time per process-players SQS message, so every player in a message shares it.                                      |
-| `scrapingOffset`       | The offset it was scraped for. Usually one entry per offset per day (the API's initial entry can add a second on the first day).    |
-| `skills`, `activities` | Parsed hiscores (JSON hiscores API). The source of truth. Missing on entries scraped before 2026-09-22.                             |
-| `sourceString`         | **Legacy**, see [Legacy](#legacy). The only data on entries without `skills`.                                                       |
-| `name`                 | Only on the API's initial entries: the player name from the hiscores JSON, spread in with `skills`/`activities`. Not in the models. |
+| Field                  | Notes                                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `date`                 | Scrape time. One time per process-players SQS message, so every player in a message shares it.                                       |
+| `scrapingOffset`       | The offset it was scraped for. Usually one entry per offset per day (the API's initial entry can add a second on the first day).     |
+| `skills`, `activities` | Parsed hiscores (JSON hiscores API). The only hiscore data. Activity `id` is the position in the list, as the JSON hiscores give it. |
+| `sourceString`         | **Legacy**, being removed: see [Legacy](#legacy). No stored entry has it since 2026-10-08.                                           |
+| `name`                 | Only on the API's initial entries: the player name from the hiscores JSON, spread in with `skills`/`activities`. Not in the models.  |
 
 Scraping offsets are hours relative to UTC midnight, -12 to +11 (the API rejects anything else). queue-players also
 queues offset `12` together with `-12` (the same time); nothing writes `12` today.
@@ -98,21 +98,25 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 
 ## Legacy
 
-- **`hiscoreEntries[].sourceString`**: the hiscores as the old CSV-like text, from before the JSON hiscores. Marked
-  `@deprecated` in the models. Both writers store `'LEGACY'` (process-players since 2026-10-08,
-  [osrs-tracker-aws#17](https://github.com/osrs-tracker/osrs-tracker-aws/issues/17); its entries scraped 2026-09-22 to
-  2026-10-08 still hold the real string next to `skills`). The API replaces it with `'LEGACY'` on every read when the
-  entry has `skills`. On entries with `skills` nothing reads the real string. Entries scraped before 2026-09-22 have
-  **only** the string: the API passes it through and `@osrs-tracker/hiscores` parses it when `skills` is missing. Those
-  entries age out by about 2026-11-21 (60 days); until then the string must stay readable on them.
+- **`hiscoreEntries[].sourceString`**: the hiscores as the old CSV-like text, from before the JSON hiscores
+  (2026-09-22). Being removed ([osrs-tracker-aws#17](https://github.com/osrs-tracker/osrs-tracker-aws/issues/17)):
+  - 2026-10-08, one-off migration: the 23,164 entries that only had the string (2026-08-09 to 2026-09-22) were converted
+    to `skills`/`activities` with `@osrs-tracker/hiscores`' parser, and `sourceString` was removed from every entry.
+    Checked first: parsing the real strings of the 8,610 entries that had both reproduced their stored values exactly.
+    The original strings are in an off-site backup kept by the owner, not in the database.
+  - Both writers still store `'LEGACY'` on new entries, because the models require the field. Next: the models drop it
+    and `@osrs-tracker/hiscores` drops the string parsing (parse orders included), then the API and web stop writing it
+    and the remaining `'LEGACY'` values are removed.
+  - Until then the readers' fallbacks stay but never run: every entry has `skills`, and the API's read-time replacement
+    only adds `'LEGACY'` to its responses.
 
 ## Where the models and storage differ
 
 - `Player.hiscoreEntries` is optional in the models, while the API can return `null` for it (tracked in
   [osrs-tracker-api#37](https://github.com/osrs-tracker/osrs-tracker-api/issues/37)).
 - `Item.members` is typed `true`; stored values are `true` or `false`.
-- `HiscoreEntry.skills`/`activities` are required in the models but missing on entries from before 2026-09-22 (see
-  [Legacy](#legacy)), and the API's initial entries carry an extra `name`.
+- `HiscoreEntry.sourceString` is required in the models but missing on entries written before the 2026-10-08 migration
+  (see [Legacy](#legacy)), and the API's initial entries carry an extra `name`.
 - One player has `type: 'CLEARED'`, which isn't a `PlayerType`, with `lastModified` set to 1900 and no `combatLevel`: a
   record cleared by hand.
 - Nothing checks stored documents against the models. A Mongo `$jsonSchema` validator (in `moderate` mode) could, later.
@@ -132,9 +136,13 @@ changing a writer; counts are a snapshot.
   queue them and process-players won't pause them (it only pauses a non-empty `scrapingOffsets`); a lookup gives them an
   offset again.
 - **Offsets in use**: -12, -6, -4, -3, 0, 1, 2, 3 (0 for over 90% of entries). No `12` is stored.
-- **`hiscoreEntries`** (31,795 entries, oldest 2026-08-09): 23,164 have only a real `sourceString` (scraped 2026-08-09
-  to 2026-09-22), 8,610 have `skills`/`activities` and a real `sourceString`, and 21 have `skills`/`activities`,
-  `'LEGACY'` and `name` (the API's initial entries).
+- **`hiscoreEntries`** (31,795 entries, oldest 2026-08-09): before the migration, 23,164 had only a real `sourceString`
+  (scraped 2026-08-09 to 2026-09-22), 8,610 had `skills`/`activities` and a real `sourceString`, and 21 had
+  `skills`/`activities`, `'LEGACY'` and `name` (the API's initial entries). After it, all have 25 skills and 91
+  activities and no `sourceString`.
+- **Size**: Atlas's free tier allows 512 MB of uncompressed data plus indexes. The database was 236 MB after the
+  migration (68 MB on disk): an entry is about 7.4 KB, so 60 days at about 540 entries a day settles near 240 MB. About
+  double today's tracked players would reach the limit.
 - **Order**: 3 players have one entry out of date order, from before the API prepended (see `hiscoreEntries` above). The
   latest ages out by about 2026-12-01.
 - **`items`** (4,682): `members` is `true` on 3,864 and `false` on 818. `limit`, `lowalch`, `highalch` and `value` are

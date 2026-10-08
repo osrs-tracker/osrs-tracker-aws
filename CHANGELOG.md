@@ -6,7 +6,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 ## 2026/10/08
 
 - process-players stores `sourceString: 'LEGACY'` instead of the old CSV-like copy of the hiscores, which nothing reads
-  next to `skills`/`activities`. Each new hiscore entry is about 12% smaller (8.4 KB to 7.4 KB).
+  next to `skills`/`activities`. Each new hiscore entry is about 12% smaller (8.4 KB to 7.4 KB). Deployed as version 42.
+  One-off migration: the 23,164 older entries that only had the CSV-like string now have `skills`/`activities` too, and
+  `sourceString` was removed from every stored entry, the first step to dropping the field.
 - Added `DATA-MODEL.md`: who writes each field of the shared `players` and `items` collections, which side owns each
   index, the pause/resume contract with the API, and what's legacy. Linked from the README and the project skill.
   Checked against the live database: it lists the pre-2026-09-22 entries that only have a `sourceString` and other
