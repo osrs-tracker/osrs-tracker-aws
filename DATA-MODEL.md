@@ -28,22 +28,19 @@ One document per tracked or looked-up player, keyed by `username`.
 
 `hiscoreEntries` is stored **newest first**: both writers prepend (`$position: 0` in process-players, `$concatArrays` in
 the API's `buildRefreshUpdate`, `api:src/features/players/player.policy.ts`). The API depends on that order: it takes
-the first matching entry as the latest and the last as `trackedSince`. Before 2026-10-02 the API appended its initial
-entry (`$push`), so a few players still have one entry out of order until it ages out (see
-[Stored data](#stored-data-2026-10-08)).
+the first matching entry as the latest and the last as `trackedSince`. A few players have one entry out of order (see
+[Stored data](#stored-data)).
 
 Each entry:
 
-| Field                  | Notes                                                                                                                                |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `date`                 | Scrape time. One time per process-players SQS message, so every player in a message shares it.                                       |
-| `scrapingOffset`       | The offset it was scraped for. Usually one entry per offset per day (the API's initial entry can add a second on the first day).     |
-| `skills`, `activities` | Parsed hiscores (JSON hiscores API). The only hiscore data. Activity `id` is the position in the list, as the JSON hiscores give it. |
-| `sourceString`         | **Removed** from every entry, see [Legacy](#legacy).                                                                                 |
-| `name`                 | **No longer written.** API initial entries from before 2026-10-08 have it (echoed by the hiscores JSON) until they age out.          |
+| Field                  | Notes                                                                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `date`                 | Scrape time. One time per process-players SQS message, so every player in a message shares it.                                   |
+| `scrapingOffset`       | The offset it was scraped for. Usually one entry per offset per day (the API's initial entry can add a second on the first day). |
+| `skills`, `activities` | Parsed hiscores (JSON hiscores API). Activity `id` is the position in the list, as the JSON hiscores give it.                    |
 
 Scraping offsets are hours relative to UTC midnight, -12 to +11 (the API rejects anything else). queue-players also
-queues offset `12` together with `-12` (the same time); nothing writes `12` today.
+queues offset `12` together with `-12` (the same time); nothing writes `12`.
 
 ### Pause/resume contract
 
@@ -84,68 +81,31 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | `items`    | `{ name: 'text' }`                              | API, at startup                                                                    | API `searchItems` (`$text`).                                                                                                          |
 | `items`    | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                    | API `getLastFetchedItems` (`hint`).                                                                                                   |
 
-On 2026-10-08 the non-owners stopped creating indexes: process-players (`players.username`), refresh-items (`items.id`)
-and the API's per-request `players.username` in `PlayersService`
-([osrs-tracker-api#39](https://github.com/osrs-tracker/osrs-tracker-api/issues/39)).
-
 A `hint` on a missing index fails the query, so don't drop an index without checking this table.
 
-Dropped on 2026-10-08, unused and created by no code: `players` `{ username: 1, 'hiscoreEntries.scrapingOffset': 1 }`
-(sparse) and `players` `{ lastFetch: -1 }` (partial; `lastFetch` is an `items` field). Don't recreate them.
-
 clean-hiscores' `$pull` runs over the whole collection without an index; that's expected for a nightly job.
-
-## Legacy
-
-- **`hiscoreEntries[].sourceString`**: the hiscores as the old CSV-like text, from before the JSON hiscores
-  (2026-09-22). Removed ([osrs-tracker-aws#17](https://github.com/osrs-tracker/osrs-tracker-aws/issues/17)):
-  - 2026-10-08, one-off migration: the 23,164 entries that only had the string (2026-08-09 to 2026-09-22) were converted
-    to `skills`/`activities` with `@osrs-tracker/hiscores`' parser, and `sourceString` was removed from every entry.
-    Checked first: parsing the real strings of the 8,610 entries that had both reproduced their stored values exactly.
-    The original strings are in an off-site backup kept by the owner, not in the database.
-  - 2026-10-08, `@osrs-tracker/models` 0.10.0 removed the field and `@osrs-tracker/hiscores` 3.0.0 the string parsing
-    (parse orders included); process-players stopped writing it.
-  - 2026-10-08, the API stopped writing `'LEGACY'` on its initial entries and returning the field
-    ([osrs-tracker-api#55](https://github.com/osrs-tracker/osrs-tracker-api/issues/55)), and the web stopped setting it
-    ([osrs-tracker-web#126](https://github.com/osrs-tracker/osrs-tracker-web/issues/126)). A final `$unset` removed the
-    last `'LEGACY'` value; no stored entry has `sourceString`.
 
 ## Where the models and storage differ
 
 - `Item.members` is typed `true`; stored values are `true` or `false`.
-- Some API initial entries written before 2026-10-08 carry an extra `name` (not in the models). The API stopped writing
-  it when it moved to `getHiscore` from `@osrs-tracker/hiscores`
-  ([osrs-tracker-api#56](https://github.com/osrs-tracker/osrs-tracker-api/issues/56)); no migration, clean-hiscores ages
-  them out within 60 days.
+- A few older API initial entries carry an extra `name` (not in the models, no longer written). clean-hiscores ages them
+  out.
 - One player has `type: 'CLEARED'`, which isn't a `PlayerType`, with `lastModified` set to 1900 and no `combatLevel`: a
   record cleared by hand.
-- Nothing checks stored documents against the models. A Mongo `$jsonSchema` validator (in `moderate` mode) could, later.
+- Nothing checks stored documents against the models.
 
-## Stored data (2026-10-08)
+## Stored data
 
-Checked against the live database (read-only), to see what the code above actually left behind. Rerun the checks when
-changing a writer; counts are a snapshot.
+What the live database holds beyond what the code above writes. Recheck (read-only) when changing a writer.
 
-- **Indexes**: all six in [Indexes](#indexes) exist with the listed options (unique, sparse, partial). The two unused
-  `players` indexes found then were dropped.
-- **`players`** (669): 660 have `hiscoreEntries` and `scrapingOffsets`. The other 9 are players looked up in 2023,
-  before tracking, with neither field. No player is paused yet (`pausedScrapingOffsets` is unset everywhere); 4 are on a
-  not-found streak. 345 have `lastHiscoreFetch`.
-- **`scrapingOffsets: []`** on 154 players, last modified between 2023 and 2026-09. Current code never writes an empty
-  array (`refreshPlayerInfo` always adds the requested offset), so these come from older code. queue-players doesn't
-  queue them and process-players won't pause them (it only pauses a non-empty `scrapingOffsets`); a lookup gives them an
-  offset again.
-- **Offsets in use**: -12, -6, -4, -3, 0, 1, 2, 3 (0 for over 90% of entries). No `12` is stored.
-- **`hiscoreEntries`** (31,795 entries, oldest 2026-08-09): before the migration, 23,164 had only a real `sourceString`
-  (scraped 2026-08-09 to 2026-09-22), 8,610 had `skills`/`activities` and a real `sourceString`, and 21 had
-  `skills`/`activities`, `'LEGACY'` and `name` (the API's initial entries). After it, all have 25 skills and 91
-  activities and no `sourceString`.
-- **Size**: Atlas's free tier allows 512 MB of uncompressed data plus indexes. The database was 236 MB after the
-  migration (68 MB on disk): an entry is about 7.4 KB, so 60 days at about 540 entries a day settles near 240 MB. About
-  double today's tracked players would reach the limit.
-- **Order**: 3 players have one entry out of date order, from before the API prepended (see `hiscoreEntries` above). The
-  latest ages out by about 2026-12-01.
-- **`items`** (4,682): `members` is `true` on 3,864 and `false` on 818. `limit`, `lowalch`, `highalch` and `value` are
-  missing on some items (the Wiki omits them). 4,681 have `lastFetch`, mostly set before 2026-10-07, when
-  `GET /items/:id` still recorded a lookup and crawlers walked the item pages. Since then only the browser's
-  `POST /items/:id/lookup` sets it, so the recent items list fills with real lookups again.
+- **`players` without tracking**: a few players looked up before tracking existed have neither `hiscoreEntries` nor
+  `scrapingOffsets`.
+- **`scrapingOffsets: []`** on some players, from older code (current code always adds the requested offset).
+  queue-players doesn't queue them and process-players won't pause them (it only pauses a non-empty `scrapingOffsets`);
+  a lookup gives them an offset again.
+- **Offsets in use**: -12, -6, -4, -3, 0, 1, 2, 3; 0 for over 90% of entries.
+- **Out-of-order entries**: 3 players have one entry stored after older entries (appended by older API code). They age
+  out by about 2026-12-01.
+- **Size**: Atlas's free tier allows 512 MB of uncompressed data plus indexes. An entry is about 7.4 KB; 60 days of
+  entries for today's tracked players settles near 240 MB, so about double the tracked players would reach the limit.
+- **`items`**: `limit`, `lowalch`, `highalch` and `value` are missing on some items (the Wiki omits them).

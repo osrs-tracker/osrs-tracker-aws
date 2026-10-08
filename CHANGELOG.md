@@ -24,7 +24,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   API owns both indexes and creates them at startup.
 - `DATA-MODEL.md` follows the API's changes of the day: it no longer writes `name` on its initial hiscore entries (it
   moved to the shared client) or `sourceString: 'LEGACY'`, so older entries with `name` age out; it no longer creates
-  `players.username` per request or returns `hiscoreEntries: null`.
+  `players.username` per request or returns `hiscoreEntries: null`. It now describes only the current state: the
+  migration history, dropped indexes and dated snapshot counts are gone (they stay in this changelog and git history).
 
 ### Shared hiscore client
 
