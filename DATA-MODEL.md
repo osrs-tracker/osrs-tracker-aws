@@ -14,22 +14,23 @@ Paths below are relative to each repo: `aws:` is this repo, `api:` is osrs-track
 
 One document per tracked or looked-up player, keyed by `username`.
 
-| Field                                             | Written by                                                                                                                                                                                                         | Read by                                                                            |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| `username`                                        | API, on upsert in `refreshPlayerInfo`: normalized, and only valid OSRS names. Never changed after that.                                                                                                            | Everyone (the filter for every per-player read and write).                         |
-| `combatLevel`, `type`, `status`, `diedAsHardcore` | API `refreshPlayerInfo`, from the four hiscore tables.                                                                                                                                                             | API, web.                                                                          |
-| `lastModified`                                    | API `refreshPlayerInfo`: when the type and status were last determined.                                                                                                                                            | API (refresh at most every `minPlayerRefreshTime` = 2 hours, and `Cache-Control`). |
-| `lastHiscoreFetch`                                | API `recordLookup` (`POST /players/:username/lookup`): when a visitor last looked the player up. Never set on insert, so players nobody looked up lack it.                                                         | API recent players list.                                                           |
-| `scrapingOffsets`                                 | API `refreshPlayerInfo` adds the requested offset (`$setUnion` with any `pausedScrapingOffsets`). process-players removes the field when it pauses the player. Nothing else removes offsets.                       | queue-players (which players to queue each hour), API.                             |
-| `pausedScrapingOffsets`                           | process-players sets it when it pauses the player. API `refreshPlayerInfo` merges it back and unsets it.                                                                                                           | API (a paused player still counts as tracked).                                     |
-| `hiscoreNotFoundCount`, `hiscoreNotFoundSince`    | process-players sets them on a 404/400 hiscore and unsets them on the next scraped entry. API `refreshPlayerInfo` also unsets them.                                                                                | process-players.                                                                   |
-| `hiscoreEntries`                                  | process-players prepends one entry per scrape. API `refreshPlayerInfo` prepends an initial entry when the player didn't have the requested offset. clean-hiscores pulls entries older than `MAX_AGE_IN_DAYS` (60). | API, web.                                                                          |
-| `trackedSince`, `refreshFailed`                   | Never stored: computed per response by the API.                                                                                                                                                                    | Web.                                                                               |
+| Field                                             | Written by                                                                                                                                                                                                         | Read by                                                                          |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `username`                                        | API, on upsert in `refreshPlayerInfo`: normalized, and only valid OSRS names. Never changed after that.                                                                                                            | Everyone (the filter for every per-player read and write).                       |
+| `combatLevel`, `type`, `status`, `diedAsHardcore` | API `refreshPlayerInfo`, from the four hiscore tables.                                                                                                                                                             | API, web.                                                                        |
+| `lastModified`                                    | API `refreshPlayerInfo`: when the type and status were last determined.                                                                                                                                            | API (refresh at most every `MIN_PLAYER_REFRESH_HOURS` = 2, and `Cache-Control`). |
+| `lastHiscoreFetch`                                | API `recordLookup` (`POST /players/:username/lookup`): when a visitor last looked the player up. Never set on insert, so players nobody looked up lack it.                                                         | API recent players list.                                                         |
+| `scrapingOffsets`                                 | API `refreshPlayerInfo` adds the requested offset (`$setUnion` with any `pausedScrapingOffsets`). process-players removes the field when it pauses the player. Nothing else removes offsets.                       | queue-players (which players to queue each hour), API.                           |
+| `pausedScrapingOffsets`                           | process-players sets it when it pauses the player. API `refreshPlayerInfo` merges it back and unsets it.                                                                                                           | API (a paused player still counts as tracked).                                   |
+| `hiscoreNotFoundCount`, `hiscoreNotFoundSince`    | process-players sets them on a 404/400 hiscore and unsets them on the next scraped entry. API `refreshPlayerInfo` also unsets them.                                                                                | process-players.                                                                 |
+| `hiscoreEntries`                                  | process-players prepends one entry per scrape. API `refreshPlayerInfo` prepends an initial entry when the player didn't have the requested offset. clean-hiscores pulls entries older than `MAX_AGE_IN_DAYS` (60). | API, web.                                                                        |
+| `trackedSince`, `refreshFailed`                   | Never stored: computed per response by the API.                                                                                                                                                                    | Web.                                                                             |
 
 `hiscoreEntries` is stored **newest first**: both writers prepend (`$position: 0` in process-players, `$concatArrays` in
-the API). The API depends on that order: it takes the first matching entry as the latest and the last as `trackedSince`.
-Before 2026-10-02 the API appended its initial entry (`$push`), so a few players still have one entry out of order until
-it ages out (see [Stored data](#stored-data-2026-10-08)).
+the API's `buildRefreshUpdate`, `api:src/features/players/player.policy.ts`). The API depends on that order: it takes
+the first matching entry as the latest and the last as `trackedSince`. Before 2026-10-02 the API appended its initial
+entry (`$push`), so a few players still have one entry out of order until it ages out (see
+[Stored data](#stored-data-2026-10-08)).
 
 Each entry:
 
@@ -83,9 +84,9 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | `items`    | `{ name: 'text' }`                              | API, at startup                                                                    | API `searchItems` (`$text`).                                                                                                          |
 | `items`    | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                    | API `getLastFetchedItems` (`hint`).                                                                                                   |
 
-Known redundant creation, harmless (`createIndex` on an existing identical index is a no-op) but to be removed: the
-API's `PlayersService` creates `players.username` again on every `getPlayer`, `getPlayerHiscores` and `recordLookup`
-call. process-players (`players.username`) and refresh-items (`items.id`) stopped creating theirs on 2026-10-08.
+On 2026-10-08 the non-owners stopped creating indexes: process-players (`players.username`), refresh-items (`items.id`)
+and the API's per-request `players.username` in `PlayersService`
+([osrs-tracker-api#39](https://github.com/osrs-tracker/osrs-tracker-api/issues/39)).
 
 A `hint` on a missing index fails the query, so don't drop an index without checking this table.
 
@@ -111,8 +112,6 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 
 ## Where the models and storage differ
 
-- `Player.hiscoreEntries` is optional in the models, while the API can return `null` for it (tracked in
-  [osrs-tracker-api#37](https://github.com/osrs-tracker/osrs-tracker-api/issues/37)).
 - `Item.members` is typed `true`; stored values are `true` or `false`.
 - Some API initial entries written before 2026-10-08 carry an extra `name` (not in the models). The API stopped writing
   it when it moved to `getHiscore` from `@osrs-tracker/hiscores`
