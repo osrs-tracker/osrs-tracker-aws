@@ -108,7 +108,8 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
     (parse orders included); process-players stopped writing it.
   - The API still writes `'LEGACY'` on its initial entries and replaces the field on read until it updates
     ([osrs-tracker-api#55](https://github.com/osrs-tracker/osrs-tracker-api/issues/55)); the web sets it on the entry it
-    builds in the browser (WEB_ISSUE). After the API's deploy, a final `$unset` removes the remaining `'LEGACY'` values.
+    builds in the browser ([osrs-tracker-web#126](https://github.com/osrs-tracker/osrs-tracker-web/issues/126)). After
+    the API's deploy, a final `$unset` removes the remaining `'LEGACY'` values.
 
 ## Where the models and storage differ
 

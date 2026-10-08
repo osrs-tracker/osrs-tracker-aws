@@ -21,7 +21,7 @@
     "@osrs-tracker/models": "^0.9.0 || ^0.10.0"
   },
   "devDependencies": {
-    "@osrs-tracker/models": "^0.9.1",
+    "@osrs-tracker/models": "^0.10.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.13.6",
     "jest": "^30.5.2",

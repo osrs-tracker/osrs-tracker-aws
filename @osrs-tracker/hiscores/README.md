@@ -13,7 +13,7 @@ npm install @osrs-tracker/hiscores @osrs-tracker/models
 ## Usage
 
 ```ts
-import { calculateXPForSkillLevel, getOverallXpDiff, hiscoreDiff, SkillEnum } from '@osrs-tracker/hiscores';
+import { calculateXPForSkillLevel, getOverallXpDiff, hiscoreDiff } from '@osrs-tracker/hiscores';
 
 // What changed between two snapshots
 const gains = hiscoreDiff(todayEntry, lastWeekEntry);

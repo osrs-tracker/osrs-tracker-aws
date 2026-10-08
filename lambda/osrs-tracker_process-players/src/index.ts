@@ -78,8 +78,6 @@ export const handler = async (event: SQSEvent, context: Context) => {
         // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
         bulkUpdateOps.push(
           MU.hiscoreEntryBulkWriteOp(username, {
-            // Legacy field, required by the models; the data is in skills/activities (see DATA-MODEL.md).
-            sourceString: 'LEGACY',
             date: scrapeTime,
             scrapingOffset,
             skills: hiscoreJson.skills,
