@@ -26,6 +26,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - Project skill: when adding a changelog entry (root or package), reread the whole day to add subtitles once it's busy
   and merge entries about the same feature. A new hiscores skill or activity only needs its enum member now that the
   parse orders are gone; the `conventions-reviewer` agent no longer checks parse orders.
+- Prettier ignores `.claude/settings.local.json`, which Claude Code rewrites in its own layout when a permission is
+  allowed, so it no longer fails the Prettier check that guards every push.
 
 ## 2026/10/07
 
