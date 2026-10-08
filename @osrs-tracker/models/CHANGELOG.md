@@ -1,3 +1,9 @@
+## 0.10.0 - 2026/10/08
+
+- **Breaking:** removed the deprecated `HiscoreEntry.sourceString`. Hiscore entries hold only `skills` and `activities`;
+  no stored entry has had the string since the 2026-10-08 migration. Stop writing it (it was set to `'LEGACY'`) and use
+  `@osrs-tracker/hiscores` 3.0.0, which no longer parses it.
+
 ## 0.9.1 - 2026/10/07
 
 - Corrected the `Player.lastHiscoreFetch` doc comment: it is the last visitor lookup (ordering the recent players list),

@@ -18,7 +18,4 @@ export interface HiscoreEntry {
   scrapingOffset: number;
   skills: HiscoreSkill[];
   activities: HiscoreActivity[];
-
-  /** @deprecated Use `skills` and `activities` instead. This will be removed in a future version. */
-  sourceString: string;
 }

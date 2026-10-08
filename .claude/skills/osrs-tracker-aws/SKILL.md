@@ -2,9 +2,9 @@
 name: osrs-tracker-aws
 description:
   Rules and workflow for osrs-tracker-aws (AWS Lambdas and the `@osrs-tracker/*` npm packages). Use when writing or
-  reviewing Lambda or package code, running a Lambda locally, adding a hiscores parse order, publishing a package,
-  deploying a Lambda, inspecting or changing AWS resources (API Gateway proxy, EventBridge, SQS, Lambda config), or
-  committing, pushing, releasing or shipping this repo.
+  reviewing Lambda or package code, running a Lambda locally, adding a new hiscores skill or activity, publishing a
+  package, deploying a Lambda, inspecting or changing AWS resources (API Gateway proxy, EventBridge, SQS, Lambda
+  config), or committing, pushing, releasing or shipping this repo.
 ---
 
 # osrs-tracker-aws
@@ -18,8 +18,9 @@ print `.env` values.
 
 Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `players`/`items` field and owns which
 index; update it with any field or index change), [INFRA.md](INFRA.md) (AWS resources, infra changes),
-[PACKAGES.md](PACKAGES.md) (parse orders, versioning, publishing), [DEPLOY.md](DEPLOY.md) (deploy and rollback). The
-`conventions-reviewer` agent reviews diffs against these files at runtime, so keep rules here, not in the agent.
+[PACKAGES.md](PACKAGES.md) (new hiscores skills and activities, versioning, publishing), [DEPLOY.md](DEPLOY.md) (deploy
+and rollback). The `conventions-reviewer` agent reviews diffs against these files at runtime, so keep rules here, not in
+the agent.
 
 ## Rules
 

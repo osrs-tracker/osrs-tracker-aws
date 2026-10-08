@@ -29,7 +29,7 @@ Review what the caller names (a PR number, a branch or a path). Otherwise review
 
 Judge the changed lines, but read the surrounding code to confirm a finding: a missing `DRY_RUN` guard may live in a
 helper in `src/utils/`. Rules that span files (a package source change and its rebuilt `dist/`, a change and its
-`CHANGELOG.md` entry, a hiscores parse order and its tests) are checked against the whole diff.
+`CHANGELOG.md` entry) are checked against the whole diff.
 
 ## Output
 

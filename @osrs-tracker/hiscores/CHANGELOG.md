@@ -1,5 +1,13 @@
-## Unreleased
+## v3.0.0 - 2026/10/08
 
+- **Breaking:** removed parsing of the old CSV-like hiscore string, now that every stored entry has `skills` and
+  `activities` (the string was migrated away on 2026-10-08): `parseHiscores`, `parseHiscoreString`,
+  `hiscoreJsonToSourceString`, every dated parse order and the `date-fns` dependency are gone. Use the entries'
+  `skills`/`activities` directly where you called `parseHiscores`. A new skill, boss or activity now only needs its
+  `SkillEnum`/`ActivityEnum` member.
+- `getOverallXpDiff` reads `skills` only.
+- Changed the `@osrs-tracker/models` peer dependency to `^0.9.0 || ^0.10.0` (models 0.10.0 drops
+  `HiscoreEntry.sourceString`). Models 0.8 is no longer accepted.
 - Overrode `js-yaml` to `^4.1.0` under `@istanbuljs/load-nyc-config` (pulled in by `ts-jest`), dropping `sprintf-js`
   (GHSA-hp3w-g68c-fv3c, no patched release). Dev-only, so the published package is unchanged.
 

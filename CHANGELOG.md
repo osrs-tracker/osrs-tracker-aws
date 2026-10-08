@@ -5,17 +5,27 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/08
 
-- process-players stores `sourceString: 'LEGACY'` instead of the old CSV-like copy of the hiscores, which nothing reads
-  next to `skills`/`activities`. Each new hiscore entry is about 12% smaller (8.4 KB to 7.4 KB). Deployed as version 42.
-  One-off migration: the 23,164 older entries that only had the CSV-like string now have `skills`/`activities` too, and
-  `sourceString` was removed from every stored entry, the first step to dropping the field.
+### Hiscore entries without `sourceString`
+
+- Hiscore entries no longer store the old CSV-like copy of the hiscores (`sourceString`); `skills`/`activities` hold
+  everything. process-players first wrote `'LEGACY'` instead (each new entry about 12% smaller, deployed as version 42),
+  then stopped writing the field once `@osrs-tracker/models` 0.10.0 dropped it (models bumped from `^0.8.0`; deployed as
+  version 43).
+- One-off migration: the 23,164 older entries that only had the string now have `skills`/`activities` too, and
+  `sourceString` was removed from every stored entry.
+
+### Data model
+
 - Added `DATA-MODEL.md`: who writes each field of the shared `players` and `items` collections, which side owns each
   index, the pause/resume contract with the API, and what's legacy. Linked from the README and the project skill.
-  Checked against the live database: it lists the pre-2026-09-22 entries that only have a `sourceString` and other
-  leftovers from older code. Dropped the two `players` indexes the check found unused and created by no code
-  (`username` + `hiscoreEntries.scrapingOffset`, and `lastFetch`).
+  Checked against the live database, which found leftovers from older code. Dropped the two `players` indexes the check
+  found unused and created by no code (`username` + `hiscoreEntries.scrapingOffset`, and `lastFetch`).
+
+### Behind the scenes
+
 - Project skill: when adding a changelog entry (root or package), reread the whole day to add subtitles once it's busy
-  and merge entries about the same feature.
+  and merge entries about the same feature. A new hiscores skill or activity only needs its enum member now that the
+  parse orders are gone; the `conventions-reviewer` agent no longer checks parse orders.
 
 ## 2026/10/07
 

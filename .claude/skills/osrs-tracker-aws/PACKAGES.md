@@ -2,15 +2,9 @@
 
 ## Jagex hiscore change (new skill, boss or activity)
 
-In `@osrs-tracker/hiscores`:
-
-1. Add `src/parser/parse-order/<year>/po-YYYY-MM-DD.ts` exporting `PO_YYYY_MM_DD: ParseOrder`, with a doc comment naming
-   the change: copy the previous order and insert the new entry at Jagex's position.
-2. Register it in that year's `index.ts` under `'YYYY-MM-DDT11'` (release hour, UTC). For a new year, add
-   `<year>/index.ts` and spread it into `ParseOrderMap` in `parse-order.ts`.
-3. Add new members to `models/hiscore.enum.ts`.
-4. Add `po-YYYY-MM-DD.spec.ts` parsing a real hiscore string from the release day, asserting the new and neighbouring
-   entries.
+Add the member to `SkillEnum` or `ActivityEnum` in `@osrs-tracker/hiscores` (`src/models/hiscore.enum.ts`), with the
+value exactly as the `name` in Jagex's JSON hiscores (the web matches skills and activities by name), and release a
+minor version. Stored entries come from the JSON hiscores, so there's no parse order to add (removed in 3.0.0).
 
 ## Versioning
 

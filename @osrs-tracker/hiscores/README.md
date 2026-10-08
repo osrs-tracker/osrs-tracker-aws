@@ -1,8 +1,8 @@
 # @osrs-tracker/hiscores &middot; [![NPM package](https://img.shields.io/npm/v/@osrs-tracker/hiscores.svg)](https://www.npmjs.com/package/@osrs-tracker/hiscores) [![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/main/LICENSE)
 
-Parses Old School RuneScape hiscores for [OSRS Tracker](https://osrs-tracker.freekmencke.com). Jagex adds new skills,
-bosses and activities from time to time, and this package knows the hiscore layout for every date since March 2023, so
-old snapshots stay readable. It also compares snapshots and has a few helpers for XP calculations.
+Helpers for Old School RuneScape hiscores in [OSRS Tracker](https://osrs-tracker.freekmencke.com): the skill and
+activity names, comparing two hiscore snapshots, and XP calculations. Snapshots come from Jagex's JSON hiscores as
+`skills` and `activities` (see `HiscoreEntry` in `@osrs-tracker/models`).
 
 ## Install
 
@@ -13,13 +13,11 @@ npm install @osrs-tracker/hiscores @osrs-tracker/models
 ## Usage
 
 ```ts
-import { calculateXPForSkillLevel, hiscoreDiff, parseHiscoreString } from '@osrs-tracker/hiscores';
-
-// Parse a raw hiscore string that was fetched on a given date
-const { skills, activities } = parseHiscoreString(hiscoreString, new Date());
+import { calculateXPForSkillLevel, getOverallXpDiff, hiscoreDiff } from '@osrs-tracker/hiscores';
 
 // What changed between two snapshots
 const gains = hiscoreDiff(todayEntry, lastWeekEntry);
+const overallXpGained = getOverallXpDiff(todayEntry, lastWeekEntry);
 
 calculateXPForSkillLevel(99); // 13034431
 ```
