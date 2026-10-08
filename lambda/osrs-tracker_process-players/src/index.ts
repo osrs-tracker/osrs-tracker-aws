@@ -7,7 +7,7 @@ import { AnyBulkWriteOperation, ServerApiVersion } from 'mongodb';
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
-import { getHiscore, hiscoreJsonToSourceString } from './utils/player.utils';
+import { getHiscore } from './utils/player.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
@@ -78,7 +78,8 @@ export const handler = async (event: SQSEvent, context: Context) => {
         // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
         bulkUpdateOps.push(
           MU.hiscoreEntryBulkWriteOp(username, {
-            sourceString: hiscoreJsonToSourceString(hiscoreJson),
+            // Legacy field, required by the models; the data is in skills/activities (see DATA-MODEL.md).
+            sourceString: 'LEGACY',
             date: scrapeTime,
             scrapingOffset,
             skills: hiscoreJson.skills,
