@@ -1,4 +1,4 @@
-import { HiscoreEntry } from './hiscores';
+import { HiscoreEntry } from './hiscores.js';
 export declare enum PlayerType {
     Normal = "normal",
     Ironman = "ironman",

@@ -1,4 +1,4 @@
-import { HiscoreEntry } from './hiscores';
+import { HiscoreEntry } from './hiscores.js';
 
 export enum PlayerType {
   Normal = 'normal',
