@@ -75,7 +75,8 @@ after that CI is the gate (builds needed for a deploy or `dist/` still run).
 - **Every change gets a changelog entry**: Lambda, infra and CI changes (including deploys) in the root `CHANGELOG.md`
   under `## YYYY/MM/DD` (newest first); package changes in the package's `CHANGELOG.md` ([PACKAGES.md](PACKAGES.md)).
   Busy days get `###` subtitles by area ("Behind the scenes" last), not repeated in their entries. Extend an existing
-  entry rather than add a near-duplicate.
+  entry rather than add a near-duplicate. When adding an entry, reread the whole day: add subtitles once it's busy, and
+  merge entries about the same feature.
 - GPG "Inappropriate ioctl for device": ask the user to run `echo test | gpg --clearsign > /dev/null` in their terminal.
   Never use `--no-gpg-sign`.
 - `gh pr edit` can fail on a Projects (classic) error; use

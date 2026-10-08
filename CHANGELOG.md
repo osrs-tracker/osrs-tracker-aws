@@ -3,6 +3,11 @@
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
 `CHANGELOG.md`.
 
+## 2026/10/08
+
+- Project skill: when adding a changelog entry (root or package), reread the whole day to add subtitles once it's busy
+  and merge entries about the same feature.
+
 ## 2026/10/07
 
 - CI reuses each project's installed `node_modules` until its `package-lock.json` changes, instead of running `npm ci`
