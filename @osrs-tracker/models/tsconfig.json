@@ -1,8 +1,8 @@
 {
   "files": ["src/index.ts"],
   "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "sourceMap": true,
     "outDir": "dist",
     "target": "es2022",

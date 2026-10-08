@@ -1,3 +1,11 @@
+## 0.10.1 - 2026/10/08
+
+- Fixed importing the package from Node's ES modules (`import` in an `.mjs` file or `"type": "module"` project), which
+  failed with `ERR_MODULE_NOT_FOUND` because `dist/esm` used extensionless imports. Relative imports now end in `.js`
+  and `dist/esm` has its own `package.json` with `"type": "module"`, like `@osrs-tracker/hiscores` 3.1.1. `types` is
+  listed first in `exports`, and declarations are only in `dist/types` (no longer copied into `dist/cjs` and
+  `dist/esm`). No API change; `require` and bundlers work as before.
+
 ## 0.10.0 - 2026/10/08
 
 - **Breaking:** removed the deprecated `HiscoreEntry.sourceString`. Hiscore entries hold only `skills` and `activities`;
