@@ -15,6 +15,5 @@ export interface HiscoreEntry {
     scrapingOffset: number;
     skills: HiscoreSkill[];
     activities: HiscoreActivity[];
-    sourceString: string;
 }
 //# sourceMappingURL=hiscores.d.ts.map
