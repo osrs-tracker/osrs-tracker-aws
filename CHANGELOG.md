@@ -9,7 +9,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 - Hiscore entries no longer store the old CSV-like copy of the hiscores (`sourceString`); `skills`/`activities` hold
   everything. process-players first wrote `'LEGACY'` instead (each new entry about 12% smaller, deployed as version 42),
-  then stopped writing the field once `@osrs-tracker/models` 0.10.0 dropped it (models bumped from `^0.8.0`).
+  then stopped writing the field once `@osrs-tracker/models` 0.10.0 dropped it (models bumped from `^0.8.0`; deployed as
+  version 43).
 - One-off migration: the 23,164 older entries that only had the string now have `skills`/`activities` too, and
   `sourceString` was removed from every stored entry.
 
