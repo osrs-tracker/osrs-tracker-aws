@@ -32,6 +32,9 @@ The jobs collect item and player data into a MongoDB database. The [website](htt
 [API](https://github.com/osrs-tracker/osrs-tracker-api) read that data to show prices and player progress. Hiscores are
 fetched from Jagex through a small proxy (`runescape-api.freekmencke.com`), which the website and the API use as well.
 
+The jobs and the API write to the same collections. [DATA-MODEL.md](DATA-MODEL.md) describes which side writes each
+field and owns each index.
+
 ## Running a job locally
 
 Each job is its own npm project. From its folder, install and build it with `npm ci` and `npm run build`.

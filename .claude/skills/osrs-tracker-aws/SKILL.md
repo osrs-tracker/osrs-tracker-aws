@@ -16,9 +16,10 @@ skills.
 **This repo is public.** Never write secret values, account IDs or resource IDs into code, docs or commits, and never
 print `.env` values.
 
-Load when needed: [INFRA.md](INFRA.md) (AWS resources, infra changes), [PACKAGES.md](PACKAGES.md) (parse orders,
-versioning, publishing), [DEPLOY.md](DEPLOY.md) (deploy and rollback). The `conventions-reviewer` agent reviews diffs
-against these files at runtime, so keep rules here, not in the agent.
+Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `players`/`items` field and owns which
+index; update it with any field or index change), [INFRA.md](INFRA.md) (AWS resources, infra changes),
+[PACKAGES.md](PACKAGES.md) (parse orders, versioning, publishing), [DEPLOY.md](DEPLOY.md) (deploy and rollback). The
+`conventions-reviewer` agent reviews diffs against these files at runtime, so keep rules here, not in the agent.
 
 ## Rules
 
@@ -39,7 +40,8 @@ against these files at runtime, so keep rules here, not in the agent.
   **rejects an explicit username/password with `MONGODB-AWS`**.
 - Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures.
 - Only process-players counts 404s: a 404/400 hiscore is skipped and starts a date-based streak; after 7 days the
-  player's `scrapingOffsets` move to `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores them.
+  player's `scrapingOffsets` move to `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores them (full contract
+  in [DATA-MODEL.md](../../../DATA-MODEL.md)).
 
 ## Verify
 

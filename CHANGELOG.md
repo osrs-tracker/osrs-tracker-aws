@@ -5,6 +5,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/08
 
+- Added `DATA-MODEL.md`: who writes each field of the shared `players` and `items` collections, which side owns each
+  index, the pause/resume contract with the API, and what's legacy. Linked from the README and the project skill.
 - Project skill: when adding a changelog entry (root or package), reread the whole day to add subtitles once it's busy
   and merge entries about the same feature.
 
