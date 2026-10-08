@@ -1,7 +1,7 @@
 {
   "files": ["src/index.ts"],
   "compilerOptions": {
-    "declaration": true,
+    "declaration": false,
     "outDir": "dist",
     "target": "es2022",
     "module": "es2022",

@@ -1,3 +1,10 @@
+## v3.1.1 - 2026/10/08
+
+- Fixed loading the package in plain Node (e.g. `nest start`), which failed with `ERR_MODULE_NOT_FOUND` because `dist`
+  was ES module syntax with extensionless imports. It now ships a CommonJS build (`dist/cjs`), an ES module build that
+  Node can import (`dist/esm`) and the types (`dist/types`), with an `exports` map, like `@osrs-tracker/models`. No API
+  change.
+
 ## v3.1.0 - 2026/10/08
 
 - Added `getHiscore({ baseUrl, username, table?, fetch?, timeoutMs? })`, the hiscore HTTP client the API and the

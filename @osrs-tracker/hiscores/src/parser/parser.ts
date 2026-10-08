@@ -1,5 +1,5 @@
 import { HiscoreEntry } from '@osrs-tracker/models';
-import { SkillEnum } from '../models/hiscore.enum';
+import { SkillEnum } from '../models/hiscore.enum.js';
 
 /**
  * Returns the difference between two hiscores as a new Hiscore object.
