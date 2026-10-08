@@ -91,11 +91,8 @@ Known redundant creations, harmless (`createIndex` on an existing identical inde
 
 A `hint` on a missing index fails the query, so don't drop an index without checking this table.
 
-Two more indexes exist on `players` that no code creates or uses (0 accesses in `$indexStats` on 2026-10-08), probably
-left over from older code. Safe to drop, since no `hint` names them:
-
-- `{ username: 1, 'hiscoreEntries.scrapingOffset': 1 }`, sparse.
-- `{ lastFetch: -1 }`, partial: `lastFetch` is an `items` field, and no player has it.
+Dropped on 2026-10-08, unused and created by no code: `players` `{ username: 1, 'hiscoreEntries.scrapingOffset': 1 }`
+(sparse) and `players` `{ lastFetch: -1 }` (partial; `lastFetch` is an `items` field). Don't recreate them.
 
 clean-hiscores' `$pull` runs over the whole collection without an index; that's expected for a nightly job.
 
@@ -125,8 +122,8 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 Checked against the live database (read-only), to see what the code above actually left behind. Rerun the checks when
 changing a writer; counts are a snapshot.
 
-- **Indexes**: all six in [Indexes](#indexes) exist with the listed options (unique, sparse, partial), plus the two
-  unused ones on `players`.
+- **Indexes**: all six in [Indexes](#indexes) exist with the listed options (unique, sparse, partial). The two unused
+  `players` indexes found then were dropped.
 - **`players`** (669): 660 have `hiscoreEntries` and `scrapingOffsets`. The other 9 are players looked up in 2023,
   before tracking, with neither field. No player is paused yet (`pausedScrapingOffsets` is unset everywhere); 4 are on a
   not-found streak. 345 have `lastHiscoreFetch`.
