@@ -21,7 +21,7 @@
     "@aws-sdk/client-sqs": "^3.1145.0",
     "@aws-sdk/credential-providers": "^3.1145.0",
     "@osrs-tracker/discord-webhooks": "^0.1.0",
-    "@osrs-tracker/hiscores": "^3.1.0",
+    "@osrs-tracker/hiscores": "^3.1.1",
     "@osrs-tracker/models": "^0.10.0",
     "date-fns": "^4.4.0",
     "lodash.chunk": "^4.2.0",
