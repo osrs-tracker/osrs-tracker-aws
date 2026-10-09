@@ -23,12 +23,20 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   to send is only logged. It still throws when every fetch failed and nothing was written. Discord alerts the webhook
   rejects (for example a revoked webhook) are now logged in the three Lambdas that send them instead of lost.
 - Deployed all four with these changes: clean-hiscores version 5, process-players 45, queue-players 20, refresh-items 7.
+- All four Lambdas depend on `@osrs-tracker/models` `^0.10.2` (three were on `^0.8.0`, which still had `sourceString`).
+  The models only provide types here, so every bundle is byte-identical and nothing was redeployed.
 
 ### Metrics package
 
 - Added the `@osrs-tracker/express-metrics` package (Prometheus HTTP metrics for the website and API, replacing
   `express-prom-bundle` and the deprecated `prom-client`). CI runs its Vitest tests for any package with a
   `vitest.config.ts`.
+
+### CI
+
+- CI loads every built package with an `exports` map (`models`, `hiscores`, `express-metrics`) with both `require` and
+  `import`, directly and by package name from the packed tarball, so a build Node can't load (like hiscores 3.1.0 or
+  models 0.10.0) fails CI before it's published.
 
 ### Behind the scenes
 

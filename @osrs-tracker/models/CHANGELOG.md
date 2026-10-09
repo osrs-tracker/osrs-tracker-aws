@@ -1,3 +1,8 @@
+## 0.10.2 - 2026/10/09
+
+- Corrected the `Player.lastModified` doc comment: osrs-tracker-api's refresh interval is now named
+  `MIN_PLAYER_REFRESH_HOURS` (was `minPlayerRefreshTime`). Doc-only.
+
 ## 0.10.1 - 2026/10/08
 
 - Fixed importing the package from Node's ES modules (`import` in an `.mjs` file or `"type": "module"` project), which

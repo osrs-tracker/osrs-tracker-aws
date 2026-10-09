@@ -22,7 +22,7 @@ export interface Player {
 
   /**
    * Last time osrs-tracker-api determined the player type and status. Refreshed on a lookup at most every
-   * `minPlayerRefreshTime` hours (2), or sooner when the player lacks the requested scraping offset.
+   * `MIN_PLAYER_REFRESH_HOURS` (2), or sooner when the player lacks the requested scraping offset.
    */
   lastModified: Date;
   /**
