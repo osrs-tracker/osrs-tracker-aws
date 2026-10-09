@@ -40,14 +40,15 @@ export const handler = async (event: SQSEvent, context: Context) => {
   // usernames whose scraping got paused in this run (not on the hiscores for 7 days in a row)
   const pausedUsernames: string[] = [];
 
-  // array of promises for bulk writes
-  const bulkWrites: Promise<number>[] = [];
+  // bulk writes, one per message, with the usernames each one stores a hiscore entry for
+  const bulkWrites: { usernames: string[]; write: Promise<number> }[] = [];
 
   // scrape each message body sequentially
   for (const messageBody of messageBodies) {
     const { usernames, scrapingOffset } = messageBody;
     const scrapeTime = new Date();
     const bulkUpdateOps: AnyBulkWriteOperation<Player>[] = [];
+    const bulkUpdateUsernames: string[] = [];
 
     // scrape each username from body with staggered delays and wait for all to finish
     await Promise.allSettled(
@@ -66,6 +67,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
         const hiscoreJson = result.hiscore;
 
         // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
+        bulkUpdateUsernames.push(username);
         bulkUpdateOps.push(
           MU.hiscoreEntryBulkWriteOp(username, {
             date: scrapeTime,
@@ -78,12 +80,24 @@ export const handler = async (event: SQSEvent, context: Context) => {
     );
 
     // Only bulk update if there are any updates, can be empty if all usernames failed
-    if (bulkUpdateOps.length) bulkWrites.push(MU.bulkWrite(client, bulkUpdateOps));
+    if (bulkUpdateOps.length)
+      bulkWrites.push({ usernames: bulkUpdateUsernames, write: MU.bulkWrite(client, bulkUpdateOps) });
   }
 
-  // wait for all bulk writes to finish
-  const modifiedCounts = await Promise.all(bulkWrites);
-  const updatedPlayerCount = modifiedCounts.reduce((acc, count) => acc + count, 0);
+  // wait for all bulk writes to finish. Settled, not Promise.all: one failed write must not throw once others have
+  // stored their entries (an SQS retry would store duplicates). Its players aren't retried either, since a bulk write
+  // can fail after storing part of its entries; they're alerted on below
+  const writeResults = await Promise.allSettled(bulkWrites.map(({ write }) => write));
+  let updatedPlayerCount = 0;
+  const unwrittenUsernames: string[] = [];
+  writeResults.forEach((result, i) => {
+    if (result.status === 'fulfilled') {
+      updatedPlayerCount += result.value;
+    } else {
+      console.error('Bulk write failed', result.reason);
+      unwrittenUsernames.push(...bulkWrites[i].usernames);
+    }
+  });
   const failedMessagesCount = [...failedMap.values()].flat().length;
   const attemptedPlayerCount =
     messageBodies.reduce((acc, body) => acc + body.usernames.length, 0) - notFoundUsernames.length;
@@ -137,6 +151,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
     `Failed to update ${failedMessagesCount} players.`,
     `Skipped ${notFoundUsernames.length} players not on the hiscores.`,
   );
+
+  if (unwrittenUsernames.length) {
+    console.error(`Failed to store hiscore entries for ${unwrittenUsernames.length} players:`, unwrittenUsernames);
+    await discordAlert('Failed to store hiscores', unwrittenUsernames, context, 'Failed to store a hiscore entry for');
+  }
 
   if (unqueuedUsernames.length) {
     console.error(`Failed to queue a retry for ${unqueuedUsernames.length} players:`, unqueuedUsernames);

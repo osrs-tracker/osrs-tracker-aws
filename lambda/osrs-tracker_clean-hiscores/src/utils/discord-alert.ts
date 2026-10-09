@@ -3,7 +3,7 @@ import { Context } from 'aws-lambda/handler';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
 import { env } from '../env';
 
-export function discordAlert(title: string, description: string, context: Context) {
+export async function discordAlert(title: string, description: string, context: Context) {
   const region = context.invokedFunctionArn.split(':')[3];
 
   const message: DiscordWebhookMessage = {
@@ -24,5 +24,7 @@ export function discordAlert(title: string, description: string, context: Contex
 
   if (DRY_RUN) return logDryRun('send Discord alert', message);
 
-  return DiscordWebhook.dispatch(message, { webhookUrl: env.WEBHOOK_URL });
+  // fetch resolves on 4xx/5xx too (e.g. a revoked webhook), so check the status or the alert is lost without a trace
+  const response: Response = await DiscordWebhook.dispatch(message, { webhookUrl: env.WEBHOOK_URL });
+  if (!response.ok) console.error(`Failed to send Discord alert: HTTP ${response.status}`);
 }

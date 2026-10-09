@@ -31,7 +31,11 @@ export async function discordAlert(title: string, players: string[], context: Co
 
   if (DRY_RUN) return logDryRun('send Discord alert', message);
 
-  await DiscordWebhook.dispatch(message, { webhookUrl: env.WEBHOOK_URL }).catch((e) =>
-    console.error('Failed to send Discord alert', e),
+  // fetch resolves on 4xx/5xx too (e.g. a revoked webhook), so check the status or the alert is lost without a trace
+  await DiscordWebhook.dispatch(message, { webhookUrl: env.WEBHOOK_URL }).then(
+    (response: Response) => {
+      if (!response.ok) console.error(`Failed to send Discord alert: HTTP ${response.status}`);
+    },
+    (e) => console.error('Failed to send Discord alert', e),
   );
 }

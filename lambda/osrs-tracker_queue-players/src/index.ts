@@ -1,4 +1,4 @@
-import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
+import { BatchResultErrorEntry, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
@@ -11,11 +11,14 @@ const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
 const client = MU.client();
 
-/** Sends a batch, adding entries SQS rejected and a thrown error to `errors`. */
-async function sendBatch(messageBatch: SendMessageBatchRequestEntry[], errors: unknown[]) {
+/** Sends a batch, adding entries SQS rejected (logged by `sendMessageBatch`) and a thrown error to `errors`. */
+async function sendBatch(messageBatch: SendMessageBatchRequestEntry[], errors: (Error | BatchResultErrorEntry)[]) {
   await sendMessageBatch(sqsClient, messageBatch).then(
     (failed) => errors.push(...failed),
-    (e) => errors.push(e),
+    (e) => {
+      console.error('Failed to send SQS message batch', e);
+      errors.push(e);
+    },
   );
 }
 
@@ -33,7 +36,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   let usernamesProcessed = 0;
   let messagesCreated = 0;
   let commandsExecuted = 0;
-  const errors: any[] = [];
+  const errors: (Error | BatchResultErrorEntry)[] = [];
 
   // temporary arrays
   const usernames: string[] = [];
@@ -82,10 +85,8 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
     errors: errors.length,
   });
 
-  if (errors.length) {
-    errors.forEach((e) => console.error(e));
-    await discordAlert('Failed to queue players', errors, context);
-  }
+  // each error is already logged where it happened
+  if (errors.length) await discordAlert('Failed to queue players', errors, context);
 
   return context.logStreamName;
 };

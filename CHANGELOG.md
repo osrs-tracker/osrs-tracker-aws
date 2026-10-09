@@ -9,15 +9,19 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 - All four Lambdas check their environment variables at startup (`envalid`). A missing, empty or invalid variable stops
   the run at once with an error naming it, instead of misbehaving quietly: an unset `PLAYERS_PER_SQS_MESSAGE` used to
-  make process-players drop failed players without a retry. `DRY_RUN` now also accepts `1`/`yes`.
+  make process-players drop failed players without a retry. `DRY_RUN` must be `true` or `false`, and a Mongo username
+  without a password is rejected too.
 - If SQS rejects some messages in a batch, players no longer silently miss their scrape or retry: queue-players and
-  process-players log them and send a Discord alert, and process-players still doesn't throw after its writes (a Discord
-  alert that fails to send is now only logged there, so it can't trigger an SQS retry and duplicate hiscore entries).
+  process-players log them and send a Discord alert, and process-players still doesn't throw after its writes.
   queue-players no longer logs every queued username each hour, and process-players uses a local `chunk` instead of
   `lodash.chunk`.
 - process-players and refresh-items use Node's built-in `fetch` instead of `node-fetch` (each bundle about 87 KB smaller
   before `envalid` added about 21 KB). refresh-items now fails with the HTTP status when the Wiki returns an error,
-  instead of the confusing `item.map is not a function`.
+  instead of the confusing `item.map is not a function`, and gives up on a stalled request after 30 seconds.
+- process-players no longer throws after any of its writes, so SQS can't retry a message and store duplicate hiscore
+  entries: when one message's bulk write fails after another's succeeded, its players are logged and alerted on, and a
+  Discord alert that fails to send is only logged. A Discord alert the webhook rejects (for example a revoked webhook)
+  is now logged in every Lambda instead of lost.
 
 ### Metrics package
 

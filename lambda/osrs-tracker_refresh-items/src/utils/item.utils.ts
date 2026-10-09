@@ -6,6 +6,8 @@ export async function fetchItems(): Promise<Item[]> {
       'cache-control': 'no-cache',
       'user-agent': 'github:osrs-tracker/osrs-tracker-aws', // https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices#Please_set_a_descriptive_User-Agent!
     },
+    // undici's own timeouts are 300 s; fail a stalled request well within the Lambda timeout
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!itemResponse.ok) throw new Error(`Item mapping request failed: HTTP ${itemResponse.status}`);

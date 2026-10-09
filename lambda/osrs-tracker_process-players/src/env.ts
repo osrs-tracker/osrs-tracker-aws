@@ -1,4 +1,4 @@
-import { bool, cleanEnv, EnvError, EnvMissingError, makeValidator, str, url } from 'envalid';
+import { cleanEnv, EnvError, EnvMissingError, makeValidator, str, url } from 'envalid';
 
 /** A string that is set and not empty (envalid's `str()` accepts an empty string). */
 const nonEmptyStr = makeValidator<string>((input) => {
@@ -30,8 +30,9 @@ export const env = cleanEnv(
     PLAYERS_PER_SQS_MESSAGE: positiveInt(),
     SQS_QUEUE_URL: url(),
     WEBHOOK_URL: nonEmptyStr(),
-    // local `npm run invoke:dry` only, see dry-run.utils.ts
-    DRY_RUN: bool({ default: false }),
+    // local `npm run invoke:dry` only, see dry-run.utils.ts. Only the exact string `true` turns writes off (not envalid's
+    // `bool()`, which also takes `1`/`yes`/`on`), so a stray value on a live function fails at init instead
+    DRY_RUN: str({ choices: ['true', 'false'], default: 'false' }),
   },
   {
     reporter: ({ errors }) => {
@@ -42,3 +43,7 @@ export const env = cleanEnv(
     },
   },
 );
+
+// SCRAM needs both. A username alone would fail later with a driver auth error that doesn't name the variable
+if (env.MONGODB_USERNAME && !env.MONGODB_PASSWORD)
+  throw new Error('Invalid environment variables: MONGODB_PASSWORD (missing, required with MONGODB_USERNAME)');
