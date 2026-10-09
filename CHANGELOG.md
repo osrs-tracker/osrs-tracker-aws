@@ -8,6 +8,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - Each Lambda's README describes what it does, its trigger and environment variable names, and how to run it locally,
   instead of the old starter-template text. The root README no longer says `@osrs-tracker/hiscores` parses the old
   hiscore formats (removed in 3.0.0) and mentions that process-players pauses players who are off the hiscores.
+- Added a `CLAUDE.md` for Claude Code: what the repo is, the verify and local-run commands, the hard rules and where
+  things live, pointing to the project skill for detail. The `conventions-reviewer` agent checks its hard rules too.
 
 ## 2026/10/08
 

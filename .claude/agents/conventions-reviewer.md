@@ -19,7 +19,8 @@ preferences.
 1. `.claude/skills/osrs-tracker-aws/SKILL.md`: the rules. Every rule in it about code applies (public repo, `DRY_RUN`
    writes, Lambda notes). Process steps (deploy, release, commits) apply only when the diff touches what they describe,
    such as a `CHANGELOG.md`, a `dist/` folder or a `package.json` version.
-2. `.claude/skills/osrs-tracker-aws/PACKAGES.md` when the diff touches `@osrs-tracker/`, `INFRA.md` when it touches AWS
+2. `CLAUDE.md`: its hard rules apply like the skill's.
+3. `.claude/skills/osrs-tracker-aws/PACKAGES.md` when the diff touches `@osrs-tracker/`, `INFRA.md` when it touches AWS
    configuration or infra docs, `DEPLOY.md` when it changes how a Lambda is deployed.
 
 ## Scope

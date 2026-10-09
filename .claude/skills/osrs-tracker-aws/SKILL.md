@@ -39,7 +39,8 @@ the agent.
 - Create clients at module scope so warm invocations reuse them.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
-- Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures.
+- Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures. process-players must not throw
+  after its bulk writes: the retry would store duplicate hiscore entries.
 - Only process-players counts 404s: a 404/400 hiscore is skipped and starts a date-based streak; after 7 days the
   player's `scrapingOffsets` move to `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores them (full contract
   in [DATA-MODEL.md](../../../DATA-MODEL.md)).
