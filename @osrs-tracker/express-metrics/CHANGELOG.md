@@ -1,4 +1,4 @@
-## Unreleased
+## v0.1.1 - 2026/10/09
 
 - Licensed under Apache-2.0 instead of MIT, with a `NOTICE` file that copies must keep. Earlier versions stay MIT. The
   tarball now holds only `dist/`, the README, `CHANGELOG.md`, `LICENSE` and `NOTICE` (no more `src/`, tests or configs).

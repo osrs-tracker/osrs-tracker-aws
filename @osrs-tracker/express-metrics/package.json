@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/express-metrics",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Prometheus HTTP metrics for the OSRS Tracker Express apps, on @prometheus-io/client",
   "license": "Apache-2.0",
   "author": "Freek Mencke",
