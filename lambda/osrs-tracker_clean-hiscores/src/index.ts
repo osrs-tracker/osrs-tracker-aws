@@ -2,11 +2,12 @@ import { Context, ScheduledEvent } from 'aws-lambda';
 import { startOfDay, subDays } from 'date-fns';
 import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
+import { env } from './env';
 
 const client = MU.client();
 
 export const handler = async (event: ScheduledEvent, context: Context) => {
-  const maxAgeInDays = Number(process.env.MAX_AGE_IN_DAYS);
+  const maxAgeInDays = env.MAX_AGE_IN_DAYS;
 
   const modifiedCount = await MU.pullHiscoreEntriesBefore(client, subDays(startOfDay(new Date()), maxAgeInDays));
 

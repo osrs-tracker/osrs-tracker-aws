@@ -1,6 +1,12 @@
-import { SendMessageBatchCommand, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
+import {
+  BatchResultErrorEntry,
+  SendMessageBatchCommand,
+  SendMessageBatchRequestEntry,
+  SQSClient,
+} from '@aws-sdk/client-sqs';
 import { randomUUID } from 'crypto';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
+import { env } from '../env';
 
 export function createMessage(usernames: string[], scrapingOffset: number) {
   return {
@@ -9,9 +15,24 @@ export function createMessage(usernames: string[], scrapingOffset: number) {
   };
 }
 
-export async function sendMessageBatch(sqsClient: SQSClient, messageBatch: SendMessageBatchRequestEntry[]) {
-  if (DRY_RUN) return logDryRun(`send ${messageBatch.length} SQS messages`, messageBatch);
+/**
+ * Sends a batch of messages. The call can succeed while SQS rejects single entries, so this returns (and logs) the
+ * rejected entries. Empty in `DRY_RUN`.
+ */
+export async function sendMessageBatch(
+  sqsClient: SQSClient,
+  messageBatch: SendMessageBatchRequestEntry[],
+): Promise<BatchResultErrorEntry[]> {
+  if (DRY_RUN) {
+    logDryRun(`send ${messageBatch.length} SQS messages`, messageBatch);
+    return [];
+  }
 
-  console.info(messageBatch);
-  return sqsClient.send(new SendMessageBatchCommand({ QueueUrl: process.env.SQS_QUEUE_URL!, Entries: messageBatch }));
+  const { Failed = [] } = await sqsClient.send(
+    new SendMessageBatchCommand({ QueueUrl: env.SQS_QUEUE_URL, Entries: messageBatch }),
+  );
+
+  Failed.forEach(({ Id, Code, Message }) => console.error('SQS rejected message', { Id, Code, Message }));
+
+  return Failed;
 }
