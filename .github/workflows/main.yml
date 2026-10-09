@@ -39,8 +39,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
-          # Every package and lambda folder, new ones are picked up automatically
-          folders=$(ls -d @osrs-tracker/*/ lambda/*/ | sed 's:/$::')
+          # Every package and lambda folder, new ones are picked up automatically. lambda/shared is code the Lambdas
+          # bundle, not a Lambda
+          folders=$(ls -d @osrs-tracker/*/ lambda/*/ | sed 's:/$::' | grep -vx lambda/shared)
 
           # The previous push is only a safe base if CI passed on it; otherwise a folder that failed there and isn't
           # touched again would be skipped and turn the required check green. Fall back to the PR's base (everything the
@@ -67,6 +68,10 @@ jobs:
             selected=$folders
           else
             selected=$(grep -Fxf <(cut -d/ -f1-2 <<< "$changed" | sort -u) <<< "$folders" || true)
+            # Every Lambda bundles lambda/shared and extends lambda/tsconfig.lambda.json: a change there checks them all
+            if grep -qE '^lambda/(shared/|tsconfig\.lambda\.json$)' <<< "$changed"; then
+              selected=$(printf '%s\n%s\n' "$selected" "$(grep '^lambda/' <<< "$folders")" | sed '/^$/d' | sort -u)
+            fi
           fi
 
           to_json() { { grep "^$1/" <<< "$selected" || true; } | cut -d/ -f2 | jq -Rnc '[inputs]'; }
@@ -160,6 +165,11 @@ jobs:
 
       - name: Prettier
         run: npm run prettier:ci
+        working-directory: lambda/${{ matrix.lambda_function }}
+
+      # esbuild strips types without checking them; this also checks the lambda/shared code the Lambda imports
+      - name: Type check
+        run: npx tsc --noEmit -p .
         working-directory: lambda/${{ matrix.lambda_function }}
 
       - name: Build

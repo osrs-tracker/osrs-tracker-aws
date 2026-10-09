@@ -10,7 +10,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 
 ## Commands
 
-- Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npm run build`.
+- Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`.
 - Verify a package: `hiscores` `npx jest && npm run build`, `express-metrics` `npx vitest run && npm run build`
   (`npm test` is watch mode in both); `models`, `discord-webhooks` `npm run build`. Repo root: `npm run prettier:ci`.
 - Run a Lambda locally: `npm run invoke:dry` (needs `.env` from `.env.example`). Reads and fetches are real; writes are
@@ -38,9 +38,12 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 
 ## Where things live
 
-- `lambda/<function>/`: `src/index.ts` (handler, clients at module scope), `src/utils/` (`mongo.utils.ts` = `MU`,
-  `dry-run.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`), `build/esbuild.js` and `build/invoke.js`, and a `README.md`
-  with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
+- `lambda/<function>/`: `src/index.ts` (handler, clients at module scope), `src/env.ts` (its env schema), `src/utils/`
+  (`mongo.utils.ts` = `MU` with its own queries, Lambda-specific helpers), `build/invoke.js` (its `invoke:dry` event),
+  and a `README.md` with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
+- `lambda/shared/`: code every Lambda bundles, no `package.json` (imports resolve from the Lambda's `node_modules`):
+  `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`), `build/esbuild.js`,
+  `build/invoke.js` and `eslint.config.mjs`. A change there touches all four Lambdas.
 - `@osrs-tracker/<package>/`: committed `dist/`, checked against the build in CI. `models`, `hiscores` and
   `express-metrics` ship `dist/cjs`, `dist/esm` and `dist/types`: osrs-tracker-api `require`s the CJS build and
   osrs-tracker-web bundles the ESM one, so a build change must keep both loading.

@@ -1,8 +1,9 @@
 import { BatchResultErrorEntry, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
-import { discordAlert } from './utils/discord-alert';
+import { discordAlert } from '@lambda/shared/discord-alert';
+import { ensureIndex } from '@lambda/shared/mongo.utils';
 import { MU } from './utils/mongo.utils';
-import { createMessage, sendMessageBatch } from './utils/sqs.utils';
+import { createMessage, sendMessageBatch } from '@lambda/shared/sqs.utils';
 import { env } from './env';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
@@ -13,7 +14,7 @@ const client = MU.client();
 
 /** Sends a batch, adding entries SQS rejected (logged by `sendMessageBatch`) and a thrown error to `errors`. */
 async function sendBatch(messageBatch: SendMessageBatchRequestEntry[], errors: (Error | BatchResultErrorEntry)[]) {
-  await sendMessageBatch(sqsClient, messageBatch).then(
+  await sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch).then(
     (failed) => errors.push(...failed),
     (e) => {
       console.error('Failed to send SQS message batch', e);
@@ -27,7 +28,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   const scrapingOffset = ((12 + new Date(event.time).getUTCHours()) % 24) - 12;
 
   // ensure index on scrapingOffsets
-  await MU.ensureIndex(client, { scrapingOffsets: 1 }, { sparse: true, background: true });
+  await ensureIndex(MU.col(client), { scrapingOffsets: 1 }, { sparse: true, background: true });
 
   // get usernames for scrapingOffset as cursor
   const usernameCursor = MU.getAllUsernamesForOffset(client, scrapingOffset);
@@ -86,7 +87,8 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   });
 
   // each error is already logged where it happened
-  if (errors.length) await discordAlert('Failed to queue players', errors, context);
+  if (errors.length)
+    await discordAlert(env.WEBHOOK_URL, 'Failed to queue players', `Error count: ${errors.length}`, context);
 
   return context.logStreamName;
 };

@@ -27,6 +27,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   The models only provide types here, so every bundle is byte-identical and nothing was redeployed.
 - Removed the unused `OSRS_API_BASE_URL` environment variable from queue-players' live configuration (only
   process-players fetches hiscores). Code unchanged.
+- The four Lambdas share one copy of their common code in `lambda/shared/` (the `DRY_RUN` switch, the MongoDB client,
+  SQS sending, Discord alerts, the environment checks, the ESLint config and the build and local-run scripts) instead of
+  keeping a copy each, so a fix there reaches all four. CI checks all four when it changes and now type-checks each
+  Lambda, including the shared code it uses. The bundles behave the same and need no redeploy, and the build no longer
+  needs `minimist`. The push hook for Claude Code checks the checkout being pushed instead of the main one.
 
 ### Metrics package
 
