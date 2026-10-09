@@ -12,32 +12,26 @@ export interface RequestLoggerOptions {
   fields?: (req: Request, res: Response) => Record<string, unknown>;
 }
 
-interface StartedRequest {
-  start: number;
-  context: Record<string, unknown>;
-}
-
 /**
  * Logs every request once it has finished (`type: 'incoming'`) at `requestLogLevel`. A request the client closed
  * before the headers were sent is a `warn` with `aborted: true` and no `status`, timed until the connection closed.
  */
 export function requestLogger({ logger, route, fields }: RequestLoggerOptions): RequestHandler {
-  const started = new WeakMap<Response, StartedRequest>();
+  // Read when the request starts: the async context it ran in has ended once the response has finished
+  const contexts = new WeakMap<Response, Record<string, unknown>>();
 
-  const line = (req: Request, res: Response): Record<string, unknown> => {
+  const line = (req: Request, res: Response, { responseTime }: { responseTime: number }): Record<string, unknown> => {
     // The client closed the connection before the headers were sent: there's no status, and nothing failed on our side
     const aborted = !res.headersSent;
-    const { start, context } = started.get(res) ?? { start: performance.now(), context: {} };
     return {
-      // Read when the request started: the async context it ran in has ended by now
-      ...context,
+      ...contexts.get(res),
       status: aborted ? undefined : String(res.statusCode),
       aborted: aborted || undefined,
       method: req.method,
       host: req.headers.host,
       route: route(req, res),
       url: req.originalUrl || req.url,
-      responseTime: (performance.now() - start).toFixed(3) + 'ms',
+      responseTime: `${responseTime}ms`,
       userAgent: req.headers['user-agent'],
       clientIp: req.ip ?? req.socket.remoteAddress,
       referer: req.headers.referer ?? req.headers.referrer,
@@ -52,14 +46,14 @@ export function requestLogger({ logger, route, fields }: RequestLoggerOptions): 
     quietResLogger: true,
     genReqId: (req) => req.id,
     customLogLevel: (_req, res) => requestLogLevel(res.statusCode, !res.headersSent),
-    customSuccessObject: (req, res) => line(req, res),
-    customErrorObject: (req, res) => line(req, res),
+    customSuccessObject: (req, res, val) => line(req, res, val),
+    customErrorObject: (req, res, _error, val) => line(req, res, val),
     customSuccessMessage: () => undefined as unknown as string,
     customErrorMessage: () => undefined as unknown as string,
   });
 
   return (req, res, next) => {
-    started.set(res, { start: performance.now(), context: captureContext(logger) });
+    contexts.set(res, captureContext(logger));
     httpLogger(req, res, next);
   };
 }
