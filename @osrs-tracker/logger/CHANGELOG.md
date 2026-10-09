@@ -1,3 +1,8 @@
+## Unreleased
+
+- README: the Nest section links to osrs-tracker-api's `NestLogger` instead of a `LoggerService` sketch that tagged
+  every line `lifecycle` and misread Nest's `(message, ...optionalParams)` arguments.
+
 ## v0.1.0 - 2026/10/09
 
 - First release: `createLogger` (pino, one JSON line per log with `level` as Loki names it, an ISO `time`, `type`,

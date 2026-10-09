@@ -91,11 +91,10 @@ logOutgoingRequests({ logger });
 
 ### Nest
 
-Pass the logger to Nest through a `LoggerService`, and use `requestLogger` as the request log middleware. With
-`nestjs-cls`, the request ID comes from `context`:
+Use `requestLogger` as the request log middleware, after the global `nestjs-cls` middleware so the request ID comes from
+`context`:
 
 ```ts
-import { LoggerService } from '@nestjs/common';
 import { createLogger, requestLogger } from '@osrs-tracker/logger';
 import { ClsServiceManager } from 'nestjs-cls';
 
@@ -103,20 +102,10 @@ export const logger = createLogger({
   context: () => ({ requestId: ClsServiceManager.getClsService().getId() }),
 });
 
-export class PinoLogger implements LoggerService {
-  private readonly lines = logger.child({ type: 'lifecycle' });
-
-  log(message: unknown, context?: string) {
-    this.lines.info({ context }, String(message));
-  }
-  warn(message: unknown, context?: string) {
-    this.lines.warn({ context }, String(message));
-  }
-  error(message: unknown, stack?: string, context?: string) {
-    this.lines.error({ context, error: stack }, String(message));
-  }
-}
-
-// main.ts: NestFactory.create(AppModule, { logger: new PinoLogger() })
 // app.module.ts: consumer.apply(requestLogger({ logger, route: (req) => routeLabel(req) })).forRoutes('*')
 ```
+
+For Nest's and the services' own lines, see osrs-tracker-api's
+[`NestLogger`](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/src/common/logger/nest-logger.ts): it extends
+Nest's `ConsoleLogger` and overrides only `printMessages`, so Nest still parses the arguments and filters the levels,
+and writes each line through a child of the logger with a `type` from its context (`lifecycle`, `uncaught` or `app`).
