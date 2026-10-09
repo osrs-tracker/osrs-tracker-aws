@@ -57,6 +57,63 @@ describe('createLogger', () => {
     expect(line.error ?? line.err).toContain('Error: Mongo is down\n    at ');
   });
 
+  describe('an error with a cause', () => {
+    const errorField = (error: unknown): string => {
+      const destination = collectLines();
+      createLogger({ destination }).error(error, 'Failed');
+      expect(destination.raw).toHaveLength(1);
+      expect(destination.raw[0]!.trimEnd()).not.toContain('\n');
+      return destination.lines[0]!.error as string;
+    };
+
+    it('follows its stack with each cause, Node style', () => {
+      const reason = new Error('connect ECONNREFUSED 127.0.0.1:27017');
+      const error = new TypeError('fetch failed', { cause: new Error('Connection lost', { cause: reason }) });
+
+      expect(errorField(error)).toBe(
+        `${error.stack}\nCaused by: ${(error.cause as Error).stack}\nCaused by: ${reason.stack}`,
+      );
+    });
+
+    it.each([
+      ['a string', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_CONNECT_TIMEOUT'],
+      ['an object, as JSON', { code: 'ECONNRESET' }, '{"code":"ECONNRESET"}'],
+    ])('writes a non-Error cause, %s', (_, cause, text) => {
+      const error = new Error('fetch failed', { cause });
+
+      expect(errorField(error)).toBe(`${error.stack}\nCaused by: ${text}`);
+    });
+
+    it('stops at a cycle', () => {
+      const first = new Error('first');
+      const second = new Error('second', { cause: first });
+      first.cause = second;
+
+      expect(errorField(first)).toBe(`${first.stack}\nCaused by: ${second.stack}\nCaused by: [circular] Error: first`);
+    });
+
+    it('stops 5 causes deep', () => {
+      let error = new Error('cause 0');
+      for (let i = 1; i <= 7; i++) error = new Error(`cause ${i}`, { cause: error });
+
+      const text = errorField(error);
+      expect(text).toContain('Error: cause 2\n');
+      expect(text).not.toContain('Error: cause 1');
+      expect(text).toMatch(/\nCaused by: \[left out, too deep\]$/);
+    });
+
+    it("writes each of an AggregateError's errors", () => {
+      const ipv6 = new Error('connect ECONNREFUSED ::1:443');
+      const ipv4 = new Error('connect ECONNREFUSED 127.0.0.1:443');
+      const aggregate = new AggregateError([ipv6, ipv4]);
+      const error = new TypeError('fetch failed', { cause: aggregate });
+
+      expect(errorField(error)).toBe(
+        `${error.stack}\nCaused by: ${aggregate.stack}\nError 1 of 2: ${ipv6.stack}\nError 2 of 2: ${ipv4.stack}`,
+      );
+    });
+  });
+
   it('adds the context fields to every line, leaving out undefined ones', () => {
     const destination = collectLines();
     const page = new AsyncLocalStorage<string>();
