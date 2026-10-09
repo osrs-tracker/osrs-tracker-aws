@@ -1,8 +1,8 @@
 import { BatchResultErrorEntry, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
-import { discordAlert } from './utils/discord-alert';
+import { discordAlert } from '../../shared/src/discord-alert';
 import { MU } from './utils/mongo.utils';
-import { createMessage, sendMessageBatch } from './utils/sqs.utils';
+import { createMessage, sendMessageBatch } from '../../shared/src/sqs.utils';
 import { env } from './env';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
@@ -86,7 +86,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   });
 
   // each error is already logged where it happened
-  if (errors.length) await discordAlert('Failed to queue players', errors, context);
+  if (errors.length) await discordAlert('Failed to queue players', `Error count: ${errors.length}`, context);
 
   return context.logStreamName;
 };

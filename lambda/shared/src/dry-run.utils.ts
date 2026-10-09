@@ -1,4 +1,4 @@
-import { env } from '../env';
+import { env } from '@lambda/env';
 
 /**
  * When `DRY_RUN=true`, writes (MongoDB, SQS, Discord) are logged instead of executed. Reads and external fetches still

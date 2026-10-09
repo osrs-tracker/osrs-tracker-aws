@@ -1,6 +1,6 @@
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { startOfDay, subDays } from 'date-fns';
-import { discordAlert } from './utils/discord-alert';
+import { discordAlert } from '../../shared/src/discord-alert';
 import { MU } from './utils/mongo.utils';
 import { env } from './env';
 

@@ -7,7 +7,7 @@ import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
 import { fetchHiscore } from './utils/player.utils';
-import { createMessage, sendMessageBatch } from './utils/sqs.utils';
+import { createMessage, sendMessageBatch } from '../../shared/src/sqs.utils';
 import { env } from './env';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10

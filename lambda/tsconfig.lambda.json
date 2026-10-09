@@ -8,6 +8,12 @@
     "experimentalDecorators": true,
     "noUnusedLocals": true,
     "removeComments": true,
-    "strict": true
+    "strict": true,
+    // lambda/shared/ has no node_modules: its imports resolve from the Lambda being checked, and `@lambda/env` is that
+    // Lambda's src/env.ts. build/esbuild.js in shared/ does the same for the bundle (nodePaths and alias)
+    "paths": {
+      "@lambda/env": ["${configDir}/src/env.ts"],
+      "*": ["${configDir}/node_modules/*", "${configDir}/node_modules/@types/*"]
+    }
   }
 }

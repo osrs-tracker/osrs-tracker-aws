@@ -6,7 +6,7 @@ import {
 } from '@aws-sdk/client-sqs';
 import { randomUUID } from 'crypto';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
-import { env } from '../env';
+import { env } from '@lambda/env';
 
 export function createMessage(usernames: string[], scrapingOffset: number) {
   return {
