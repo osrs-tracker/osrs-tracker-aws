@@ -25,6 +25,8 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
   skills and activities, compares snapshots and does XP calculations.
 - [`@osrs-tracker/express-metrics`](https://www.npmjs.com/package/@osrs-tracker/express-metrics): Prometheus HTTP
   metrics for the website's and the API's servers.
+- [`@osrs-tracker/logger`](https://www.npmjs.com/package/@osrs-tracker/logger): structured JSON logs (request logs,
+  outgoing requests, errors) for the website's and the API's servers, on pino.
 
 ## How it fits together
 

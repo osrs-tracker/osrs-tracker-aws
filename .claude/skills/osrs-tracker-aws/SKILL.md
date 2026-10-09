@@ -59,7 +59,7 @@ the agent.
   type-check; `tsc` also checks the shared files that Lambda imports, and CI runs it). A change in `lambda/shared/`
   touches all four. process-players' `npm run lint` lints `lambda/shared/`; the root `npm run prettier:ci` formats it.
 - `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode)
-- `@osrs-tracker/express-metrics`: `npx vitest run && npm run build` (`npm test` is watch mode)
+- `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npx vitest run && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/models`: `npm run build`
 - Repo root: `npm run prettier:ci`
 
