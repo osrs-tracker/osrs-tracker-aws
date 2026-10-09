@@ -23,8 +23,8 @@ interface DiscordAlertMessage {
 /**
  * Sends a red Discord alert to `webhookUrl`, linking to this invocation's logs and the function's monitoring tab. A
  * non-2xx response (e.g. a revoked webhook) is logged, not thrown; a failed or timed-out (5 s) request rejects. A
- * description over Discord's limit is truncated. Code that must not throw,
- * such as process-players after its bulk writes, uses `discordAlertNeverRejects` instead.
+ * description over Discord's limit is truncated. Code that must not throw, such as process-players after its bulk
+ * writes, uses `discordAlertNeverRejects` instead.
  */
 export async function discordAlert(
   webhookUrl: string,
