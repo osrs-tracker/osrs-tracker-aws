@@ -27,7 +27,7 @@
     "build": "npm run build:cjs && npm run build:esm && npm run build:types",
     "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
     "build:esm": "tsc --module ESNext --outDir dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
-    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist/types",
+    "build:types": "tsc --declaration --emitDeclarationOnly --removeComments false --outDir dist/types",
     "prepublishOnly": "npm run build",
     "test": "vitest"
   },
