@@ -40,8 +40,10 @@ export const handler = async (event: SQSEvent, context: Context) => {
   // usernames whose scraping got paused in this run (not on the hiscores for 7 days in a row)
   const pausedUsernames: string[] = [];
 
-  // bulk writes, one per message, with the usernames each one stores a hiscore entry for
-  const bulkWrites: { usernames: string[]; write: Promise<number> }[] = [];
+  // bulk writes, one per message, with the usernames each one stores a hiscore entry for. Each write is settled as soon
+  // as it's started: it's only awaited after the later messages are scraped, and a rejection left unhandled until then
+  // would crash the invocation (and SQS would retry it, storing duplicates)
+  const bulkWrites: { usernames: string[]; result: Promise<PromiseSettledResult<number>> }[] = [];
 
   // scrape each message body sequentially
   for (const messageBody of messageBodies) {
@@ -81,13 +83,16 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
     // Only bulk update if there are any updates, can be empty if all usernames failed
     if (bulkUpdateOps.length)
-      bulkWrites.push({ usernames: bulkUpdateUsernames, write: MU.bulkWrite(client, bulkUpdateOps) });
+      bulkWrites.push({
+        usernames: bulkUpdateUsernames,
+        result: Promise.allSettled([MU.bulkWrite(client, bulkUpdateOps)]).then(([result]) => result),
+      });
   }
 
-  // wait for all bulk writes to finish. Settled, not Promise.all: one failed write must not throw once others have
-  // stored their entries (an SQS retry would store duplicates). Its players aren't retried either, since a bulk write
-  // can fail after storing part of its entries; they're alerted on below
-  const writeResults = await Promise.allSettled(bulkWrites.map(({ write }) => write));
+  // wait for all bulk writes to finish. A failed write must not throw (an SQS retry would store duplicates for the
+  // other writes, or for the part of its own entries it stored before failing), so its players aren't retried either;
+  // they're alerted on below
+  const writeResults = await Promise.all(bulkWrites.map(({ result }) => result));
   let updatedPlayerCount = 0;
   const unwrittenUsernames: string[] = [];
   writeResults.forEach((result, i) => {
@@ -105,9 +110,10 @@ export const handler = async (event: SQSEvent, context: Context) => {
   if (notFoundUsernames.length)
     console.log(`Skipped ${notFoundUsernames.length} players not on the hiscores:`, notFoundUsernames);
 
-  // throw error if no players were updated. Dont send new SQS messages or we will get stuck in a loop
-  // (a message where every player is not on the hiscores completes normally, there's nothing to retry)
-  if (attemptedPlayerCount > 0 && updatedPlayerCount === 0) {
+  // throw error if no write was attempted because every scrape failed, so SQS retries the whole message. Nothing was
+  // stored, so that's safe. Dont send new SQS messages or we will get stuck in a loop (a message where every player is
+  // not on the hiscores completes normally, there's nothing to retry)
+  if (attemptedPlayerCount > 0 && bulkWrites.length === 0) {
     if (maxReceiveCount > 1) await discordAlert('No players were updated', [...failedMap.values()].flat(), context);
 
     throw new Error(`No players were updated. Failed to update ${failedMessagesCount} players.`);

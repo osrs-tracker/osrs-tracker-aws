@@ -12,16 +12,16 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   make process-players drop failed players without a retry. `DRY_RUN` must be `true` or `false`, and a Mongo username
   without a password is rejected too.
 - If SQS rejects some messages in a batch, players no longer silently miss their scrape or retry: queue-players and
-  process-players log them and send a Discord alert, and process-players still doesn't throw after its writes.
-  queue-players no longer logs every queued username each hour, and process-players uses a local `chunk` instead of
-  `lodash.chunk`.
+  process-players log them and send a Discord alert. queue-players no longer logs every queued username each hour, and
+  process-players uses a local `chunk` instead of `lodash.chunk`.
 - process-players and refresh-items use Node's built-in `fetch` instead of `node-fetch` (each bundle about 87 KB smaller
   before `envalid` added about 21 KB). refresh-items now fails with the HTTP status when the Wiki returns an error,
-  instead of the confusing `item.map is not a function`, and gives up on a stalled request after 30 seconds.
-- process-players no longer throws after any of its writes, so SQS can't retry a message and store duplicate hiscore
-  entries: when one message's bulk write fails after another's succeeded, its players are logged and alerted on, and a
-  Discord alert that fails to send is only logged. A Discord alert the webhook rejects (for example a revoked webhook)
-  is now logged in every Lambda instead of lost.
+  instead of the confusing `item.map is not a function`, and gives up on a stalled request after 15 seconds.
+- process-players no longer throws once it has started writing, so SQS can't retry a message and store duplicate hiscore
+  entries: a failed bulk write (before, one failed write threw, and one failing while later players were still being
+  scraped could crash the run), or a retry SQS rejects is logged and alerted on instead, and a Discord alert that fails
+  to send is only logged. It still throws when every fetch failed and nothing was written. Discord alerts the webhook
+  rejects (for example a revoked webhook) are now logged in the three Lambdas that send them instead of lost.
 
 ### Metrics package
 
