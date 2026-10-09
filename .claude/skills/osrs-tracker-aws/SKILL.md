@@ -27,7 +27,7 @@ the agent.
 - **Mutating `aws` commands** hit production (no IaC, broad default profile): follow [INFRA.md](INFRA.md). Read-only
   calls are fine.
 - **Lambda deploys** go live immediately and **npm publishes** are public and irreversible: get explicit go-ahead.
-- **Every write goes through a `DRY_RUN`-aware helper** (`src/utils/dry-run.utils.ts`): Mongo writes in `MU`,
+- **Every write goes through a `DRY_RUN`-aware helper** (`lambda/shared/src/dry-run.utils.ts`): Mongo writes in `MU`,
   `sendMessageBatch`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
 - **Run handlers locally only via `npm run invoke:dry`** (from `lambda/<function>/`, `.env` filled in). There is no
   staging database. Reads and fetches are real; writes log `[DRY_RUN] Would …`. Scheduled Lambdas take an optional event
@@ -37,6 +37,13 @@ the agent.
 ## Lambda notes
 
 - Create clients at module scope so warm invocations reuse them.
+- Code every Lambda needs lives once in `lambda/shared/` (no `package.json`, bundled into each Lambda): `src/` holds
+  `env.ts` (`cleanLambdaEnv`: the MongoDB variables and `DRY_RUN`, plus the Lambda's own schema from its `src/env.ts`),
+  `dry-run.utils.ts`, `mongo.utils.ts` (each Lambda's `MU` extends `mongoUtils<Schema>()` with its own queries),
+  `sqs.utils.ts` and `discord-alert.ts` (`discordAlertNeverRejects` for code that must not throw); `build/` holds
+  `esbuild.js` and the `invoke.js` runner; `eslint.config.mjs` is every Lambda's ESLint config. Its imports resolve from
+  the Lambda being built or checked (esbuild `nodePaths`, `paths` in `lambda/tsconfig.lambda.json`), and `@lambda/env`
+  is that Lambda's `src/env.ts`. Keep Lambda-specific logic in the Lambda.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
 - Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures. process-players must not throw
@@ -47,7 +54,9 @@ the agent.
 
 ## Verify
 
-- Each touched Lambda: `npm run lint && npm run prettier:ci && npm run build`
+- Each touched Lambda: `npm run lint && npm run prettier:ci && npm run build`. A change in `lambda/shared/` touches all
+  four; also run `npx tsc --noEmit -p .` in each, which type-checks the shared files that Lambda imports (the build and
+  lint don't type-check). `npm run lint` lints `lambda/shared/` too; the root `npm run prettier:ci` formats it.
 - `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/express-metrics`: `npx vitest run && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/models`, `discord-webhooks`: `npm run build`
