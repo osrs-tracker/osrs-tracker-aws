@@ -3,8 +3,8 @@
  * everything it imports, including lambda/shared/, into `dist/index.js`. Flags: `--dev` (source map, no minify),
  * `--watch`, `--run` (start the bundle after each build).
  *
- * lambda/shared/ has no node_modules, so its imports resolve from the Lambda's (`nodePaths`), and `@lambda/env` is the
- * Lambda's src/env.ts (`alias`), like the `paths` in tsconfig.lambda.json do for TypeScript.
+ * Lambdas import shared code as `@lambda/shared/<module>` (`alias`). lambda/shared/ has no node_modules, so its imports
+ * resolve from the Lambda's (`nodePaths`), like the `paths` in tsconfig.lambda.json do for TypeScript.
  */
 const { createRequire } = require('module');
 const path = require('path');
@@ -36,7 +36,7 @@ const config = {
   platform: 'node',
   logLevel: 'info',
   nodePaths: [path.resolve('node_modules')],
-  alias: { '@lambda/env': './src/env.ts' },
+  alias: { '@lambda/shared': path.resolve(__dirname, '../src') },
   // Not the Lambda's tsconfig.json: its `paths` (for tsc) would make esbuild bundle packages as plain folders, e.g.
   // date-fns' CommonJS build instead of its ES modules. The bundle needs none of its options (no decorators or class
   // fields) except `strict`, which made the whole bundle strict mode; the banner keeps that. A tsconfig given here

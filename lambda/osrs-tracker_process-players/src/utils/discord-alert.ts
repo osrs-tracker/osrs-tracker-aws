@@ -1,5 +1,6 @@
 import { Context } from 'aws-lambda/handler';
-import { discordAlertNeverRejects } from '../../../shared/src/discord-alert';
+import { discordAlertNeverRejects } from '@lambda/shared/discord-alert';
+import { env } from '../env';
 
 /**
  * Sends a Discord alert listing the players. Never rejects: most alerts are sent after the bulk writes, where a throw
@@ -9,5 +10,5 @@ export async function discordAlert(title: string, players: string[], context: Co
   let description = `${summary} ${players.length} player${players.length > 1 ? 's:' : ':'}\n`;
   description += players.map((username) => `- ${username}`).join('\n');
 
-  await discordAlertNeverRejects(title, description, context);
+  await discordAlertNeverRejects(env.WEBHOOK_URL, title, description, context);
 }

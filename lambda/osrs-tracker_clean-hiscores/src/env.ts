@@ -1,4 +1,4 @@
-import { cleanLambdaEnv, nonEmptyStr, positiveInt } from '../../shared/src/env';
+import { cleanLambdaEnv, nonEmptyStr, positiveInt } from '@lambda/shared/env';
 
 /** The environment variables this Lambda reads besides the MongoDB ones and `DRY_RUN`, see `cleanLambdaEnv`. */
 export const env = cleanLambdaEnv({

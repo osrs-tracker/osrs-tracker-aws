@@ -1,53 +1,54 @@
 import { cleanEnv, EnvError, EnvMissingError, makeValidator, str } from 'envalid';
 
 /** A string that is set and not empty (envalid's `str()` accepts an empty string). */
-export const nonEmptyStr = makeValidator<string>((input) => {
+export const nonEmptyStr = /* @__PURE__ */ makeValidator<string>((input) => {
   if (!input) throw new EnvError('Empty');
   return input;
 });
 
 /** A whole number of at least 1. */
-export const positiveInt = makeValidator<number>((input) => {
+export const positiveInt = /* @__PURE__ */ makeValidator<number>((input) => {
   const value = Number(input);
   if (!Number.isInteger(value) || value < 1) throw new EnvError('Not a positive integer');
   return value;
 });
 
+/** Throws one error naming every missing or invalid variable, never its value (envalid's default prints values). */
+const reporter = ({ errors }: { errors: Partial<Record<string, Error>> }) => {
+  const problems = Object.entries(errors).map(
+    ([name, error]) => `${name} (${error instanceof EnvMissingError ? 'missing' : 'invalid'})`,
+  );
+  if (problems.length) throw new Error(`Invalid environment variables: ${problems.join(', ')}`);
+};
+
 /**
- * Validates the environment variables a Lambda reads, once at cold start: the MongoDB ones every Lambda needs, the
- * Lambda's own `specs` and `DRY_RUN`. A missing or invalid variable throws at module load with an error naming it (never
- * its value), so the invocation fails at init instead of misbehaving later.
- *
- * Call it once, from the Lambda's `src/env.ts`. The shared code imports that module as `@lambda/env`.
+ * The environment variables the shared code reads (MongoDB and `DRY_RUN`), validated once at cold start when this module
+ * loads. Anything else shared code needs, such as a queue or webhook URL, is passed in by the Lambda.
+ */
+export const sharedEnv = cleanEnv(
+  process.env,
+  {
+    MONGODB_URI: nonEmptyStr(),
+    MONGODB_DATABASE: nonEmptyStr(),
+    MONGODB_COLLECTION: nonEmptyStr(),
+    // local SCRAM only (an Atlas database user); unset in production, which uses MONGODB-AWS
+    MONGODB_USERNAME: str({ default: undefined }),
+    MONGODB_PASSWORD: str({ default: undefined }),
+    // local `npm run invoke:dry` only, see dry-run.utils.ts. Only the exact string `true` turns writes off (not
+    // envalid's `bool()`, which also takes `1`/`yes`/`on`), so a stray value on a live function fails at init instead
+    DRY_RUN: str({ choices: ['true', 'false'], default: 'false' }),
+  },
+  { reporter },
+);
+
+// SCRAM needs both. A username alone would fail later with a driver auth error that doesn't name the variable
+if (sharedEnv.MONGODB_USERNAME && !sharedEnv.MONGODB_PASSWORD)
+  throw new Error('Invalid environment variables: MONGODB_PASSWORD (missing, required with MONGODB_USERNAME)');
+
+/**
+ * Validates the Lambda's own environment variables (`specs`) once at cold start, like `sharedEnv`, and returns them
+ * together with `sharedEnv`. Call it once, from the Lambda's `src/env.ts`.
  */
 export function cleanLambdaEnv<S extends object>(specs: S) {
-  const env = cleanEnv(
-    process.env,
-    {
-      MONGODB_URI: nonEmptyStr(),
-      MONGODB_DATABASE: nonEmptyStr(),
-      MONGODB_COLLECTION: nonEmptyStr(),
-      // local SCRAM only (an Atlas database user); unset in production, which uses MONGODB-AWS
-      MONGODB_USERNAME: str({ default: undefined }),
-      MONGODB_PASSWORD: str({ default: undefined }),
-      ...specs,
-      // local `npm run invoke:dry` only, see dry-run.utils.ts. Only the exact string `true` turns writes off (not
-      // envalid's `bool()`, which also takes `1`/`yes`/`on`), so a stray value on a live function fails at init instead
-      DRY_RUN: str({ choices: ['true', 'false'], default: 'false' }),
-    },
-    {
-      reporter: ({ errors }) => {
-        const problems = Object.entries(errors).map(
-          ([name, error]) => `${name} (${error instanceof EnvMissingError ? 'missing' : 'invalid'})`,
-        );
-        if (problems.length) throw new Error(`Invalid environment variables: ${problems.join(', ')}`);
-      },
-    },
-  );
-
-  // SCRAM needs both. A username alone would fail later with a driver auth error that doesn't name the variable
-  if (env.MONGODB_USERNAME && !env.MONGODB_PASSWORD)
-    throw new Error('Invalid environment variables: MONGODB_PASSWORD (missing, required with MONGODB_USERNAME)');
-
-  return env;
+  return { ...sharedEnv, ...cleanEnv(process.env, specs, { reporter }) };
 }

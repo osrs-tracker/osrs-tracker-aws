@@ -1,11 +1,11 @@
 import { Player } from '@osrs-tracker/models';
 import { FindCursor, MongoClient } from 'mongodb';
-import { mongoUtils } from '../../../shared/src/mongo.utils';
+import { mongoUtils } from '@lambda/shared/mongo.utils';
 
 /**
  * Short for MongoUtils.
  *
- * This Lambda's MongoDB queries and writes, on top of the shared client, collection and `ensureIndex`.
+ * This Lambda's MongoDB queries and writes, on top of the shared client and collection.
  */
 export class MU extends mongoUtils() {
   /** Returns all usernames that match the scrapingOffset */

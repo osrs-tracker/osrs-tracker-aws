@@ -10,7 +10,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 
 ## Commands
 
-- Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npm run build`.
+- Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`.
 - Verify a package: `hiscores` `npx jest && npm run build`, `express-metrics` `npx vitest run && npm run build`
   (`npm test` is watch mode in both); `models`, `discord-webhooks` `npm run build`. Repo root: `npm run prettier:ci`.
 - Run a Lambda locally: `npm run invoke:dry` (needs `.env` from `.env.example`). Reads and fetches are real; writes are

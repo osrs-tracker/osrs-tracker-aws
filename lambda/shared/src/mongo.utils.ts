@@ -1,4 +1,3 @@
-import { env } from '@lambda/env';
 import {
   AuthMechanism,
   Collection,
@@ -10,9 +9,10 @@ import {
   MongoClientOptions,
 } from 'mongodb';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
+import { sharedEnv as env } from './env';
 
 /**
- * The MongoDB helpers every Lambda shares, typed with the Lambda's collection schema. A Lambda extends the returned class
+ * The MongoDB client and collection every Lambda shares, typed with the Lambda's collection schema. A Lambda extends the returned class
  * with its own queries and writes: `export class MU extends mongoUtils<Player>() { … }`.
  */
 export function mongoUtils<TSchema extends Document = Document>() {
@@ -30,17 +30,6 @@ export function mongoUtils<TSchema extends Document = Document>() {
       });
     }
 
-    /** Ensures an index exists on the collection. Skipped when `DRY_RUN` is set. */
-    static async ensureIndex(
-      mongo: MongoClient,
-      spec: IndexSpecification,
-      options: CreateIndexesOptions = {},
-    ): Promise<void> {
-      if (DRY_RUN) return logDryRun('create index', { spec, options });
-
-      await this.col(mongo).createIndex(spec, options);
-    }
-
     static db(mongo: MongoClient): Db {
       return mongo.db(env.MONGODB_DATABASE);
     }
@@ -49,4 +38,15 @@ export function mongoUtils<TSchema extends Document = Document>() {
       return this.db(mongo).collection<TSchema>(env.MONGODB_COLLECTION);
     }
   };
+}
+
+/** Ensures an index exists on `col`. Skipped when `DRY_RUN` is set. */
+export async function ensureIndex<TSchema extends Document>(
+  col: Collection<TSchema>,
+  spec: IndexSpecification,
+  options: CreateIndexesOptions = {},
+): Promise<void> {
+  if (DRY_RUN) return logDryRun('create index', { spec, options });
+
+  await col.createIndex(spec, options);
 }

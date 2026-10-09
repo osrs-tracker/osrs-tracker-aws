@@ -1,8 +1,8 @@
 import { HiscoreEntry, Player } from '@osrs-tracker/models';
 import { subDays } from 'date-fns';
 import { AnyBulkWriteOperation, Document, MongoClient } from 'mongodb';
-import { DRY_RUN, logDryRun } from '../../../shared/src/dry-run.utils';
-import { mongoUtils } from '../../../shared/src/mongo.utils';
+import { DRY_RUN, logDryRun } from '@lambda/shared/dry-run.utils';
+import { mongoUtils } from '@lambda/shared/mongo.utils';
 
 /** Scraping is paused when a player hasn't been on the hiscores for this many days in a row. */
 export const HISCORE_NOT_FOUND_PAUSE_DAYS = 7;
@@ -10,7 +10,7 @@ export const HISCORE_NOT_FOUND_PAUSE_DAYS = 7;
 /**
  * Short for MongoUtils.
  *
- * This Lambda's MongoDB queries and writes, on top of the shared client, collection and `ensureIndex`.
+ * This Lambda's MongoDB queries and writes, on top of the shared client and collection.
  */
 export class MU extends mongoUtils<Player>() {
   static hiscoreEntryBulkWriteOp(username: string, hiscoreEntry: HiscoreEntry): AnyBulkWriteOperation<Player> {

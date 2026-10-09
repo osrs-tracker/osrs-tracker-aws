@@ -10,7 +10,7 @@
     "deploy": "aws lambda update-function-code --function-name osrs-tracker_clean-hiscores --zip-file fileb://dist.zip --publish",
     "postdeploy": "rm ./dist.zip",
     "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_clean-hiscores --runtime nodejs24.x",
-    "lint": "eslint . ../shared",
+    "lint": "eslint .",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
     "start": "node ../shared/build/esbuild.js --dev --watch --run",

@@ -12,7 +12,7 @@ entry to the player's `hiscoreEntries`.
   `scrapingOffsets` move to `pausedScrapingOffsets`, so they're no longer queued, and this is reported on Discord. The
   API restores them on the next lookup (see the pause/resume contract in [DATA-MODEL.md](../../DATA-MODEL.md)).
 
-Environment (validated at cold start by `src/env.ts` with `../shared/src/env.ts`, which names any missing or invalid
+Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
 variable): `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `OSRS_API_BASE_URL`, `PLAYERS_PER_SQS_MESSAGE`,
 `SQS_QUEUE_URL`, `WEBHOOK_URL`. Optional: `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local SCRAM only) and `DRY_RUN`.
 

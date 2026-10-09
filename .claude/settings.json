@@ -19,7 +19,7 @@
           {
             "type": "command",
             "if": "Bash(git push*)",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && out=$({ npm run -s prettier:ci && for d in lambda/*/; do [ -f \"$d/package.json\" ] || continue; (cd \"$d\" && npm run -s lint) || exit 1; done; } 2>&1) || { printf 'Push blocked: prettier check or Lambda lint failed.\\n%s\\n' \"$(printf '%s' \"$out\" | tail -40)\" >&2; exit 2; }",
+            "command": "cd \"$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' \"$CLAUDE_PROJECT_DIR\")\" && out=$({ npm run -s prettier:ci && for d in lambda/*/; do [ -f \"$d/package.json\" ] || continue; (cd \"$d\" && npm run -s lint) || exit 1; done; } 2>&1) || { printf 'Push blocked: prettier check or Lambda lint failed.\\n%s\\n' \"$(printf '%s' \"$out\" | tail -40)\" >&2; exit 2; }",
             "timeout": 300,
             "statusMessage": "Running prettier check and Lambda lint before push"
           }

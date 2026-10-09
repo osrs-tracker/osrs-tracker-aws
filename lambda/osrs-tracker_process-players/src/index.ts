@@ -7,7 +7,7 @@ import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
 import { fetchHiscore } from './utils/player.utils';
-import { createMessage, sendMessageBatch } from '../../shared/src/sqs.utils';
+import { createMessage, sendMessageBatch } from '@lambda/shared/sqs.utils';
 import { env } from './env';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
@@ -140,7 +140,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
     // would store duplicate hiscore entries. A batch that fails to send counts as rejected as a whole.
     const rejectedIds = await Promise.all(
       chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) =>
-        sendMessageBatch(sqsClient, messageBatch).then(
+        sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch).then(
           (failed) => failed.map(({ Id }) => Id),
           (e) => {
             console.error('Failed to send SQS message batch', e);

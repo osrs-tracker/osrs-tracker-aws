@@ -5,7 +5,7 @@ midnight), finds every player whose `scrapingOffsets` contain it, and sends thei
 `osrs-tracker_players-to-scrape` SQS queue in messages of `PLAYERS_PER_SQS_MESSAGE` usernames for process-players. It
 also ensures the `{ scrapingOffsets: 1 }` index it reads with. Failed queue sends are reported on Discord.
 
-Environment (validated at cold start by `src/env.ts` with `../shared/src/env.ts`, which names any missing or invalid
+Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
 variable): `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `PLAYERS_PER_SQS_MESSAGE`, `SQS_QUEUE_URL`,
 `WEBHOOK_URL`. Optional: `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local SCRAM only) and `DRY_RUN`.
 
