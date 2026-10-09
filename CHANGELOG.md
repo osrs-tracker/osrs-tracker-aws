@@ -22,6 +22,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   scraped could crash the run), or a retry SQS rejects is logged and alerted on instead, and a Discord alert that fails
   to send is only logged. It still throws when every fetch failed and nothing was written. Discord alerts the webhook
   rejects (for example a revoked webhook) are now logged in the three Lambdas that send them instead of lost.
+- Deployed all four with these changes: clean-hiscores version 5, process-players 45, queue-players 20, refresh-items 7.
 
 ### Metrics package
 
