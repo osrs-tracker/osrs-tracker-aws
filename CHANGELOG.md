@@ -49,17 +49,20 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   - Environment checks keep envalid's guard against reading undeclared variables. refresh-items now loads its
     `src/env.ts`, and times its steps with `performance.now()`.
 
-### Metrics package
+### Packages
 
 - Added the `@osrs-tracker/express-metrics` package (Prometheus HTTP metrics for the website and API, replacing
   `express-prom-bundle` and the deprecated `prom-client`). CI runs its Vitest tests for any package with a
   `vitest.config.ts`.
+- Added the `@osrs-tracker/logger` package: the JSON logs the website and API servers each wrote by hand (request log,
+  outgoing requests, errors with their stack on one line), shared on pino and pino-http so both keep the same fields for
+  Loki.
 
 ### CI
 
-- CI loads every built package with an `exports` map (`models`, `hiscores`, `express-metrics`) with both `require` and
-  `import`, directly and by package name from the packed tarball, so a build Node can't load (like hiscores 3.1.0 or
-  models 0.10.0) fails CI before it's published.
+- CI loads every built package with an `exports` map (`models`, `hiscores`, `express-metrics`, `logger`) with both
+  `require` and `import`, directly and by package name from the packed tarball, so a build Node can't load (like
+  hiscores 3.1.0 or models 0.10.0) fails CI before it's published.
 - The packages' built `dist/` folders are no longer committed: nobody installs them from git, `prepublishOnly` builds
   them before every publish, and the load check above builds and packs each changed package anyway. CI drops its
   "committed dist is up to date" step, and the load check builds a peer it packs (hiscores' models). Each package's

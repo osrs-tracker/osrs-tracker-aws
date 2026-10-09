@@ -27,5 +27,9 @@ Order:
 series (`http_request_duration_seconds` names, labels, buckets and help text, `up`) are what Prometheus scrapes and
 dashboards query: changing them is a breaking change, and its tests pin them.
 
+`logger` stands alone too, with the same consumers. Its line shape (`level` names, `time`, `type`, `message`, `error`,
+and the request fields `status`, `aborted`, `route`, `responseTime`, …) is what Loki queries and runbooks filter on:
+changing a field name or level name is a breaking change, and its tests pin them.
+
 Wait for a 200 from `https://registry.npmjs.org/@osrs-tracker%2f<pkg>/<version>` (about a minute) rather than trusting
 `npm view`.

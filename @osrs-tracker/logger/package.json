@@ -1,0 +1,59 @@
+{
+  "name": "@osrs-tracker/logger",
+  "version": "0.1.0",
+  "description": "Structured JSON logs for the OSRS Tracker Express and Nest apps, on pino and pino-http",
+  "license": "Apache-2.0",
+  "author": "Freek Mencke",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "NOTICE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osrs-tracker/osrs-tracker-aws.git",
+    "directory": "@osrs-tracker/logger"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
+    "build:esm": "tsc --module ESNext --outDir dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
+    "build:types": "tsc --declaration --emitDeclarationOnly --removeComments false --outDir dist/types",
+    "prepublishOnly": "npm run build",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0"
+  },
+  "peerDependencies": {
+    "@types/express": "^5.0.0",
+    "express": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/express": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.1",
+    "express": "^5.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}
