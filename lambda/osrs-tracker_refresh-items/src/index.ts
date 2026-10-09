@@ -1,21 +1,13 @@
 import { Context, ScheduledEvent } from 'aws-lambda';
-import { Agent } from 'https';
 import { fetchItems } from './utils/item.utils';
 import { MU } from './utils/mongo.utils';
 
 const client = MU.client();
 
-const agent = new Agent({
-  keepAlive: true,
-  maxFreeSockets: 5,
-  maxSockets: 5,
-  timeout: 30000,
-});
-
 export const handler = async (_event: ScheduledEvent, context: Context) => {
   const startFetching = process.hrtime();
 
-  const items = await fetchItems(agent);
+  const items = await fetchItems();
 
   console.info(
     `Fetched ${items.length} items in ${Math.trunc(

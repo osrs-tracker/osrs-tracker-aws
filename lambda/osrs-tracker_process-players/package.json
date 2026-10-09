@@ -24,8 +24,7 @@
     "@osrs-tracker/hiscores": "^3.1.1",
     "@osrs-tracker/models": "^0.10.0",
     "date-fns": "^4.4.0",
-    "mongodb": "^7.7.0",
-    "node-fetch": "^3.3.2"
+    "mongodb": "^7.7.0"
   },
   "devDependencies": {
     "@es-exec/esbuild-plugin-start": "^0.0.5",
