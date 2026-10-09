@@ -66,6 +66,13 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   `files` limits its next published tarball to `dist/`, `CHANGELOG.md`, the README and the license (no more `src/`,
   tests or configs).
 
+### Licence
+
+- The repo is now licensed under Apache-2.0 instead of MIT: still free for anyone to use, change and ship, but a copy
+  has to keep the new `NOTICE` file (crediting OSRS Tracker and Freek Mencke) and mark the files it changed, and the
+  licence grants no use of the project's name. Each package ships its own `LICENSE` and `NOTICE`, from its next release;
+  versions already on npm stay MIT.
+
 ### Behind the scenes
 
 - Each Lambda's README describes what it does, its trigger and environment variable names, and how to run it locally,
