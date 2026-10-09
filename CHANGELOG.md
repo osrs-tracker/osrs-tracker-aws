@@ -25,6 +25,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - Deployed all four with these changes: clean-hiscores version 5, process-players 45, queue-players 20, refresh-items 7.
 - All four Lambdas depend on `@osrs-tracker/models` `^0.10.2` (three were on `^0.8.0`, which still had `sourceString`).
   The models only provide types here, so every bundle is byte-identical and nothing was redeployed.
+- Removed the unused `OSRS_API_BASE_URL` environment variable from queue-players' live configuration (only
+  process-players fetches hiscores). Code unchanged.
 
 ### Metrics package
 
