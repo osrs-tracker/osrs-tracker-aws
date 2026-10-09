@@ -23,6 +23,8 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
   hiscores, news) used by the website, the API and these jobs.
 - [`@osrs-tracker/hiscores`](https://www.npmjs.com/package/@osrs-tracker/hiscores): fetches OSRS hiscores, names the
   skills and activities, compares snapshots and does XP calculations.
+- [`@osrs-tracker/express-metrics`](https://www.npmjs.com/package/@osrs-tracker/express-metrics): Prometheus HTTP
+  metrics for the website's and the API's servers.
 - [`@osrs-tracker/discord-webhooks`](https://www.npmjs.com/package/@osrs-tracker/discord-webhooks): a tiny helper for
   sending messages to a Discord webhook.
 

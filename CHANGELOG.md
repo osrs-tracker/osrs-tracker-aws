@@ -5,6 +5,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/09
 
+- Added the `@osrs-tracker/express-metrics` package (Prometheus HTTP metrics for the website and API, replacing
+  `express-prom-bundle` and the deprecated `prom-client`). CI runs its Vitest tests for any package with a
+  `vitest.config.ts`.
 - Each Lambda's README describes what it does, its trigger and environment variable names, and how to run it locally,
   instead of the old starter-template text. The root README no longer says `@osrs-tracker/hiscores` parses the old
   hiscore formats (removed in 3.0.0) and mentions that process-players pauses players who are off the hiscores.

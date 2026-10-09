@@ -1,8 +1,8 @@
 # osrs-tracker-aws
 
 Four AWS Lambdas (`lambda/<function>/`, Node 24, one npm project each) that keep OSRS Tracker's MongoDB Atlas data
-fresh, plus the npm packages in `@osrs-tracker/` (`models`, `hiscores`, `discord-webhooks`). Sibling repos:
-`../osrs-tracker-api` (writes the same collections) and `../osrs-tracker-web`. **This repo is public.**
+fresh, plus the npm packages in `@osrs-tracker/` (`models`, `hiscores`, `discord-webhooks`, `express-metrics`). Sibling
+repos: `../osrs-tracker-api` (writes the same collections) and `../osrs-tracker-web`. **This repo is public.**
 
 **Load the `osrs-tracker-aws` skill before writing, reviewing, running, deploying, publishing or committing anything
 here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra, deploy and package steps in its
@@ -11,8 +11,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 ## Commands
 
 - Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npm run build`.
-- Verify a package: `hiscores` `npx jest && npm run build` (`npm test` is watch mode); `models`, `discord-webhooks`
-  `npm run build`. Repo root: `npm run prettier:ci`.
+- Verify a package: `hiscores` `npx jest && npm run build`, `express-metrics` `npx vitest run && npm run build`
+  (`npm test` is watch mode in both); `models`, `discord-webhooks` `npm run build`. Repo root: `npm run prettier:ci`.
 - Run a Lambda locally: `npm run invoke:dry` (needs `.env` from `.env.example`). Reads and fetches are real; writes are
   only logged. There is no staging database.
 - Size per dependency in a bundle:
@@ -41,9 +41,9 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - `lambda/<function>/`: `src/index.ts` (handler, clients at module scope), `src/utils/` (`mongo.utils.ts` = `MU`,
   `dry-run.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`), `build/esbuild.js` and `build/invoke.js`, and a `README.md`
   with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
-- `@osrs-tracker/<package>/`: committed `dist/`, checked against the build in CI. `models` and `hiscores` ship
-  `dist/cjs`, `dist/esm` and `dist/types`: osrs-tracker-api `require`s the CJS build and osrs-tracker-web bundles the
-  ESM one, so a build change must keep both loading.
+- `@osrs-tracker/<package>/`: committed `dist/`, checked against the build in CI. `models`, `hiscores` and
+  `express-metrics` ship `dist/cjs`, `dist/esm` and `dist/types`: osrs-tracker-api `require`s the CJS build and
+  osrs-tracker-web bundles the ESM one, so a build change must keep both loading.
 - `DATA-MODEL.md`: who writes each `players`/`items` field and owns each index, and the pause/resume contract.
 - `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is the one required check.
   `.github/actions/setup-deps` caches each folder's `node_modules` by its lockfile.

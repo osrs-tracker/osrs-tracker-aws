@@ -49,6 +49,7 @@ the agent.
 
 - Each touched Lambda: `npm run lint && npm run prettier:ci && npm run build`
 - `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode)
+- `@osrs-tracker/express-metrics`: `npx vitest run && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/models`, `discord-webhooks`: `npm run build`
 - Repo root: `npm run prettier:ci`
 

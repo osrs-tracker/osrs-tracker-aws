@@ -1,0 +1,55 @@
+{
+  "name": "@osrs-tracker/express-metrics",
+  "version": "0.1.0",
+  "description": "Prometheus HTTP metrics for the OSRS Tracker Express apps, on @prometheus-io/client",
+  "license": "MIT",
+  "author": "Freek Mencke",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osrs-tracker/osrs-tracker-aws.git",
+    "directory": "@osrs-tracker/express-metrics"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
+    "build:esm": "tsc --module ESNext --outDir dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist/types",
+    "prepublishOnly": "npm run build",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@prometheus-io/client": "^0.16.1",
+    "on-finished": "^2.4.1"
+  },
+  "peerDependencies": {
+    "@types/express": "^5.0.0",
+    "express": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/express": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.13.6",
+    "@types/on-finished": "^2.3.5",
+    "express": "^5.2.1",
+    "typescript": "^5.8.3",
+    "vitest": "^5.0.3"
+  }
+}
