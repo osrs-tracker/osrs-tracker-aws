@@ -60,6 +60,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - CI loads every built package with an `exports` map (`models`, `hiscores`, `express-metrics`) with both `require` and
   `import`, directly and by package name from the packed tarball, so a build Node can't load (like hiscores 3.1.0 or
   models 0.10.0) fails CI before it's published.
+- The packages' built `dist/` folders are no longer committed: nobody installs them from git, `prepublishOnly` builds
+  them before every publish, and the load check above builds and packs each changed package anyway. CI drops its
+  "committed dist is up to date" step, and the load check builds a peer it packs (hiscores' models). Each package's
+  `files` limits its next published tarball to `dist/`, `CHANGELOG.md`, the README and the license (no more `src/`,
+  tests or configs).
 
 ### Behind the scenes
 

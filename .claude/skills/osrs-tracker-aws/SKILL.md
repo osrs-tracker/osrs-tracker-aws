@@ -63,13 +63,14 @@ the agent.
 - `@osrs-tracker/models`: `npm run build`
 - Repo root: `npm run prettier:ci`
 
-CI checks each package's committed `dist/` against its build, so commit the rebuilt `dist/`.
+Packages' `dist/` isn't committed: `prepublishOnly` builds it, and CI builds each changed package and loads it from the
+packed tarball.
 
 ## Release ("release it", "ship it")
 
 Run the whole flow without asking between steps; stop only on failure. The request is the go-ahead to deploy and publish
 what the change touches; mutating infra commands still need their own approval. Verify locally once before committing;
-after that CI is the gate (builds needed for a deploy or `dist/` still run).
+after that CI is the gate (builds needed for a deploy or publish still run).
 
 1. Commit on a `<type>/<short-name>` branch, push, `gh pr create --base main`.
 2. Review `gh pr diff` for bugs and leftovers while the `conventions-reviewer` agent checks the PR; fix both and push.

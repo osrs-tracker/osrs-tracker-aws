@@ -129,14 +129,9 @@ jobs:
         run: npm run build
         working-directory: '@osrs-tracker/${{ matrix.package }}'
 
-      # The dist check only compares files; this one loads them, with require and import, also by package name from the
-      # packed tarball
+      # Loads the build with require and import, also by package name from the packed tarball
       - name: Build loads with require and import
         run: ../../.github/scripts/check-package-loads.sh
-        working-directory: '@osrs-tracker/${{ matrix.package }}'
-
-      - name: Committed dist is up to date
-        run: git diff --exit-code -- dist
         working-directory: '@osrs-tracker/${{ matrix.package }}'
 
   lambda:
