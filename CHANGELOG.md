@@ -78,6 +78,13 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   versions already on npm stay MIT. Released as `@osrs-tracker/models` 0.10.3, `hiscores` 3.1.2 and `express-metrics`
   0.1.1 (`logger` started out on Apache-2.0).
 
+### Data model
+
+- `DATA-MODEL.md` says what a normalized `players.username` is, following the API's change: lowercase, `_` and `-` as
+  spaces and trimmed, as Jagex matches names, so a stored name never contains `_` or `-`. A one-off migration renamed
+  the 12 players stored with `_` or `-` (9) or deleted them where the normalized player already held the same data (3).
+  The Lambdas only read stored names, so none of them changed.
+
 ### Behind the scenes
 
 - Each Lambda's README describes what it does, its trigger and environment variable names, and how to run it locally,
