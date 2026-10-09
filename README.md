@@ -25,8 +25,6 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
   skills and activities, compares snapshots and does XP calculations.
 - [`@osrs-tracker/express-metrics`](https://www.npmjs.com/package/@osrs-tracker/express-metrics): Prometheus HTTP
   metrics for the website's and the API's servers.
-- [`@osrs-tracker/discord-webhooks`](https://www.npmjs.com/package/@osrs-tracker/discord-webhooks): a tiny helper for
-  sending messages to a Discord webhook.
 
 ## How it fits together
 

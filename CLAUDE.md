@@ -1,8 +1,8 @@
 # osrs-tracker-aws
 
 Four AWS Lambdas (`lambda/<function>/`, Node 24, one npm project each) that keep OSRS Tracker's MongoDB Atlas data
-fresh, plus the npm packages in `@osrs-tracker/` (`models`, `hiscores`, `discord-webhooks`, `express-metrics`). Sibling
-repos: `../osrs-tracker-api` (writes the same collections) and `../osrs-tracker-web`. **This repo is public.**
+fresh, plus the npm packages in `@osrs-tracker/` (`models`, `hiscores`, `express-metrics`). Sibling repos:
+`../osrs-tracker-api` (writes the same collections) and `../osrs-tracker-web`. **This repo is public.**
 
 **Load the `osrs-tracker-aws` skill before writing, reviewing, running, deploying, publishing or committing anything
 here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra, deploy and package steps in its
@@ -12,7 +12,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 
 - Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`.
 - Verify a package: `hiscores` `npx jest && npm run build`, `express-metrics` `npx vitest run && npm run build`
-  (`npm test` is watch mode in both); `models`, `discord-webhooks` `npm run build`. Repo root: `npm run prettier:ci`.
+  (`npm test` is watch mode in both); `models` `npm run build`. Repo root: `npm run prettier:ci`.
 - Run a Lambda locally: `npm run invoke:dry` (needs `.env` from `.env.example`). Reads and fetches are real; writes are
   only logged. There is no staging database.
 - Size per dependency in a bundle:

@@ -19,7 +19,6 @@
   "prettier": "./.prettierrc.json",
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.1145.0",
-    "@osrs-tracker/discord-webhooks": "^0.1.0",
     "@osrs-tracker/models": "^0.10.2",
     "date-fns": "^4.4.0",
     "envalid": "^8.2.0",
