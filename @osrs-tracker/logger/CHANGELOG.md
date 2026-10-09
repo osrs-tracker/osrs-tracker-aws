@@ -1,3 +1,8 @@
+## Unreleased
+
+- README: the Nest section says Nest has to run on its Express adapter (Nest 11 or later, for the Express 5 peer
+  dependency).
+
 ## v0.2.0 - 2026/10/09
 
 Breaking: the `error` field's format and `responseTime`'s precision change.

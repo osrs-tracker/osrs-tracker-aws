@@ -87,6 +87,13 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ### Behind the scenes
 
+- Docs audit fixes: every `aws` call in the skill, including `npm run deploy`, runs as the `claude` profile instead of
+  the default one. DEPLOY.md says when each Lambda's next run is, compares the bundle size before a deploy, and rolls
+  back `lambda/shared/` and the lockfile too, with the steps for redeploying an earlier version's zip. INFRA.md says how
+  long each queue keeps messages, how to move or purge the dead-letter queue, and what to do for each Discord alert. The
+  root README lists what each `.env` value is locally; the `.env.example` files say the Mongo user is required there.
+  The `conventions-reviewer` agent diffs against `origin/main` and checks `DATA-MODEL.md`. Only queue-players reads a
+  local run's event time; the skill and `lambda/shared/build/invoke.js` now say so.
 - Each Lambda's README describes what it does, its trigger and environment variable names, and how to run it locally,
   instead of the old starter-template text. The root README no longer says `@osrs-tracker/hiscores` parses the old
   hiscore formats (removed in 3.0.0) and mentions that process-players pauses players who are off the hiscores.

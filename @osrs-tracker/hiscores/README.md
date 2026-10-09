@@ -22,7 +22,8 @@ const overallXpGained = getOverallXpDiff(todayEntry, lastWeekEntry);
 calculateXPForSkillLevel(99); // 13034431
 ```
 
-Fetching a hiscore (Node 18+ or a browser; pass `fetch` to use your own client):
+Fetching a hiscore (Node 18+ or a browser; pass `fetch` to use your own client). `getHiscore` never throws: every
+outcome is a result.
 
 ```ts
 import { getHiscore } from '@osrs-tracker/hiscores';
@@ -34,7 +35,9 @@ else if (result.status === 'notFound')
 else console.log(`Failed: ${result.reason}`); // worth retrying
 ```
 
-Pass `table: 'hiscore_oldschool_ironman'` (or `_ultimate`, `_hardcore_ironman`) for the ironman tables.
+Options: `table` (default `'hiscore_oldschool'`; `'hiscore_oldschool_ironman'`, `'hiscore_oldschool_ultimate'` or
+`'hiscore_oldschool_hardcore_ironman'` for the ironman tables), `fetch` (default the global `fetch`) and `timeoutMs`
+(default 10 seconds, after which the result is `failed`).
 
 ## Development
 

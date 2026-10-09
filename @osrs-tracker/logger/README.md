@@ -92,8 +92,8 @@ logOutgoingRequests({ logger });
 
 ### Nest
 
-Use `requestLogger` as the request log middleware, after the global `nestjs-cls` middleware so the request ID comes from
-`context`:
+Nest has to run on its Express adapter (Nest 11 or later, for Express 5, a peer dependency). Use `requestLogger` as the
+request log middleware, after the global `nestjs-cls` middleware so the request ID comes from `context`:
 
 ```ts
 import { createLogger, requestLogger } from '@osrs-tracker/logger';

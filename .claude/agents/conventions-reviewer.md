@@ -20,12 +20,14 @@ preferences.
    such as a `CHANGELOG.md` or a `package.json` version.
 2. `CLAUDE.md`: its hard rules apply like the skill's.
 3. `.claude/skills/osrs-tracker-aws/PACKAGES.md` when the diff touches `@osrs-tracker/`, `INFRA.md` when it touches AWS
-   configuration or infra docs, `DEPLOY.md` when it changes how a Lambda is deployed.
+   configuration or infra docs, `DEPLOY.md` when it changes how a Lambda is deployed, and `DATA-MODEL.md` when it
+   changes a Mongo write, a query's fields or an index (its rows must match the change).
 
 ## Scope
 
-Review what the caller names (a PR number, a branch or a path). Otherwise review the current branch against `main`:
-`git diff main...HEAD` plus uncommitted changes (`git diff HEAD`). For a PR, `gh pr diff <n>`.
+Review what the caller names (a PR number, a branch or a path). Otherwise review the current branch against
+`origin/main` (the local `main` is often stale, especially in a worktree): `git fetch origin main` (the one `git` write
+you may run), then `git diff origin/main...HEAD` plus uncommitted changes (`git diff HEAD`). For a PR, `gh pr diff <n>`.
 
 Judge the changed lines, but read the surrounding code to confirm a finding: a missing `DRY_RUN` guard may live in a
 helper in `src/utils/` or in `lambda/shared/src/`. Rules that span files (a change and its `CHANGELOG.md` entry) are

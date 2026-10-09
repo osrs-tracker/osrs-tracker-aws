@@ -9,5 +9,6 @@ variable): `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `MAX_AGE_IN_
 `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local SCRAM only) and `DRY_RUN`.
 
 Run it locally without writing anything: copy `.env.example` to `.env`, fill it in, then `npm run invoke:dry` (it only
-counts the players it would change). See the [root README](../../README.md) and [DATA-MODEL.md](../../DATA-MODEL.md) for
+counts the players it would change). It ignores an event time argument, and its cutoff is midnight in your machine's
+timezone, not UTC as in production. See the [root README](../../README.md) and [DATA-MODEL.md](../../DATA-MODEL.md) for
 how it fits with the other jobs and the API.

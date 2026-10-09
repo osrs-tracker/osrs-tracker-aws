@@ -1,3 +1,8 @@
+## Unreleased
+
+- README: lists `getHiscore`'s options with their defaults (`table` with the full table names, `fetch`, `timeoutMs`) and
+  says it never throws.
+
 ## v3.1.3 - 2026/10/09
 
 - The `@osrs-tracker/models` peer range also accepts `^1.0.0`. No code change.

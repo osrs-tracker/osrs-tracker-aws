@@ -25,7 +25,10 @@ function invokeDry(functionName, event) {
     .finally(() => setTimeout(() => process.exit(), 100));
 }
 
-/** The scheduled event for the ISO time passed as argument (`npm run invoke:dry -- 2026-10-02T18:00:00Z`), or now. */
+/**
+ * The scheduled event for the ISO time passed as argument (`npm run invoke:dry -- 2026-10-02T18:00:00Z`), or now. Only
+ * queue-players reads `event.time`; clean-hiscores and refresh-items ignore it.
+ */
 function scheduledEvent() {
   return { time: process.argv[2] ?? new Date().toISOString() };
 }

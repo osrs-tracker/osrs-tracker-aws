@@ -24,15 +24,16 @@ the agent.
 
 ## Rules
 
-- **Mutating `aws` commands** hit production (no IaC, broad default profile): follow [INFRA.md](INFRA.md). Read-only
-  calls are fine.
+- **Mutating `aws` commands** hit production (no IaC): follow [INFRA.md](INFRA.md). Read-only calls are fine. Run every
+  `aws` call, including the ones inside `npm run deploy` and `update:runtime`, as the `claude` profile
+  (`--profile claude` or `AWS_PROFILE=claude`), never the default profile.
 - **Lambda deploys** go live immediately and **npm publishes** are public and irreversible: get explicit go-ahead.
 - **Every write goes through a `DRY_RUN`-aware helper** (`lambda/shared/src/dry-run.utils.ts`): Mongo writes in `MU`,
   `sendMessageBatch`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
 - **Run handlers locally only via `npm run invoke:dry`** (from `lambda/<function>/`, `.env` filled in). There is no
-  staging database. Reads and fetches are real; writes log `[DRY_RUN] Would …`. Scheduled Lambdas take an optional event
-  time (`-- 2026-10-02T18:00:00Z`), process-players takes usernames (`-- Zezima "Lynx Titan"`). It overwrites `dist/`
-  with a dev build, so `npm run build` before comparing bundles.
+  staging database. Reads and fetches are real; writes log `[DRY_RUN] Would …`. queue-players takes an optional event
+  time (`-- 2026-10-02T18:00:00Z`; the other scheduled Lambdas accept it but ignore it), process-players takes usernames
+  (`-- Zezima "Lynx Titan"`). It overwrites `dist/` with a dev build, so `npm run build` before comparing bundles.
 
 ## Lambda notes
 
@@ -75,7 +76,8 @@ after that CI is the gate (builds needed for a deploy or publish still run).
 1. Commit on a `<type>/<short-name>` branch, push, `gh pr create --base main`.
 2. Review `gh pr diff` for bugs and leftovers while the `conventions-reviewer` agent checks the PR; fix both and push.
 3. Once CI passes, deploy changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish changed packages
-   ([PACKAGES.md](PACKAGES.md)), and check they work.
+   ([PACKAGES.md](PACKAGES.md)), and check they work: a Lambda's new `CodeSha256` and a clean next run (DEPLOY.md steps
+   4 and 5), a package's registry 200 (PACKAGES.md, "Publishing").
 4. Commit version or lockfile bumps, push, and record what shipped and the check results in the PR description.
 5. Once checks pass: `gh pr merge <n> --merge`, switch to `main`, pull, `git branch -d <branch>`, `git fetch --prune`.
 

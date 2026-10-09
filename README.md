@@ -46,8 +46,19 @@ npm run invoke:dry
 ```
 
 This runs the job once with `DRY_RUN=true`. It still reads data and calls the external APIs, but every write (to the
-database, the queue or Discord) is only logged. Locally the jobs log in to the database with `MONGODB_USERNAME` and
-`MONGODB_PASSWORD`.
+database, the queue or Discord) is only logged. You need Node 24.
+
+What goes in `.env` (each job's `.env.example` lists the ones it needs):
+
+| Variable                               | Locally                                                                                               |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `MONGODB_URI`, `MONGODB_DATABASE`      | The Atlas cluster's connection string and database name.                                              |
+| `MONGODB_COLLECTION`                   | `players`, or `items` for refresh-items.                                                              |
+| `MONGODB_USERNAME`, `MONGODB_PASSWORD` | An Atlas database user. Required locally: without them the driver tries AWS authentication and fails. |
+| `OSRS_API_BASE_URL`                    | The hiscore proxy, `https://runescape-api.freekmencke.com/rs`.                                        |
+| `PLAYERS_PER_SQS_MESSAGE`              | Any whole number of at least 1; it only changes how the logged messages are grouped.                  |
+| `SQS_QUEUE_URL`, `WEBHOOK_URL`         | Any valid URL: a dry run never sends to the queue or Discord.                                         |
+| `MAX_AGE_IN_DAYS`                      | `60`, as in production.                                                                               |
 
 ## Built with
 
