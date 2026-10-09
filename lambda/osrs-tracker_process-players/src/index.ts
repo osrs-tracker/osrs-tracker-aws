@@ -1,8 +1,8 @@
 import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Player, PlayerScrapeMessageBody } from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
-import chunk from 'lodash.chunk';
 import { AnyBulkWriteOperation, ServerApiVersion } from 'mongodb';
+import { chunk } from './utils/array.utils';
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
@@ -98,23 +98,37 @@ export const handler = async (event: SQSEvent, context: Context) => {
     throw new Error(`No players were updated. Failed to update ${failedMessagesCount} players.`);
   }
 
+  // usernames whose retry message SQS rejected (or whose batch failed to send), so their retry is lost
+  const unqueuedUsernames: string[] = [];
+
   // If some usernames updated successfully and some failed, send new SQS messages for the failed usernames
   if (failedMap.size > 0) {
     const failedMessages: SendMessageBatchRequestEntry[] = [];
+    const usernamesByMessageId: Map<string, string[]> = new Map();
 
     // create messages from failed usernames
     failedMap.forEach((usernames, scrapingOffset) =>
-      failedMessages.push(
-        ...chunk(usernames, parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)).map((usernameBatch) =>
-          createMessage(usernameBatch, scrapingOffset),
+      chunk(usernames, parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)).forEach((usernameBatch) => {
+        const message = createMessage(usernameBatch, scrapingOffset);
+        usernamesByMessageId.set(message.Id, usernameBatch);
+        failedMessages.push(message);
+      }),
+    );
+
+    // send failed messages in batches. Never throw here: the bulk writes are done, so an SQS retry of this message
+    // would store duplicate hiscore entries. A batch that fails to send counts as rejected as a whole.
+    const rejectedIds = await Promise.all(
+      chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) =>
+        sendMessageBatch(sqsClient, messageBatch).then(
+          (failed) => failed.map(({ Id }) => Id),
+          (e) => {
+            console.error('Failed to send SQS message batch', e);
+            return messageBatch.map(({ Id }) => Id);
+          },
         ),
       ),
     );
-
-    // send failed messages in batches
-    await Promise.all(
-      chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) => sendMessageBatch(sqsClient, messageBatch)),
-    );
+    rejectedIds.flat().forEach((id) => unqueuedUsernames.push(...(usernamesByMessageId.get(id!) ?? [])));
   }
 
   console.log(
@@ -122,6 +136,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
     `Failed to update ${failedMessagesCount} players.`,
     `Skipped ${notFoundUsernames.length} players not on the hiscores.`,
   );
+
+  if (unqueuedUsernames.length) {
+    console.error(`Failed to queue a retry for ${unqueuedUsernames.length} players:`, unqueuedUsernames);
+    await discordAlert('Failed to queue retries', unqueuedUsernames, context, 'Failed to queue a retry for');
+  }
 
   if (pausedUsernames.length) {
     console.log(

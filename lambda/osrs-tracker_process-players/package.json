@@ -24,7 +24,6 @@
     "@osrs-tracker/hiscores": "^3.1.1",
     "@osrs-tracker/models": "^0.10.0",
     "date-fns": "^4.4.0",
-    "lodash.chunk": "^4.2.0",
     "mongodb": "^7.7.0",
     "node-fetch": "^3.3.2"
   },
@@ -32,7 +31,6 @@
     "@es-exec/esbuild-plugin-start": "^0.0.5",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/aws-lambda": "^8.10.164",
-    "@types/lodash.chunk": "^4.2.7",
     "@types/node": "^24.19.1",
     "bestzip": "^2.2.7",
     "esbuild": "^0.28.2",

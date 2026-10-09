@@ -10,6 +10,14 @@ const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
 const client = MU.client();
 
+/** Sends a batch, adding entries SQS rejected and a thrown error to `errors`. */
+async function sendBatch(messageBatch: SendMessageBatchRequestEntry[], errors: unknown[]) {
+  await sendMessageBatch(sqsClient, messageBatch).then(
+    (failed) => errors.push(...failed),
+    (e) => errors.push(e),
+  );
+}
+
 export const handler = async (event: ScheduledEvent, context: Context) => {
   // current scrapeOffset, -12 to 11
   const scrapingOffset = ((12 + new Date(event.time).getUTCHours()) % 24) - 12;
@@ -46,7 +54,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
 
       // if batch is full, send batch
       if (messageBatch.length === SQS_MESSAGE_BATCH_SIZE) {
-        await sendMessageBatch(sqsClient, messageBatch).catch((e) => errors.push(e));
+        await sendBatch(messageBatch, errors);
         commandsExecuted++;
         messageBatch.length = 0;
       }
@@ -62,7 +70,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
     messagesCreated++;
   }
   if (messageBatch.length) {
-    await sendMessageBatch(sqsClient, messageBatch).catch((e) => errors.push(e));
+    await sendBatch(messageBatch, errors);
     commandsExecuted++;
   }
 
