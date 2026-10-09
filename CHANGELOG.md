@@ -5,6 +5,19 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/09
 
+### Lambdas
+
+- All four Lambdas check their environment variables at startup (`envalid`). A missing, empty or invalid variable stops
+  the run at once with an error naming it, instead of misbehaving quietly: an unset `PLAYERS_PER_SQS_MESSAGE` used to
+  make process-players drop failed players without a retry. `DRY_RUN` now also accepts `1`/`yes`.
+- If SQS rejects some messages in a batch, players no longer silently miss their scrape or retry: queue-players and
+  process-players log them and send a Discord alert, and process-players still doesn't throw after its writes.
+  queue-players no longer logs every queued username each hour, and process-players uses a local `chunk` instead of
+  `lodash.chunk`.
+- process-players and refresh-items use Node's built-in `fetch` instead of `node-fetch` (each bundle about 87 KB smaller
+  before `envalid` added about 21 KB). refresh-items now fails with the HTTP status when the Wiki returns an error,
+  instead of the confusing `item.map is not a function`.
+
 ### Metrics package
 
 - Added the `@osrs-tracker/express-metrics` package (Prometheus HTTP metrics for the website and API, replacing
