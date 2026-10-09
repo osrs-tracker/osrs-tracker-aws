@@ -110,9 +110,14 @@ jobs:
         with:
           working-directory: '@osrs-tracker/${{ matrix.package }}'
 
-      - name: Test
+      - name: Test (Jest)
         if: matrix.package == 'hiscores'
         run: npx jest --ci
+        working-directory: '@osrs-tracker/${{ matrix.package }}'
+
+      - name: Test (Vitest)
+        if: hashFiles(format('@osrs-tracker/{0}/vitest.config.ts', matrix.package)) != ''
+        run: npx vitest run
         working-directory: '@osrs-tracker/${{ matrix.package }}'
 
       - name: Build

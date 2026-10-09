@@ -23,5 +23,9 @@ Order:
    models is live, or `npm ci` fails on the lockfile.
 3. Consumers: the Lambdas here, then web and API. **The web must bump models and hiscores together.**
 
+`express-metrics` stands alone (no `@osrs-tracker/*` dependencies); its consumers are the web and API servers. Its
+series (`http_request_duration_seconds` names, labels, buckets and help text, `up`) are what Prometheus scrapes and
+dashboards query: changing them is a breaking change, and its tests pin them.
+
 Wait for a 200 from `https://registry.npmjs.org/@osrs-tracker%2f<pkg>/<version>` (about a minute) rather than trusting
 `npm view`.
