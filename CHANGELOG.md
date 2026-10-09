@@ -30,6 +30,12 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   `express-prom-bundle` and the deprecated `prom-client`). CI runs its Vitest tests for any package with a
   `vitest.config.ts`.
 
+### CI
+
+- CI loads the built `@osrs-tracker/models` and `@osrs-tracker/hiscores` with both `require` and `import`, directly and
+  by package name from the packed tarball, so a build Node can't load (like hiscores 3.1.0 or models 0.10.0) fails CI
+  before it's published.
+
 ### Behind the scenes
 
 - Each Lambda's README describes what it does, its trigger and environment variable names, and how to run it locally,
