@@ -3,7 +3,11 @@ import { Context } from 'aws-lambda/handler';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
 import { env } from '../env';
 
-export function discordAlert(title: string, players: string[], context: Context, summary = 'Failed to update') {
+/**
+ * Sends a Discord alert. Never rejects: most alerts are sent after the bulk writes, where a throw would make SQS retry
+ * the message and store duplicate hiscore entries, so a failed alert is only logged.
+ */
+export async function discordAlert(title: string, players: string[], context: Context, summary = 'Failed to update') {
   const region = context.invokedFunctionArn.split(':')[3];
 
   let description = `${summary} ${players.length} player${players.length > 1 ? 's:' : ':'}\n`;
@@ -27,5 +31,7 @@ export function discordAlert(title: string, players: string[], context: Context,
 
   if (DRY_RUN) return logDryRun('send Discord alert', message);
 
-  return DiscordWebhook.dispatch(message, { webhookUrl: env.WEBHOOK_URL });
+  await DiscordWebhook.dispatch(message, { webhookUrl: env.WEBHOOK_URL }).catch((e) =>
+    console.error('Failed to send Discord alert', e),
+  );
 }
