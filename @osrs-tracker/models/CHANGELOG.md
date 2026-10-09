@@ -1,3 +1,8 @@
+## 1.0.0 - 2026/10/09
+
+- First stable release: the models are unchanged from 0.10.3, and 1.0.0 marks their API as stable. From here, a breaking
+  change to a model is a major version. Consumers on `^0.10.x` need to widen their range to `^1.0.0` to get it.
+
 ## 0.10.3 - 2026/10/09
 
 - Licensed under Apache-2.0 instead of MIT, with a `NOTICE` file that copies must keep. Earlier versions stay MIT. The

@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/models",
-  "version": "0.10.3",
+  "version": "1.0.0",
   "description": "Typings for OSRS Tracker API",
   "license": "Apache-2.0",
   "author": "Freek Mencke",
