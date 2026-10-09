@@ -1,5 +1,8 @@
-## Unreleased
+## v0.1.1 - 2026/10/09
 
+- The `error` field follows the stack with the error's `cause` chain, Node style (`Caused by: ` and the cause's own
+  stack, or a non-Error cause as text, JSON for an object), and an `AggregateError`'s errors (`Error 1 of 2: …`), up to
+  5 deep and stopping at a cycle. undici's `TypeError: fetch failed` and MongoDB's errors keep the actual reason there.
 - README: the Nest section links to osrs-tracker-api's `NestLogger` instead of a `LoggerService` sketch that tagged
   every line `lifecycle` and misread Nest's `(message, ...optionalParams)` arguments.
 

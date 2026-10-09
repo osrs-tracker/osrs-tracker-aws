@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/logger",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Structured JSON logs for the OSRS Tracker Express and Nest apps, on pino and pino-http",
   "license": "Apache-2.0",
   "author": "Freek Mencke",

@@ -64,8 +64,39 @@ export function requestLogLevel(status: number, aborted: boolean): RequestLogLev
   return aborted ? 'warn' : status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info';
 }
 
-/** An error's stack (or message) as one string, which stays on one line in the JSON output. */
+/** How many causes (and errors of an `AggregateError`) deep `errorText` follows an error. */
+const MAX_CAUSE_DEPTH = 5;
+
+/**
+ * An error's stack (or message) as one string, which stays on one line in the JSON output. Its `cause` chain follows,
+ * each as `Caused by: ` and its own text, and an `AggregateError`'s errors as `Error 1 of 2: ` and so on.
+ */
 function errorText(error: unknown): string | undefined {
   if (error === undefined) return undefined;
-  return error instanceof Error ? (error.stack ?? error.message) : String(error);
+  return describe(error, new Set(), 0);
+}
+
+function describe(error: unknown, seen: Set<unknown>, depth: number): string {
+  if (!(error instanceof Error)) return valueText(error);
+  if (seen.has(error)) return `[circular] ${error.name}: ${error.message}`;
+  seen.add(error);
+
+  let text = error.stack ?? `${error.name}: ${error.message}`;
+  const nested = (label: string, inner: unknown): void => {
+    text += `\n${label}: ` + (depth < MAX_CAUSE_DEPTH ? describe(inner, seen, depth + 1) : '[left out, too deep]');
+  };
+  if (error instanceof AggregateError && Array.isArray(error.errors))
+    error.errors.forEach((inner, i, all) => nested(`Error ${i + 1} of ${all.length}`, inner));
+  if (error.cause !== undefined) nested('Caused by', error.cause);
+  return text;
+}
+
+/** A non-Error thrown or used as a cause: an object as JSON, anything else as `String` does. */
+function valueText(value: unknown): string {
+  if (typeof value !== 'object' || value === null) return String(value);
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return String(value);
+  }
 }
