@@ -6,8 +6,8 @@ hand-rolled JSON lines, so both servers write the same fields for Loki:
 
 - One JSON object per line, starting with `level` as Loki names it (`info`, `warn`, `error`), `time` as an ISO string
   and `type`.
-- The message under `message`; an error with its stack under `error`, as one string, followed by its `cause` chain
-  (`Caused by: …`) and an `AggregateError`'s errors (`Error 1 of 2: …`).
+- The message under `message`; an error under `error` as one string, as Node's `util.inspect` writes it: its stack, its
+  own fields (`code`, `errno`, …), its `cause` chain and an `AggregateError`'s errors.
 - `type` says what the line is about: `incoming` (a request the server answered), `outgoing` (a request it made),
   `lifecycle` (startup and shutdown) or `uncaught` (an error that reached the error handler). An app can add its own.
 
@@ -65,7 +65,7 @@ app.use(
   "host": "…",
   "route": "/items/:id",
   "url": "/items/4151",
-  "responseTime": "12.345ms",
+  "responseTime": "12ms",
   "userAgent": "…",
   "clientIp": "…",
   "referer": "…",
@@ -76,8 +76,8 @@ app.use(
 
 `requestLogLevel(status, aborted)` sets the level: 5xx `error`, 4xx `warn`, else `info`. A request the client closed
 before the headers were sent is a `warn` with `aborted: true` and no `status`, timed until the connection closed.
-`responseTime` runs until the response finished. `context` is read when the request starts, so its fields are on the
-line even though it's written after the request's async context has ended.
+`responseTime` runs until the response finished, in whole milliseconds (pino-http's timing). `context` is read when the
+request starts, so its fields are on the line even though it's written after the request's async context has ended.
 
 ### `logOutgoingRequests({ logger })`
 

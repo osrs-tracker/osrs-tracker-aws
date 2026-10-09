@@ -52,7 +52,7 @@ describe('requestLogger', () => {
       host: expect.stringMatching(/^127\.0\.0\.1:\d+$/),
       route: '/players/:username',
       url: '/players/Zezima?x=1',
-      responseTime: expect.stringMatching(/^\d+\.\d{3}ms$/),
+      responseTime: expect.stringMatching(/^\d+ms$/),
       userAgent: 'vitest',
       clientIp: expect.stringMatching(/127\.0\.0\.1$/),
       referer: 'https://example.com/',
@@ -92,7 +92,7 @@ describe('requestLogger', () => {
       aborted: true,
       requestId: 'request-1',
       url: '/slow',
-      responseTime: expect.stringMatching(/^\d+\.\d{3}ms$/),
+      responseTime: expect.stringMatching(/^\d+ms$/),
     });
     expect(Number.parseFloat(lines[0]!.responseTime as string)).toBeGreaterThanOrEqual(20);
     for (const field of ['status', 'contentLength', 'cache', 'message', 'error']) {

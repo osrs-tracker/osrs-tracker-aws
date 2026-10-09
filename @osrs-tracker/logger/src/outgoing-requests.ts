@@ -44,7 +44,7 @@ export function logOutgoingRequests({ logger }: LogOutgoingRequestsOptions): () 
       aborted: aborted || undefined,
       method: request.method,
       url: request.origin + request.path,
-      responseTime: (performance.now() - outgoing.start).toFixed(3) + 'ms',
+      responseTime: `${Math.round(performance.now() - outgoing.start)}ms`,
       error: error && !aborted ? error.message : undefined,
     });
   };
