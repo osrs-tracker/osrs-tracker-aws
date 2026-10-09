@@ -8,6 +8,7 @@ import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
 import { fetchHiscore } from './utils/player.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
+import { env } from './env';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 
@@ -108,7 +109,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
     // create messages from failed usernames
     failedMap.forEach((usernames, scrapingOffset) =>
-      chunk(usernames, parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)).forEach((usernameBatch) => {
+      chunk(usernames, env.PLAYERS_PER_SQS_MESSAGE).forEach((usernameBatch) => {
         const message = createMessage(usernameBatch, scrapingOffset);
         usernamesByMessageId.set(message.Id, usernameBatch);
         failedMessages.push(message);

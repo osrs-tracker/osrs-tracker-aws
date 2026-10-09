@@ -10,8 +10,9 @@ entry to the player's `hiscoreEntries`.
   `scrapingOffsets` move to `pausedScrapingOffsets`, so they're no longer queued, and this is reported on Discord. The
   API restores them on the next lookup (see the pause/resume contract in [DATA-MODEL.md](../../DATA-MODEL.md)).
 
-Environment: `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `OSRS_API_BASE_URL`, `PLAYERS_PER_SQS_MESSAGE`,
-`SQS_QUEUE_URL`, `WEBHOOK_URL`.
+Environment (validated at cold start by `src/env.ts`, which names any missing or invalid variable): `MONGODB_URI`,
+`MONGODB_DATABASE`, `MONGODB_COLLECTION`, `OSRS_API_BASE_URL`, `PLAYERS_PER_SQS_MESSAGE`, `SQS_QUEUE_URL`,
+`WEBHOOK_URL`. Optional: `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local SCRAM only) and `DRY_RUN`.
 
 Run it locally without writing anything: copy `.env.example` to `.env`, fill it in, then
 `npm run invoke:dry -- Zezima "Lynx Titan"`. See the [root README](../../README.md) for how it fits with the other jobs.

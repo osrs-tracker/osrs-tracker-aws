@@ -20,6 +20,7 @@
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.1145.0",
     "@osrs-tracker/models": "^0.8.0",
+    "envalid": "^8.2.0",
     "mongodb": "^7.7.0"
   },
   "devDependencies": {

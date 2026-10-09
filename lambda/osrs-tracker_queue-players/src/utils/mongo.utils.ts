@@ -10,6 +10,7 @@ import {
   MongoClientOptions,
 } from 'mongodb';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
+import { env } from '../env';
 
 /**
  * Short for MongoUtils.
@@ -22,10 +23,10 @@ export class MU {
    * in production with MONGODB-AWS, using the role credentials from the AWS SDK credential chain.
    */
   static client(options: MongoClientOptions = {}): MongoClient {
-    return new MongoClient(process.env.MONGODB_URI!, {
+    return new MongoClient(env.MONGODB_URI, {
       ...options,
-      ...(process.env.MONGODB_USERNAME
-        ? { auth: { username: process.env.MONGODB_USERNAME, password: process.env.MONGODB_PASSWORD } }
+      ...(env.MONGODB_USERNAME
+        ? { auth: { username: env.MONGODB_USERNAME, password: env.MONGODB_PASSWORD } }
         : { authMechanism: AuthMechanism.MONGODB_AWS, authSource: '$external' }),
     });
   }
@@ -42,11 +43,11 @@ export class MU {
   }
 
   static db(mongo: MongoClient): Db {
-    return mongo.db(process.env.MONGODB_DATABASE!);
+    return mongo.db(env.MONGODB_DATABASE);
   }
 
   static col(mongo: MongoClient): Collection {
-    return this.db(mongo).collection(process.env.MONGODB_COLLECTION!);
+    return this.db(mongo).collection(env.MONGODB_COLLECTION);
   }
 
   /** Returns all usernames that match the scrapingOffset */

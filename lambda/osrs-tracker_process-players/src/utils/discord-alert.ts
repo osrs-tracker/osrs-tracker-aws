@@ -1,6 +1,7 @@
 import { DiscordWebhook, DiscordWebhookMessage } from '@osrs-tracker/discord-webhooks';
 import { Context } from 'aws-lambda/handler';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
+import { env } from '../env';
 
 export function discordAlert(title: string, players: string[], context: Context, summary = 'Failed to update') {
   const region = context.invokedFunctionArn.split(':')[3];
@@ -26,5 +27,5 @@ export function discordAlert(title: string, players: string[], context: Context,
 
   if (DRY_RUN) return logDryRun('send Discord alert', message);
 
-  return DiscordWebhook.dispatch(message);
+  return DiscordWebhook.dispatch(message, { webhookUrl: env.WEBHOOK_URL });
 }

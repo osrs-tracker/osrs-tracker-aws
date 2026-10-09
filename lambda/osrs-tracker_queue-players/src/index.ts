@@ -3,6 +3,7 @@ import { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
 import { createMessage, sendMessageBatch } from './utils/sqs.utils';
+import { env } from './env';
 
 const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 
@@ -45,7 +46,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
       usernamesProcessed++;
 
       // if usernames array is smaller then PLAYERS_PER_SQS_MESSAGE,
-      if (usernames.length < parseInt(process.env.PLAYERS_PER_SQS_MESSAGE!)) continue;
+      if (usernames.length < env.PLAYERS_PER_SQS_MESSAGE) continue;
 
       // if usernames array is full, add message to batch
       messageBatch.push(createMessage(usernames, scrapingOffset));
