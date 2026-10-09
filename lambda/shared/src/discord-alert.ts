@@ -1,6 +1,9 @@
 import { Context } from 'aws-lambda/handler';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
 
+/** @see https://discord.com/developers/docs/resources/message#embed-object-embed-limits */
+const DISCORD_DESCRIPTION_MAX_LENGTH = 4096;
+
 /**
  * The part of Discord's execute-webhook body these alerts use: one embed.
  *
@@ -19,8 +22,9 @@ interface DiscordAlertMessage {
 
 /**
  * Sends a red Discord alert to `webhookUrl`, linking to this invocation's logs and the function's monitoring tab. A
- * non-2xx response (e.g. a revoked webhook) is logged, not thrown; a failed request rejects. Code that must not throw,
- * such as process-players after its bulk writes, uses `discordAlertNeverRejects` instead.
+ * non-2xx response (e.g. a revoked webhook) is logged, not thrown; a failed or timed-out (5 s) request rejects. A
+ * description over Discord's limit is truncated. Code that must not throw, such as process-players after its bulk
+ * writes, uses `discordAlertNeverRejects` instead.
  */
 export async function discordAlert(
   webhookUrl: string,
@@ -29,6 +33,10 @@ export async function discordAlert(
   context: Context,
 ): Promise<void> {
   const region = context.invokedFunctionArn.split(':')[3];
+
+  // Discord rejects a longer embed description with HTTP 400, which would lose the whole alert
+  if (description.length > DISCORD_DESCRIPTION_MAX_LENGTH)
+    description = `${description.slice(0, DISCORD_DESCRIPTION_MAX_LENGTH - 1)}…`;
 
   const message: DiscordAlertMessage = {
     embeds: [
@@ -53,6 +61,9 @@ export async function discordAlert(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(message),
+    // undici's own timeouts are 300 s; a stalled request must not hold the Lambda until it times out (process-players
+    // would then be retried by SQS after its bulk writes, storing duplicate hiscore entries)
+    signal: AbortSignal.timeout(5_000),
   });
   if (!response.ok) console.error(`Failed to send Discord alert: HTTP ${response.status}`);
 }

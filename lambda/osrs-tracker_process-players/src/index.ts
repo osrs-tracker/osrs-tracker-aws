@@ -7,10 +7,8 @@ import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
 import { MU } from './utils/mongo.utils';
 import { fetchHiscore } from './utils/player.utils';
-import { createMessage, sendMessageBatch } from '@lambda/shared/sqs.utils';
+import { createMessage, sendMessageBatch, SQS_MESSAGE_BATCH_SIZE } from '@lambda/shared/sqs.utils';
 import { env } from './env';
-
-const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
@@ -53,15 +51,15 @@ export const handler = async (event: SQSEvent, context: Context) => {
     const bulkUpdateUsernames: string[] = [];
 
     // scrape each username from body with staggered delays and wait for all to finish
-    await Promise.allSettled(
+    const scrapeResults = await Promise.allSettled(
       usernames.map(async (username, index) => {
         // Add 2000ms (2 second) delay for each subsequent request to avoid 503 errors
         if (index > 0) await new Promise((resolve) => setTimeout(resolve, index * 2000));
 
         const result = await fetchHiscore(username);
         if (result.status === 'notFound') {
-          notFoundUsernames.push(username);
           if (await MU.recordHiscoreNotFound(client, username)) pausedUsernames.push(username);
+          notFoundUsernames.push(username);
           return;
         }
         if (result.status === 'failed') return mapArrayPush(failedMap, scrapingOffset, username);
@@ -80,6 +78,13 @@ export const handler = async (event: SQSEvent, context: Context) => {
         );
       }),
     );
+
+    // a scrape that threw (e.g. recording a 404 failed) is retried like a failed fetch, instead of silently dropped
+    scrapeResults.forEach((result, i) => {
+      if (result.status === 'fulfilled') return;
+      console.error(`Failed to scrape username: ${usernames[i]}`, result.reason);
+      mapArrayPush(failedMap, scrapingOffset, usernames[i]);
+    });
 
     // Only bulk update if there are any updates, can be empty if all usernames failed
     if (bulkUpdateOps.length)
@@ -110,10 +115,11 @@ export const handler = async (event: SQSEvent, context: Context) => {
   if (notFoundUsernames.length)
     console.log(`Skipped ${notFoundUsernames.length} players not on the hiscores:`, notFoundUsernames);
 
-  // throw error if no write was attempted because every scrape failed, so SQS retries the whole message. Nothing was
-  // stored, so that's safe. Dont send new SQS messages or we will get stuck in a loop (a message where every player is
-  // not on the hiscores completes normally, there's nothing to retry)
-  if (attemptedPlayerCount > 0 && bulkWrites.length === 0) {
+  // throw error if nothing was written because every scrape failed, so SQS retries the whole message. Dont send new
+  // SQS messages or we will get stuck in a loop (a message where every player is not on the hiscores completes
+  // normally, there's nothing to retry). When a 404 was recorded, a retry would record it again, so the failed players
+  // are queued in a new message below instead; that message has no 404s left and throws here if it fails again
+  if (attemptedPlayerCount > 0 && bulkWrites.length === 0 && notFoundUsernames.length === 0) {
     if (maxReceiveCount > 1) await discordAlert('No players were updated', [...failedMap.values()].flat(), context);
 
     throw new Error(`No players were updated. Failed to update ${failedMessagesCount} players.`);
@@ -136,20 +142,14 @@ export const handler = async (event: SQSEvent, context: Context) => {
       }),
     );
 
-    // send failed messages in batches. Never throw here: the bulk writes are done, so an SQS retry of this message
-    // would store duplicate hiscore entries. A batch that fails to send counts as rejected as a whole.
-    const rejectedIds = await Promise.all(
+    // send failed messages in batches. `sendMessageBatch` never rejects (the bulk writes are done, so an SQS retry of
+    // this message would store duplicate hiscore entries); a batch that fails to send counts as rejected as a whole
+    const rejected = await Promise.all(
       chunk(failedMessages, SQS_MESSAGE_BATCH_SIZE).map((messageBatch) =>
-        sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch).then(
-          (failed) => failed.map(({ Id }) => Id),
-          (e) => {
-            console.error('Failed to send SQS message batch', e);
-            return messageBatch.map(({ Id }) => Id);
-          },
-        ),
+        sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch),
       ),
     );
-    rejectedIds.flat().forEach((id) => unqueuedUsernames.push(...(usernamesByMessageId.get(id!) ?? [])));
+    rejected.flat().forEach(({ Id }) => unqueuedUsernames.push(...(usernamesByMessageId.get(Id!) ?? [])));
   }
 
   console.log(

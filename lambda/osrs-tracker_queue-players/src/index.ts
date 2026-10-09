@@ -3,25 +3,12 @@ import { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { ensureIndex } from '@lambda/shared/mongo.utils';
 import { MU } from './utils/mongo.utils';
-import { createMessage, sendMessageBatch } from '@lambda/shared/sqs.utils';
+import { createMessage, sendMessageBatch, SQS_MESSAGE_BATCH_SIZE } from '@lambda/shared/sqs.utils';
 import { env } from './env';
-
-const SQS_MESSAGE_BATCH_SIZE = 10; // max 10
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
 const client = MU.client();
-
-/** Sends a batch, adding entries SQS rejected (logged by `sendMessageBatch`) and a thrown error to `errors`. */
-async function sendBatch(messageBatch: SendMessageBatchRequestEntry[], errors: (Error | BatchResultErrorEntry)[]) {
-  await sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch).then(
-    (failed) => errors.push(...failed),
-    (e) => {
-      console.error('Failed to send SQS message batch', e);
-      errors.push(e);
-    },
-  );
-}
 
 export const handler = async (event: ScheduledEvent, context: Context) => {
   // current scrapeOffset, -12 to 11
@@ -37,7 +24,8 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   let usernamesProcessed = 0;
   let messagesCreated = 0;
   let commandsExecuted = 0;
-  const errors: (Error | BatchResultErrorEntry)[] = [];
+  // entries SQS rejected or that failed to send, each logged by `sendMessageBatch`
+  const errors: BatchResultErrorEntry[] = [];
 
   // temporary arrays
   const usernames: string[] = [];
@@ -59,7 +47,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
 
       // if batch is full, send batch
       if (messageBatch.length === SQS_MESSAGE_BATCH_SIZE) {
-        await sendBatch(messageBatch, errors);
+        errors.push(...(await sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch)));
         commandsExecuted++;
         messageBatch.length = 0;
       }
@@ -75,7 +63,7 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
     messagesCreated++;
   }
   if (messageBatch.length) {
-    await sendBatch(messageBatch, errors);
+    errors.push(...(await sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch)));
     commandsExecuted++;
   }
 
