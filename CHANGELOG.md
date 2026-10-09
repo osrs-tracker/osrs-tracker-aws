@@ -36,7 +36,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   `@osrs-tracker/discord-webhooks` package. The Lambdas were its only users, so the package is removed from this repo
   and deprecated on npm. Deployed with the shared-code build: clean-hiscores version 6, process-players 46,
   queue-players 21 (refresh-items' bundle is unchanged).
-- Fixes from reviewing the above (not deployed yet):
+- Fixes from reviewing the above, deployed as clean-hiscores version 7, process-players 47, queue-players 22 and
+  refresh-items 8:
   - A stalled Discord request gives up after 5 seconds. Before, it could hold process-players past its timeout after the
     bulk writes, and the SQS retry would store duplicate hiscore entries.
   - An alert over Discord's 4096-character limit (such as a long player list) is cut short instead of rejected.
