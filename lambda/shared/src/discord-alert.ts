@@ -1,6 +1,21 @@
-import { DiscordWebhook, DiscordWebhookMessage } from '@osrs-tracker/discord-webhooks';
 import { Context } from 'aws-lambda/handler';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
+
+/**
+ * The part of Discord's execute-webhook body these alerts use: one embed.
+ *
+ * @see https://discord.com/developers/docs/resources/webhook#execute-webhook
+ */
+interface DiscordAlertMessage {
+  embeds: {
+    title: string;
+    description: string;
+    url: string;
+    author: { name: string; url: string };
+    color: number;
+    timestamp: string;
+  }[];
+}
 
 /**
  * Sends a red Discord alert to `webhookUrl`, linking to this invocation's logs and the function's monitoring tab. A
@@ -15,7 +30,7 @@ export async function discordAlert(
 ): Promise<void> {
   const region = context.invokedFunctionArn.split(':')[3];
 
-  const message: DiscordWebhookMessage = {
+  const message: DiscordAlertMessage = {
     embeds: [
       {
         title,
@@ -34,7 +49,11 @@ export async function discordAlert(
   if (DRY_RUN) return logDryRun('send Discord alert', message);
 
   // fetch resolves on 4xx/5xx too (e.g. a revoked webhook), so check the status or the alert is lost without a trace
-  const response: Response = await DiscordWebhook.dispatch(message, { webhookUrl });
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(message),
+  });
   if (!response.ok) console.error(`Failed to send Discord alert: HTTP ${response.status}`);
 }
 

@@ -60,7 +60,7 @@ the agent.
   touches all four. process-players' `npm run lint` lints `lambda/shared/`; the root `npm run prettier:ci` formats it.
 - `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/express-metrics`: `npx vitest run && npm run build` (`npm test` is watch mode)
-- `@osrs-tracker/models`, `discord-webhooks`: `npm run build`
+- `@osrs-tracker/models`: `npm run build`
 - Repo root: `npm run prettier:ci`
 
 CI checks each package's committed `dist/` against its build, so commit the rebuilt `dist/`.

@@ -32,6 +32,10 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   keeping a copy each, so a fix there reaches all four. CI checks all four when it changes and now type-checks each
   Lambda, including the shared code it uses. The bundles behave the same and need no redeploy, and the build no longer
   needs `minimist`. The push hook for Claude Code checks the checkout being pushed instead of the main one.
+- Discord alerts are sent by the Lambdas' shared code directly (a `fetch` POST to the webhook) instead of through the
+  `@osrs-tracker/discord-webhooks` package. The Lambdas were its only users, so the package is removed from this repo
+  and deprecated on npm. Deployed with the shared-code build: clean-hiscores version 6, process-players 46,
+  queue-players 21 (refresh-items' bundle is unchanged).
 
 ### Metrics package
 
