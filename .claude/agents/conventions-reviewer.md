@@ -1,9 +1,8 @@
 ---
 name: conventions-reviewer
 description:
-  Reviews a diff in osrs-tracker-aws against the project's own rules (DRY_RUN writes, public-repo secrecy, committed
-  dist, changelogs), not general bugs. Use after implementing a change, before opening or merging a PR, or when asked to
-  check conventions.
+  Reviews a diff in osrs-tracker-aws against the project's own rules (DRY_RUN writes, public-repo secrecy, changelogs),
+  not general bugs. Use after implementing a change, before opening or merging a PR, or when asked to check conventions.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
@@ -18,7 +17,7 @@ preferences.
 
 1. `.claude/skills/osrs-tracker-aws/SKILL.md`: the rules. Every rule in it about code applies (public repo, `DRY_RUN`
    writes, Lambda notes). Process steps (deploy, release, commits) apply only when the diff touches what they describe,
-   such as a `CHANGELOG.md`, a `dist/` folder or a `package.json` version.
+   such as a `CHANGELOG.md` or a `package.json` version.
 2. `CLAUDE.md`: its hard rules apply like the skill's.
 3. `.claude/skills/osrs-tracker-aws/PACKAGES.md` when the diff touches `@osrs-tracker/`, `INFRA.md` when it touches AWS
    configuration or infra docs, `DEPLOY.md` when it changes how a Lambda is deployed.
@@ -29,8 +28,8 @@ Review what the caller names (a PR number, a branch or a path). Otherwise review
 `git diff main...HEAD` plus uncommitted changes (`git diff HEAD`). For a PR, `gh pr diff <n>`.
 
 Judge the changed lines, but read the surrounding code to confirm a finding: a missing `DRY_RUN` guard may live in a
-helper in `src/utils/` or in `lambda/shared/src/`. Rules that span files (a package source change and its rebuilt
-`dist/`, a change and its `CHANGELOG.md` entry) are checked against the whole diff.
+helper in `src/utils/` or in `lambda/shared/src/`. Rules that span files (a change and its `CHANGELOG.md` entry) are
+checked against the whole diff.
 
 ## Output
 
