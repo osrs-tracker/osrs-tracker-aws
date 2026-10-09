@@ -3,6 +3,12 @@
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
 `CHANGELOG.md`.
 
+## 2026/10/09
+
+- Each Lambda's README describes what it does, its trigger and environment variable names, and how to run it locally,
+  instead of the old starter-template text. The root README no longer says `@osrs-tracker/hiscores` parses the old
+  hiscore formats (removed in 3.0.0) and mentions that process-players pauses players who are off the hiscores.
+
 ## 2026/10/08
 
 ### Hiscore entries without `sourceString`

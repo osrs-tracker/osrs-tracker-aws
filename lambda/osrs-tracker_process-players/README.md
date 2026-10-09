@@ -1,3 +1,17 @@
-# Generated with node-ts-starter-cli
+# osrs-tracker_process-players
 
-https://github.com/FreekMencke/node-typescript-starter
+Triggered by the `osrs-tracker_players-to-scrape` SQS queue that queue-players fills. For each username in a message it
+fetches the normal hiscore through the hiscore proxy (`getHiscore` from `@osrs-tracker/hiscores`) and prepends a new
+entry to the player's `hiscoreEntries`.
+
+- **Failed** fetches (5xx, network, timeout) are sent back to the queue; when nothing in the run succeeded it throws so
+  SQS retries the message. Failures on a retried message are reported on Discord.
+- **Not found** (HTTP 404/400) is skipped without retry and counted. After 7 days off the hiscores the player's
+  `scrapingOffsets` move to `pausedScrapingOffsets`, so they're no longer queued, and this is reported on Discord. The
+  API restores them on the next lookup (see the pause/resume contract in [DATA-MODEL.md](../../DATA-MODEL.md)).
+
+Environment: `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `OSRS_API_BASE_URL`, `PLAYERS_PER_SQS_MESSAGE`,
+`SQS_QUEUE_URL`, `WEBHOOK_URL`.
+
+Run it locally without writing anything: copy `.env.example` to `.env`, fill it in, then
+`npm run invoke:dry -- Zezima "Lynx Titan"`. See the [root README](../../README.md) for how it fits with the other jobs.

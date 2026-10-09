@@ -13,15 +13,16 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
 - **queue-players**: every hour, finds the tracked players whose daily snapshot is due at that hour and puts them in a
   queue.
 - **process-players**: picks players from that queue, fetches their current hiscores and saves them as a new daily
-  snapshot. Players that fail are retried, and persistent failures are reported on Discord.
+  snapshot. Players that fail are retried, and persistent failures are reported on Discord. Players who have been off
+  the hiscores for 7 days are no longer queued until someone looks them up again.
 - **clean-hiscores**: every night at midnight (UTC), removes snapshots older than 60 days.
 
 ## Shared packages
 
 - [`@osrs-tracker/models`](https://www.npmjs.com/package/@osrs-tracker/models): the shared data types (players, items,
   hiscores, news) used by the website, the API and these jobs.
-- [`@osrs-tracker/hiscores`](https://www.npmjs.com/package/@osrs-tracker/hiscores): parses OSRS hiscores (including
-  older formats since March 2023), compares snapshots and does XP calculations.
+- [`@osrs-tracker/hiscores`](https://www.npmjs.com/package/@osrs-tracker/hiscores): fetches OSRS hiscores, names the
+  skills and activities, compares snapshots and does XP calculations.
 - [`@osrs-tracker/discord-webhooks`](https://www.npmjs.com/package/@osrs-tracker/discord-webhooks): a tiny helper for
   sending messages to a Discord webhook.
 
