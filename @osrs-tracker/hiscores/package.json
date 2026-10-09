@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/hiscores",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "Helpers for OSRS hiscores: a hiscore client, skill and activity names, snapshot diffs and XP",
   "license": "Apache-2.0",
   "author": "Freek Mencke",

@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/models",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "Typings for OSRS Tracker API",
   "license": "Apache-2.0",
   "author": "Freek Mencke",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "github:osrs-tracker/osrs-tracker-aws",
+    "url": "git+https://github.com/osrs-tracker/osrs-tracker-aws.git",
     "directory": "@osrs-tracker/models"
   },
   "scripts": {

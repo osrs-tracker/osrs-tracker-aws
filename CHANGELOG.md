@@ -74,7 +74,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - The repo is now licensed under Apache-2.0 instead of MIT: still free for anyone to use, change and ship, but a copy
   has to keep the new `NOTICE` file (crediting OSRS Tracker and Freek Mencke) and mark the files it changed, and the
   licence grants no use of the project's name. Each package ships its own `LICENSE` and `NOTICE`, from its next release;
-  versions already on npm stay MIT.
+  versions already on npm stay MIT. Released as `@osrs-tracker/models` 0.10.3, `hiscores` 3.1.2 and `express-metrics`
+  0.1.1 (`logger` started out on Apache-2.0).
 
 ### Behind the scenes
 
