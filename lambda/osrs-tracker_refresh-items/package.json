@@ -5,16 +5,16 @@
   "license": "MIT",
   "scripts": {
     "prebuild": "rm -rf ./dist",
-    "build": "node ./build/esbuild.js",
+    "build": "node ../shared/build/esbuild.js",
     "predeploy": "npm run build && cd dist && bestzip ../dist.zip * && cd ..",
     "deploy": "aws lambda update-function-code --function-name osrs-tracker_refresh-items --zip-file fileb://dist.zip --publish",
     "postdeploy": "rm ./dist.zip",
     "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_refresh-items --runtime nodejs24.x",
-    "lint": "eslint .",
+    "lint": "eslint . ../shared",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
-    "start": "node ./build/esbuild.js --dev --watch --run",
-    "invoke:dry": "node ./build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
+    "start": "node ../shared/build/esbuild.js --dev --watch --run",
+    "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
@@ -33,7 +33,6 @@
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
-    "minimist": "^1.2.8",
     "prettier": "^3.9.9",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.71.0"
