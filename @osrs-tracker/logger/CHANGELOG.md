@@ -8,7 +8,8 @@ Breaking: the `error` field's format and `responseTime`'s precision change.
   (`... 2 more items`), handles errors from another realm (a `vm` context), and no longer throws for an object without a
   prototype. A string is still written as is (Nest passes a stack as one), and a non-Error object as `inspect` writes it
   instead of as JSON.
-- `requestLogger`'s `responseTime` is pino-http's own timing, in whole milliseconds (`12ms`, was `12.345ms`).
+- `requestLogger`'s `responseTime` is pino-http's own timing, in whole milliseconds (`12ms`, was `12.345ms`), and
+  `logOutgoingRequests` rounds its own to whole milliseconds to match.
 
 ## v0.1.1 - 2026/10/09
 

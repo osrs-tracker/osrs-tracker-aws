@@ -45,7 +45,7 @@ describe('logOutgoingRequests', () => {
       status,
       method: 'GET',
       url: `${url}${path}`,
-      responseTime: expect.stringMatching(/^\d+\.\d{3}ms$/),
+      responseTime: expect.stringMatching(/^\d+ms$/),
     });
   });
 
