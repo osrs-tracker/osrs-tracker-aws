@@ -1,8 +1,7 @@
 ## 1.0.0 - 2026/10/09
 
-- First stable release. The types are the same as 0.10.3; from now on breaking changes bump the major version. Consumers
-  on `^0.10.x` don't pick this up automatically: change the range to `^1.0.0` (and use `@osrs-tracker/hiscores` 3.1.3 or
-  later, whose peer range accepts it).
+- First stable release: the models are unchanged from 0.10.3, and 1.0.0 marks their API as stable. From here, a breaking
+  change to a model is a major version. Consumers on `^0.10.x` need to widen their range to `^1.0.0` to get it.
 
 ## 0.10.3 - 2026/10/09
 
