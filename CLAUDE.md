@@ -45,9 +45,10 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`), `build/esbuild.js`,
   `build/invoke.js` and `eslint.config.mjs`. A change there touches all four Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
-  tarball to `dist/` and `CHANGELOG.md`. `models`, `hiscores` and `express-metrics` ship `dist/cjs`, `dist/esm` and
-  `dist/types`: osrs-tracker-api `require`s the CJS build and osrs-tracker-web bundles the ESM one, so a build change
-  must keep both loading.
+  tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root
+  `LICENSE` and `NOTICE`. `models`, `hiscores` and `express-metrics` ship `dist/cjs`, `dist/esm` and `dist/types`:
+  osrs-tracker-api `require`s the CJS build and osrs-tracker-web bundles the ESM one, so a build change must keep both
+  loading.
 - `DATA-MODEL.md`: who writes each `players`/`items` field and owns each index, and the pause/resume contract.
 - `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is the one required check.
   `.github/actions/setup-deps` caches each folder's `node_modules` by its lockfile.

@@ -2,14 +2,15 @@
   "name": "@osrs-tracker/hiscores",
   "version": "3.1.1",
   "description": "Helpers for OSRS hiscores: a hiscore client, skill and activity names, snapshot diffs and XP",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Freek Mencke",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "files": [
     "dist",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "NOTICE"
   ],
   "exports": {
     ".": {

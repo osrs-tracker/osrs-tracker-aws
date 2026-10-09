@@ -9,7 +9,7 @@ minor version. Stored entries come from the JSON hiscores, so there's no parse o
 ## Versioning
 
 Bump `package.json`, add a `## vX.Y.Z - YYYY/MM/DD` entry to the package's `CHANGELOG.md` (models: `## X.Y.Z - …`), and
-build (`dist/` isn't committed; `prepublishOnly` rebuilds it).
+build (`dist/` isn't committed; `prepublishOnly` rebuilds it). An `## Unreleased` section becomes that version's entry.
 
 ## Publishing
 
