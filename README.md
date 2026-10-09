@@ -19,14 +19,18 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
 
 ## Shared packages
 
-- [`@osrs-tracker/models`](https://www.npmjs.com/package/@osrs-tracker/models): the shared data types (players, items,
-  hiscores, news) used by the website, the API and these jobs.
-- [`@osrs-tracker/hiscores`](https://www.npmjs.com/package/@osrs-tracker/hiscores): fetches OSRS hiscores, names the
-  skills and activities, compares snapshots and does XP calculations.
-- [`@osrs-tracker/express-metrics`](https://www.npmjs.com/package/@osrs-tracker/express-metrics): Prometheus HTTP
-  metrics for the website's and the API's servers.
-- [`@osrs-tracker/logger`](https://www.npmjs.com/package/@osrs-tracker/logger): structured JSON logs (request logs,
-  outgoing requests, errors) for the website's and the API's servers, on pino.
+- [`@osrs-tracker/models`](https://www.npmjs.com/package/@osrs-tracker/models)
+  [![npm](https://img.shields.io/npm/v/@osrs-tracker/models.svg)](https://www.npmjs.com/package/@osrs-tracker/models):
+  the shared data types (players, items, hiscores, news) used by the website, the API and these jobs.
+- [`@osrs-tracker/hiscores`](https://www.npmjs.com/package/@osrs-tracker/hiscores)
+  [![npm](https://img.shields.io/npm/v/@osrs-tracker/hiscores.svg)](https://www.npmjs.com/package/@osrs-tracker/hiscores):
+  fetches OSRS hiscores, names the skills and activities, compares snapshots and does XP calculations.
+- [`@osrs-tracker/express-metrics`](https://www.npmjs.com/package/@osrs-tracker/express-metrics)
+  [![npm](https://img.shields.io/npm/v/@osrs-tracker/express-metrics.svg)](https://www.npmjs.com/package/@osrs-tracker/express-metrics):
+  Prometheus HTTP metrics for the website's and the API's servers.
+- [`@osrs-tracker/logger`](https://www.npmjs.com/package/@osrs-tracker/logger)
+  [![npm](https://img.shields.io/npm/v/@osrs-tracker/logger.svg)](https://www.npmjs.com/package/@osrs-tracker/logger):
+  structured JSON logs (request logs, outgoing requests, errors) for the website's and the API's servers, on pino.
 
 ## How it fits together
 
