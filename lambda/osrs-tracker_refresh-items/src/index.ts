@@ -1,29 +1,23 @@
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { fetchItems } from './utils/item.utils';
 import { MU } from './utils/mongo.utils';
+// validates the environment at cold start (only the shared variables)
+import './env';
 
 const client = MU.client();
 
 export const handler = async (_event: ScheduledEvent, context: Context) => {
-  const startFetching = process.hrtime();
+  const startFetching = performance.now();
 
   const items = await fetchItems();
 
-  console.info(
-    `Fetched ${items.length} items in ${Math.trunc(
-      process.hrtime(startFetching)[0] * 1000 + process.hrtime(startFetching)[1] / 1000000,
-    )}ms.`,
-  );
+  console.info(`Fetched ${items.length} items in ${Math.trunc(performance.now() - startFetching)}ms.`);
 
-  const startUpserting = process.hrtime();
+  const startUpserting = performance.now();
 
   const upsertedItemCount = await MU.upsertItems(client, items);
 
-  console.info(
-    `Upserted ${upsertedItemCount} items in ${Math.trunc(
-      process.hrtime(startUpserting)[0] * 1000 + process.hrtime(startUpserting)[1] / 1000000,
-    )}ms.`,
-  );
+  console.info(`Upserted ${upsertedItemCount} items in ${Math.trunc(performance.now() - startUpserting)}ms.`);
 
   if (upsertedItemCount === 0) throw Error('No items processed');
 
