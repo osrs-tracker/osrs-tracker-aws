@@ -32,9 +32,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ### CI
 
-- CI loads the built `@osrs-tracker/models` and `@osrs-tracker/hiscores` with both `require` and `import`, directly and
-  by package name from the packed tarball, so a build Node can't load (like hiscores 3.1.0 or models 0.10.0) fails CI
-  before it's published.
+- CI loads every built package with an `exports` map (`models`, `hiscores`, `express-metrics`) with both `require` and
+  `import`, directly and by package name from the packed tarball, so a build Node can't load (like hiscores 3.1.0 or
+  models 0.10.0) fails CI before it's published.
 
 ### Behind the scenes
 
