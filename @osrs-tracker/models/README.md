@@ -42,6 +42,12 @@ await players.updateOne({ username }, [
 const entries = decodeHiscoreEntries(player.hiscoreEntries, layoutsById); // newest first, as stored
 ```
 
+### Reading entries
+
+A value is `null` when there's no xp or score; don't make up a value for it. Show an untrained skill's level with
+`skillLevel(entry.skills[name])` (1), read Overall with `overallOf(entry)`, and iterate a `HiscoreDiff` with
+`Object.entries`: its values are never `null`.
+
 ## Development
 
 OSRS Tracker was originally built entirely without AI assistance. Since October 2026, I've started using

@@ -1,3 +1,9 @@
+## v4.1.0 - 2026/10/10
+
+- `hiscoreDiff` returns models' `HiscoreDiff`, whose values are typed as numbers (never `null`), so code reading a diff
+  needs no fallbacks. The values are the same as in 4.0.0; a skill without xp still counts as level 1, now through
+  models' `skillLevel`. Requires `@osrs-tracker/models` `^2.1.0`.
+
 ## v4.0.0 - 2026/10/10
 
 - **Breaking:** `getHiscore` returns hiscores mapped to `@osrs-tracker/models` 2.0.0's `HiscoreEntry` (keyed by name,

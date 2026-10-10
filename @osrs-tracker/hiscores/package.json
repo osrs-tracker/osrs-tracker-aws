@@ -1,6 +1,6 @@
 {
   "name": "@osrs-tracker/hiscores",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Helpers for OSRS hiscores: a hiscore client, skill and activity names, snapshot diffs and XP",
   "license": "Apache-2.0",
   "author": "Freek Mencke",
@@ -34,10 +34,10 @@
     "test": "jest --watch"
   },
   "peerDependencies": {
-    "@osrs-tracker/models": "^2.0.0"
+    "@osrs-tracker/models": "^2.1.0"
   },
   "devDependencies": {
-    "@osrs-tracker/models": "^2.0.0",
+    "@osrs-tracker/models": "^2.1.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.13.6",
     "jest": "^30.5.2",
