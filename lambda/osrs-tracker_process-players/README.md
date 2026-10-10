@@ -2,7 +2,12 @@
 
 Triggered by the `osrs-tracker_players-to-scrape` SQS queue that queue-players fills. For each username in a message it
 fetches the normal hiscore through the hiscore proxy (`getHiscore` from `@osrs-tracker/hiscores`) and prepends a new
-entry to the player's `hiscoreEntries`.
+entry to the player's `hiscoreEntries` in the compact stored format (`encodeHiscoreEntry` and
+`hiscoreEntriesWriteExpression` from `@osrs-tracker/models`), which also strips the previous entry for the same offset.
+
+- **Layouts:** before writing the entries it upserts their layout (the skill and activity names Jagex used) in the
+  `hiscoreLayouts` collection, in the same database, once per layout per warm Lambda. A stored layout with the same id
+  but other names (a hash collision) fails that message's write, which is reported on Discord like any failed write.
 
 - **Failed** fetches (5xx, network, timeout) are sent back to the queue; when every fetch in the run failed (so nothing
   was written) it throws so SQS retries the message. Failures on a retried message are reported on Discord. After the

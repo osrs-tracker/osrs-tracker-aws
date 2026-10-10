@@ -1,5 +1,11 @@
 import { SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
-import { Player, PlayerScrapeMessageBody } from '@osrs-tracker/models';
+import {
+  createHiscoreLayout,
+  encodeHiscoreEntry,
+  HiscoreLayout,
+  PlayerScrapeMessageBody,
+  StoredPlayer,
+} from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
 import { AnyBulkWriteOperation, ServerApiVersion } from 'mongodb';
 import { chunk } from './utils/array.utils';
@@ -47,8 +53,9 @@ export const handler = async (event: SQSEvent, context: Context) => {
   for (const messageBody of messageBodies) {
     const { usernames, scrapingOffset } = messageBody;
     const scrapeTime = new Date();
-    const bulkUpdateOps: AnyBulkWriteOperation<Player>[] = [];
+    const bulkUpdateOps: AnyBulkWriteOperation<StoredPlayer>[] = [];
     const bulkUpdateUsernames: string[] = [];
+    const layouts: HiscoreLayout[] = [];
 
     // scrape each username from body with staggered delays and wait for all to finish
     const scrapeResults = await Promise.allSettled(
@@ -64,18 +71,13 @@ export const handler = async (event: SQSEvent, context: Context) => {
         }
         if (result.status === 'failed') return mapArrayPush(failedMap, scrapingOffset, username);
 
-        const hiscoreJson = result.hiscore;
+        const layout = createHiscoreLayout(result.layout, scrapeTime);
+        const entry = encodeHiscoreEntry({ date: scrapeTime, scrapingOffset, ...result.hiscore }, layout);
 
-        // add hiscoreEntry to player.hiscoreEntries via bulkWriteOp
+        // add the entry to player.hiscoreEntries via bulkWriteOp, once its layout is stored
+        layouts.push(layout);
         bulkUpdateUsernames.push(username);
-        bulkUpdateOps.push(
-          MU.hiscoreEntryBulkWriteOp(username, {
-            date: scrapeTime,
-            scrapingOffset,
-            skills: hiscoreJson.skills,
-            activities: hiscoreJson.activities,
-          }),
-        );
+        bulkUpdateOps.push(MU.hiscoreEntryBulkWriteOp(username, entry));
       }),
     );
 
@@ -86,11 +88,15 @@ export const handler = async (event: SQSEvent, context: Context) => {
       mapArrayPush(failedMap, scrapingOffset, usernames[i]);
     });
 
-    // Only bulk update if there are any updates, can be empty if all usernames failed
+    // Only bulk update if there are any updates, can be empty if all usernames failed. The layouts are stored first, in
+    // the same settled chain: an earlier message's write may already be running, so a failure here (e.g. a layout id
+    // collision) must not throw either; it fails this message's write, which is alerted on below
     if (bulkUpdateOps.length)
       bulkWrites.push({
         usernames: bulkUpdateUsernames,
-        result: Promise.allSettled([MU.bulkWrite(client, bulkUpdateOps)]).then(([result]) => result),
+        result: Promise.allSettled([
+          MU.ensureHiscoreLayouts(client, layouts).then(() => MU.bulkWrite(client, bulkUpdateOps)),
+        ]).then(([result]) => result),
       });
   }
 
