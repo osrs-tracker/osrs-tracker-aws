@@ -45,4 +45,25 @@ export class MU extends mongoUtils<StoredPlayer>() {
     const { deletedCount } = await this.layouts(mongo).deleteMany(filter);
     return deletedCount;
   }
+
+  /**
+   * Deletes the players without hiscore entries (none left after the pull, or never any) and returns how many. A lookup
+   * through the API creates the player again, with its first entry. When `DRY_RUN` is set it only logs who it would
+   * delete.
+   */
+  static async deletePlayersWithoutEntries(mongo: MongoClient): Promise<number> {
+    const filter = { $or: [{ hiscoreEntries: { $exists: false } }, { hiscoreEntries: { $size: 0 } }] };
+
+    if (DRY_RUN) {
+      const usernames = await this.col(mongo)
+        .find(filter, { projection: { _id: 0, username: 1 } })
+        .map(({ username }) => username)
+        .toArray();
+      logDryRun(`delete ${usernames.length} players without hiscore entries`, usernames);
+      return usernames.length;
+    }
+
+    const { deletedCount } = await this.col(mongo).deleteMany(filter);
+    return deletedCount;
+  }
 }

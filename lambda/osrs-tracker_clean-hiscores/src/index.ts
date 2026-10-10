@@ -28,5 +28,9 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   const deletedLayoutCount = await MU.deleteUnusedHiscoreLayouts(client, now);
   console.log(`Deleted ${deletedLayoutCount} unused hiscore layouts.`);
 
+  // a player whose last entry was just pulled hasn't been scraped or looked up for MAX_AGE_IN_DAYS
+  const deletedPlayerCount = await MU.deletePlayersWithoutEntries(client);
+  console.log(`Deleted ${deletedPlayerCount} players without hiscore entries.`);
+
   return context.logStreamName;
 };
