@@ -104,8 +104,12 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | `players`  | `{ lastHiscoreFetch: -1 }`, partial (`$exists`) | API, at startup                                                                    | API `getLastFetchedPlayers` (`hint`).                                                                                                 |
 | `players`  | `{ scrapingOffsets: 1 }`, sparse                | queue-players, on every run (`aws:lambda/osrs-tracker_queue-players/src/index.ts`) | queue-players `getAllUsernamesForOffset` (`hint`).                                                                                    |
 | `items`    | `{ id: 1 }`, unique                             | API, at startup                                                                    | API `getItem`, `recordLookup` (`hint`); refresh-items upsert (`hint`).                                                                |
-| `items`    | `{ name: 'text' }`                              | API, at startup                                                                    | API `searchItems` (`$text`).                                                                                                          |
+| `items`    | `name_autocomplete`, Atlas Search               | API, at startup when missing                                                       | API `searchItems` (`$search`).                                                                                                        |
 | `items`    | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                    | API `getLastFetchedItems` (`hint`).                                                                                                   |
+
+`name_autocomplete` is an Atlas Search index (`listSearchIndexes`, not `indexes()`): `name` as `autocomplete`
+(`edgeGram`, `minGrams` 2, `maxGrams` 15, `foldDiacritics`) and `string`, `dynamic: false`. The API creates it only when
+it's missing and never updates an existing definition: apply a changed definition by hand.
 
 A `hint` on a missing index fails the query, so don't drop an index without checking this table.
 
