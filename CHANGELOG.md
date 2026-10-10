@@ -42,6 +42,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   block a push.
 - CI type-checks the tests of packages that use Vitest and have a `tsconfig.spec.json` (models), since Vitest doesn't
   and the build covers only `src/index.ts`.
+- The root `package.json` declares the repo's Apache-2.0 license instead of MIT, matching `LICENSE` and every Lambda and
+  package (#58).
 
 ## 2026/10/09
 
