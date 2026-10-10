@@ -1,4 +1,4 @@
-import { HiscoreEntry, Player } from '@osrs-tracker/models';
+import { HiscoreLayout, hiscoreEntriesWriteExpression, StoredHiscoreEntry, StoredPlayer } from '@osrs-tracker/models';
 import { subDays } from 'date-fns';
 import { AnyBulkWriteOperation, Document, MongoClient } from 'mongodb';
 import { DRY_RUN, logDryRun } from '@lambda/shared/dry-run.utils';
@@ -7,28 +7,59 @@ import { mongoUtils } from '@lambda/shared/mongo.utils';
 /** Scraping is paused when a player hasn't been on the hiscores for this many days in a row. */
 export const HISCORE_NOT_FOUND_PAUSE_DAYS = 7;
 
+/** Layout ids this warm Lambda has upserted or found with the same names, so each is upserted once per container. */
+const knownLayoutIds = new Set<number>();
+
+function sameNames(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((name, i) => name === b[i]);
+}
+
 /**
  * Short for MongoUtils.
  *
  * This Lambda's MongoDB queries and writes, on top of the shared client and collection.
  */
-export class MU extends mongoUtils<Player>() {
-  static hiscoreEntryBulkWriteOp(username: string, hiscoreEntry: HiscoreEntry): AnyBulkWriteOperation<Player> {
+export class MU extends mongoUtils<StoredPlayer>() {
+  /**
+   * Upserts the layouts the new entries use, before the entries are written. Layout ids already known to this warm
+   * Lambda are skipped. Throws when an existing layout with the same id has other names (a hash collision), so nothing
+   * is stored under a layout that decodes to the wrong names. Logged instead when `DRY_RUN` is set.
+   */
+  static async ensureHiscoreLayouts(mongo: MongoClient, layouts: HiscoreLayout[]): Promise<void> {
+    const unknown = new Map<number, HiscoreLayout>();
+    for (const layout of layouts) if (!knownLayoutIds.has(layout._id)) unknown.set(layout._id, layout);
+
+    for (const { _id, skills, activities, since } of unknown.values()) {
+      if (DRY_RUN) {
+        logDryRun(`upsert hiscore layout ${_id}`, { _id, skills, activities, since });
+        continue;
+      }
+
+      const { upsertedCount } = await this.layouts(mongo).updateOne(
+        { _id },
+        { $setOnInsert: { skills, activities, since } },
+        { upsert: true },
+      );
+      if (!upsertedCount) {
+        const existing = await this.layouts(mongo).findOne({ _id });
+        if (!existing || !sameNames(existing.skills, skills) || !sameNames(existing.activities, activities))
+          throw new Error(`Hiscore layout ${_id} is stored with other names (a layout id hash collision)`);
+      }
+      knownLayoutIds.add(_id);
+    }
+  }
+
+  static hiscoreEntryBulkWriteOp(username: string, entry: StoredHiscoreEntry): AnyBulkWriteOperation<StoredPlayer> {
     return {
-      // add new hiscoreEntry to player.hiscoreEntries
+      // prepend the new entry to player.hiscoreEntries and strip the previous one for the same offset
       updateOne: {
         filter: { username },
         hint: { username: 1 },
-        update: {
-          $push: {
-            hiscoreEntries: {
-              $each: [hiscoreEntry],
-              $position: 0,
-            },
-          },
+        update: [
+          { $set: { hiscoreEntries: hiscoreEntriesWriteExpression(entry) } },
           // the player is on the hiscores (again), so end any "not found" streak
-          $unset: { hiscoreNotFoundCount: '', hiscoreNotFoundSince: '' },
-        },
+          { $unset: ['hiscoreNotFoundCount', 'hiscoreNotFoundSince'] },
+        ],
       },
     };
   }
@@ -106,9 +137,9 @@ export class MU extends mongoUtils<Player>() {
   }
 
   /** Executes the bulk write and returns the number of modified players. Logged instead when `DRY_RUN` is set. */
-  static async bulkWrite(mongo: MongoClient, operations: AnyBulkWriteOperation<Player>[]): Promise<number> {
+  static async bulkWrite(mongo: MongoClient, operations: AnyBulkWriteOperation<StoredPlayer>[]): Promise<number> {
     if (DRY_RUN) {
-      logDryRun(`push a hiscore entry for ${operations.length} players`, operations);
+      logDryRun(`prepend a hiscore entry for ${operations.length} players`, operations);
       return operations.length;
     }
 

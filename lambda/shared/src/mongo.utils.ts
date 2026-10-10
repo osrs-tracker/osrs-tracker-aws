@@ -8,8 +8,12 @@ import {
   MongoClient,
   MongoClientOptions,
 } from 'mongodb';
+import { HiscoreLayout } from '@osrs-tracker/models';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
 import { sharedEnv as env } from './env';
+
+/** The collection of hiscore layouts (`HiscoreLayout`), in the same database as `MONGODB_COLLECTION`. */
+export const HISCORE_LAYOUTS_COLLECTION = 'hiscoreLayouts';
 
 /**
  * The MongoDB client and collection every Lambda shares, typed with the Lambda's collection schema. A Lambda extends the returned class
@@ -36,6 +40,11 @@ export function mongoUtils<TSchema extends Document = Document>() {
 
     static col(mongo: MongoClient): Collection<TSchema> {
       return this.db(mongo).collection<TSchema>(env.MONGODB_COLLECTION);
+    }
+
+    /** The hiscore layouts that `hiscoreEntries[].l` points to. */
+    static layouts(mongo: MongoClient): Collection<HiscoreLayout> {
+      return this.db(mongo).collection<HiscoreLayout>(HISCORE_LAYOUTS_COLLECTION);
     }
   };
 }

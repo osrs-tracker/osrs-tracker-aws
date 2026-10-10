@@ -9,7 +9,8 @@ const client = MU.client();
 export const handler = async (event: ScheduledEvent, context: Context) => {
   const maxAgeInDays = env.MAX_AGE_IN_DAYS;
 
-  const modifiedCount = await MU.pullHiscoreEntriesBefore(client, subDays(startOfDay(new Date()), maxAgeInDays));
+  const now = new Date();
+  const modifiedCount = await MU.pullHiscoreEntriesBefore(client, subDays(startOfDay(now), maxAgeInDays));
 
   if (modifiedCount === 0) {
     await discordAlert(
@@ -22,6 +23,10 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   }
 
   console.log(`Cleaned hiscores older than ${maxAgeInDays} days for ${modifiedCount} players.`);
+
+  // after the pull, since only pulled entries can leave a layout unused
+  const deletedLayoutCount = await MU.deleteUnusedHiscoreLayouts(client, now);
+  console.log(`Deleted ${deletedLayoutCount} unused hiscore layouts.`);
 
   return context.logStreamName;
 };
