@@ -11,17 +11,6 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
 
   const now = new Date();
   const modifiedCount = await MU.pullHiscoreEntriesBefore(client, subDays(startOfDay(now), maxAgeInDays));
-
-  if (modifiedCount === 0) {
-    await discordAlert(
-      env.WEBHOOK_URL,
-      'Error cleaning hiscores',
-      `No hiscores older than ${maxAgeInDays} days were found.`,
-      context,
-    );
-    throw new Error(`No hiscores older than ${maxAgeInDays} days were found.`);
-  }
-
   console.log(`Cleaned hiscores older than ${maxAgeInDays} days for ${modifiedCount} players.`);
 
   // after the pull, since only pulled entries can leave a layout unused
@@ -31,6 +20,18 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   // a player whose last entry was just pulled hasn't been scraped or looked up for MAX_AGE_IN_DAYS
   const deletedPlayerCount = await MU.deletePlayersWithoutEntries(client);
   console.log(`Deleted ${deletedPlayerCount} players without hiscore entries.`);
+
+  // Every night should age out a day of entries; none points at scraping that stopped. Checked last, so the clean-ups
+  // above run either way
+  if (modifiedCount === 0) {
+    await discordAlert(
+      env.WEBHOOK_URL,
+      'Error cleaning hiscores',
+      `No hiscores older than ${maxAgeInDays} days were found.`,
+      context,
+    );
+    throw new Error(`No hiscores older than ${maxAgeInDays} days were found.`);
+  }
 
   return context.logStreamName;
 };
