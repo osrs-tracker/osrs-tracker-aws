@@ -8,6 +8,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - process-players stores hiscore entries in the compact format from `@osrs-tracker/models` 2.0.0 (unchanged values as a
   bare rank) and keeps their layouts in a new `hiscoreLayouts` collection; clean-hiscores pulls by the new date field
   and deletes layouts no entry uses any more. Not deployed yet: it goes live at the cutover (#57), after the migration.
+- A one-off migration script (`scripts/migrate-hiscore-entries/`) rewrites stored hiscore entries to the compact format
+  and fills `hiscoreLayouts`, one player at a time, checking every player by decoding the result. Dry run by default
+  (`--write` to write); it runs during the cutover (#57). CI doesn't cover `scripts/`: run its tests locally.
 - CI type-checks the tests of packages that use Vitest and have a `tsconfig.spec.json` (models), since Vitest doesn't
   and the build covers only `src/index.ts`.
 
