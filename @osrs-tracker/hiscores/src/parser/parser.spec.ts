@@ -45,7 +45,7 @@ describe('hiscoreDiff', () => {
     });
   });
 
-  it('covers names on only one side, counting the missing side as 0', () => {
+  it('covers names on only one side, counting the missing side as 0 (level 1)', () => {
     const oldEntry = entry(1, { Overall: { rank: 200, level: 10, xp: 10 }, Agility: { rank: 5, level: 3, xp: 200 } });
     const recentEntry = entry(
       2,
@@ -56,12 +56,12 @@ describe('hiscoreDiff', () => {
     expect(hiscoreDiff(recentEntry, oldEntry)).toEqual({
       date: oldEntry.date,
       scrapingOffset: 1,
-      skills: { Overall: { rank: 5, level: 2, xp: 1490 }, Agility: { rank: -5, level: -3, xp: -200 } },
+      skills: { Overall: { rank: 5, level: 2, xp: 1490 }, Agility: { rank: -5, level: -2, xp: -200 } },
       activities: { [ActivityEnum.BountyHunter]: { rank: 7, score: 80 } },
     });
   });
 
-  it('counts null on either side as 0, so no diff value is null', () => {
+  it('counts null on either side as 0 (level 1), so no diff value is null', () => {
     const oldEntry = entry(
       1,
       { Overall: { rank: null, level: 30, xp: 0 }, Fishing: null, Cooking: { rank: 9, level: 5, xp: 400 } },
@@ -78,11 +78,21 @@ describe('hiscoreDiff', () => {
       scrapingOffset: 1,
       skills: {
         Overall: { rank: 50, level: 1, xp: 100 },
-        Fishing: { rank: 0, level: 2, xp: 100 },
-        Cooking: { rank: -9, level: -5, xp: -400 },
+        Fishing: { rank: 0, level: 1, xp: 100 },
+        Cooking: { rank: -9, level: -4, xp: -400 },
       },
       activities: { 'Grid Points': { rank: 3, score: 12 }, 'Zulrah': { rank: 0, score: -4 } },
     });
+  });
+
+  it('counts a null skill as level 1 when it becomes ranked', () => {
+    const diff = hiscoreDiff(entry(2, { Mining: { rank: 300, level: 5, xp: 400 } }), entry(1, { Mining: null }));
+    expect(diff.skills['Mining']).toEqual({ rank: 300, level: 4, xp: 400 });
+  });
+
+  it('counts a missing skill as level 1 when it appears ranked', () => {
+    const diff = hiscoreDiff(entry(2, { Sailing: { rank: 300, level: 5, xp: 400 } }), entry(1, {}));
+    expect(diff.skills['Sailing']).toEqual({ rank: 300, level: 4, xp: 400 });
   });
 
   it('diffs names in neither enum', () => {

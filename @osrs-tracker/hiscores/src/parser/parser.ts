@@ -1,11 +1,15 @@
 import { HiscoreActivity, HiscoreEntry, HiscoreSkill, SkillEnum } from '@osrs-tracker/models';
 
+/** The level of a skill without xp (`null`) or not on the hiscores, as Jagex shows it. */
+const MIN_LEVEL = 1;
+
 /**
  * Returns the difference between two hiscore entries, in the same keyed shape.
  *
  * Covers the union of both entries' names (a name can appear or disappear between entries). `null` (no value) or a
- * missing name counts as 0, so every value in the result is an object of numbers, never `null`. Skills diff `rank`,
- * `level` and `xp`, activities `rank` and `score`. `date` and `scrapingOffset` come from the older entry.
+ * missing name counts as 0, except a skill's level, which counts as 1 (the level Jagex shows without xp). Every value in
+ * the result is an object of numbers, never `null`. Skills diff `rank`, `level` and `xp`, activities `rank` and
+ * `score`. `date` and `scrapingOffset` come from the older entry.
  *
  * @param recent The most recent hiscore entry.
  * @param old The older hiscore entry.
@@ -17,7 +21,7 @@ export function hiscoreDiff(recent: HiscoreEntry, old: HiscoreEntry): HiscoreEnt
     const o = old.skills[name];
     skills[name] = {
       rank: (r?.rank ?? 0) - (o?.rank ?? 0),
-      level: (r?.level ?? 0) - (o?.level ?? 0),
+      level: (r?.level ?? MIN_LEVEL) - (o?.level ?? MIN_LEVEL),
       xp: diff(r?.xp, o?.xp),
     };
   }
