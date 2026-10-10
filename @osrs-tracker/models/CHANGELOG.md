@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- `Player.scrapingOffsetLookups`: when a visitor last looked the player up per scraping offset, keyed by the offset as a
+  string. Set by osrs-tracker-api, read by clean-hiscores to drop the offsets nobody uses.
 - The write expression's source comment no longer refers to the migration script, which was removed. Comment only.
 
 ## 2.1.0 - 2026/10/10

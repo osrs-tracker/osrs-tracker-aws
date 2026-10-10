@@ -5,6 +5,15 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/10
 
+### Unused scraping offsets
+
+- clean-hiscores drops a player's scraping offset that nobody looked up for 180 days, with all its hiscore entries, so a
+  player isn't scraped once per offset forever after a single lookup from another timezone (worst case 24 times a day).
+  It always keeps the most recently looked up offset, so every player is still scraped once a day. Lookups are recorded
+  per offset by osrs-tracker-api in the new `scrapingOffsetLookups`; offsets without a date get the date of the run, so
+  nothing is dropped before 2027/04. Deployed: clean-hiscores v11; its first run at 00:00 UTC on 2026/10/11 dates every
+  offset.
+
 ### Compact hiscore storage
 
 - Hiscore entries are stored in a compact format, about 89% smaller (roadmap #52): values by position in a layout (the
