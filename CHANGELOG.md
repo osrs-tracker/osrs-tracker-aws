@@ -5,12 +5,22 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/10
 
-- process-players stores hiscore entries in the compact format from `@osrs-tracker/models` 2.0.0 (unchanged values as a
-  bare rank) and keeps their layouts in a new `hiscoreLayouts` collection; clean-hiscores pulls by the new date field
-  and deletes layouts no entry uses any more. Not deployed yet: it goes live at the cutover (#57), after the migration.
-- A one-off migration script (`scripts/migrate-hiscore-entries/`) rewrites stored hiscore entries to the compact format
-  and fills `hiscoreLayouts`, one player at a time, checking every player by decoding the result. Dry run by default
-  (`--write` to write); it runs during the cutover (#57). CI doesn't cover `scripts/`: run its tests locally.
+### Compact hiscore storage
+
+- Hiscore entries are stored in a compact format, about 89% smaller (roadmap #52): values by position in a layout (the
+  new `hiscoreLayouts` collection), and a value that didn't change since the next newer entry as just its rank. The
+  database's hiscore entries went from 223.9 MB to 24.2 MB, so about ten times as many players fit in Atlas's free tier.
+  Cut over at 10:12–10:27 UTC with the writers stopped; the API and the website switched at the same time.
+- process-players writes the new format (with `@osrs-tracker/models` 2.0.0 and `@osrs-tracker/hiscores` 4.0.0) and
+  stores new layouts before the entries that use them; clean-hiscores pulls by the new date field and deletes layouts no
+  entry uses any more. Deployed: process-players v48, clean-hiscores v8, queue-players v23, refresh-items v9 (the last
+  two only for the models bump).
+- A one-off migration script (`scripts/migrate-hiscore-entries/`) rewrote the stored entries and filled
+  `hiscoreLayouts`, one player at a time, checking every player by decoding the result: 514 players, 31,822 entries, 0
+  failures. Dry run by default (`--write` to write). CI doesn't cover `scripts/`: run its tests locally.
+
+### Behind the scenes
+
 - CI type-checks the tests of packages that use Vitest and have a `tsconfig.spec.json` (models), since Vitest doesn't
   and the build covers only `src/index.ts`.
 

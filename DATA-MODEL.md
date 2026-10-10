@@ -26,24 +26,28 @@ One document per tracked or looked-up player, keyed by `username`.
 | `hiscoreEntries`                                  | process-players prepends one entry per scrape. API `refreshPlayerInfo` prepends an initial entry when the player didn't have the requested offset. clean-hiscores pulls entries older than `MAX_AGE_IN_DAYS` (60).                                                                                                                                                                                                                                       | API, web.                                                                        |
 | `trackedSince`, `refreshFailed`                   | Never stored: computed per response by the API.                                                                                                                                                                                                                                                                                                                                                                                                          | Web.                                                                             |
 
-`hiscoreEntries` is stored **newest first**: both writers prepend (`$position: 0` in process-players, `$concatArrays` in
-the API's `buildRefreshUpdate`, `api:src/features/players/player.policy.ts`). The API depends on that order: it takes
-the first matching entry as the latest and the last as `trackedSince`. A few players have one entry out of order (see
-[Stored data](#stored-data)).
-
-**Planned format change:** roadmap osrs-tracker/osrs-tracker-aws#52 replaces these entries with a compact stored format
-(`d`/`o`/`l`/`s`/`a`, values by position in a layout from a new `hiscoreLayouts` collection, unchanged values as a bare
-rank), written with `hiscoreEntriesWriteExpression` and read with `decodeHiscoreEntries` from `@osrs-tracker/models`
-2.0.0. Nothing writes it yet: this file is rewritten for it in the cutover, osrs-tracker/osrs-tracker-aws#57, when every
-writer and reader switches at once.
+`hiscoreEntries` is stored **newest first** in a compact format (since 2026-10-10, roadmap
+osrs-tracker/osrs-tracker-aws#52). Both writers prepend with `hiscoreEntriesWriteExpression` from `@osrs-tracker/models`
+(a pipeline update: process-players' bulk write, and the API's `buildRefreshUpdate` in
+`api:src/features/players/player.policy.ts`), and readers decode with `decodeHiscoreEntries`. Bare values only point to
+newer entries, so readers must decode from the newest entry, and the order matters: the API takes the first matching
+entry as the latest and the last as `trackedSince`.
 
 Each entry:
 
-| Field                  | Notes                                                                                                                            |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `date`                 | Scrape time. One time per process-players SQS message, so every player in a message shares it.                                   |
-| `scrapingOffset`       | The offset it was scraped for. Usually one entry per offset per day (the API's initial entry can add a second on the first day). |
-| `skills`, `activities` | Parsed hiscores (JSON hiscores API). Activity `id` is the position in the list, as the JSON hiscores give it.                    |
+| Field | Notes                                                                                                                                      |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `d`   | Date: scrape time. One time per process-players SQS message, so every player in a message shares it.                                       |
+| `o`   | Scraping offset. Usually one entry per offset per day (the API's initial entry can add a second on the first day).                         |
+| `l`   | Layout id: `_id` in [`hiscoreLayouts`](#hiscorelayouts), the skill and activity names the values are positioned by.                        |
+| `s`   | Skills by position in the layout. Index 0 (Overall) is always `[rank or null, level, xp]`; other levels are derived from xp when decoding. |
+| `a`   | Activities by position in the layout.                                                                                                      |
+
+A value is `[rank, xp]` / `[rank, score]` (`rank` is `null` when unranked: the value is below Jagex's ranking cut-off),
+`null` (no xp or score), or bare: a bare `rank` (or `0` when unranked) means "the same xp or score as this name in the
+next newer entry with the same `o`". The write expression creates bare values: when it prepends an entry, it strips the
+previous newest entry with the same `o` (wherever it is in the array), only if it also has the same `l`. So the newest
+entry per offset is always stored in full, and clean-hiscores pulling the oldest entries never breaks a bare value.
 
 Scraping offsets are hours relative to UTC midnight, -12 to +11 (the API rejects anything else). queue-players also
 queues offset `12` together with `-12` (the same time); nothing writes `12`.
@@ -62,6 +66,20 @@ found again.
 3. **The API resumes.** A successful `refreshPlayerInfo` merges `pausedScrapingOffsets` (and the requested offset) into
    `scrapingOffsets` and unsets `pausedScrapingOffsets`, `hiscoreNotFoundSince` and `hiscoreNotFoundCount`.
 4. **The API never counts.** A refresh that isn't successful (404 or hiscores outage) writes nothing.
+
+## `hiscoreLayouts`
+
+One document per list of skill and activity names Jagex has used (one on 2026-10-10). A RuneScape update that adds a
+skill or activity gives a new layout; older entries keep theirs.
+
+| Field                  | Written by                                                                                                                                                                                               | Read by                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `_id`                  | `layoutId(skills, activities)` from models: 32-bit FNV-1a over the names, as a signed int32. Writers upsert the layout **before** the first entry using it and fail when an existing id has other names. | API (cached), the migration. |
+| `skills`, `activities` | `$setOnInsert` by process-players (`MU.ensureHiscoreLayouts`), the API and the migration script (`aws:scripts/migrate-hiscore-entries`). Never changed after insert.                                     | API, to decode entries.      |
+| `since`                | `$setOnInsert` (the first writer's scrape time); the migration also lowers it with `$min` to the oldest entry using it.                                                                                  | clean-hiscores' 1-day guard. |
+
+clean-hiscores deletes layouts no entry uses that are older than a day (`since`), after its nightly pull (not on a night
+it pulled nothing). The guard protects a layout whose first entry is still being written.
 
 ## `items`
 
@@ -94,8 +112,6 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 ## Where the models and storage differ
 
 - `Item.members` is typed `true`; stored values are `true` or `false`.
-- A few older API initial entries carry an extra `name` (not in the models, no longer written). clean-hiscores ages them
-  out.
 - One player has `type: 'CLEARED'`, which isn't a `PlayerType`, with `lastModified` set to 1900 and no `combatLevel`: a
   record cleared by hand.
 - Nothing checks stored documents against the models.
@@ -110,8 +126,8 @@ What the live database holds beyond what the code above writes. Recheck (read-on
   queue-players doesn't queue them and process-players won't pause them (it only pauses a non-empty `scrapingOffsets`);
   a lookup gives them an offset again.
 - **Offsets in use**: -12, -6, -4, -3, 0, 1, 2, 3; 0 for over 90% of entries.
-- **Out-of-order entries**: 3 players have one entry stored after older entries (appended by older API code). They age
-  out by about 2026-12-01.
-- **Size**: Atlas's free tier allows 512 MB of uncompressed data plus indexes. An entry is about 7.4 KB; 60 days of
-  entries for today's tracked players settles near 240 MB, so about double the tracked players would reach the limit.
+- **Size**: Atlas's free tier allows 512 MB of uncompressed data plus indexes. Since the compact format (2026-10-10), an
+  entry is about 0.8 KB (24.2 MB for 31,822 entries of 514 players, was 223.9 MB); 60 days of entries for today's
+  tracked players settles near 25 MB, so about ten times the tracked players fit. The migration also put the few
+  out-of-order entries in date order and dropped the extra `name` some older API entries carried.
 - **`items`**: `limit`, `lowalch`, `highalch` and `value` are missing on some items (the Wiki omits them).
