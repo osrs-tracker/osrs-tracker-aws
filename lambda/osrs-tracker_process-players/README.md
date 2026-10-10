@@ -6,13 +6,14 @@ entry to the player's `hiscoreEntries` in the compact stored format (`encodeHisc
 `hiscoreEntriesWriteExpression` from `@osrs-tracker/models`), which also strips the previous entry for the same offset.
 
 - **Layouts:** before writing the entries it upserts their layout (the skill and activity names Jagex used) in the
-  `hiscoreLayouts` collection, in the same database, once per layout per warm Lambda. A stored layout with the same id
-  but other names (a hash collision) fails that message's write, which is reported on Discord like any failed write.
+  `hiscoreLayouts` collection, in the same database, once per layout per warm Lambda. When a layout can't be stored
+  (Atlas unreachable, or a stored layout with the same id but other names: a hash collision), nothing was written for
+  that message's players yet, so they're retried like failed fetches below.
 
-- **Failed** fetches (5xx, network, timeout) are sent back to the queue; when every fetch in the run failed (so nothing
-  was written) it throws so SQS retries the message. Failures on a retried message are reported on Discord. After the
-  writes it never throws, since a retry would store duplicate entries: a failed write or a retry that can't be queued is
-  reported on Discord instead.
+- **Failed** fetches (5xx, network, timeout), and players whose layout couldn't be stored, are sent back to the queue;
+  when every fetch in the run failed (so nothing was written) it throws so SQS retries the message. Failures on a
+  retried message are reported on Discord. After the writes it never throws, since a retry would store duplicate
+  entries: a failed write or a retry that can't be queued is reported on Discord instead.
 - **Not found** (HTTP 404/400) is skipped without retry and counted. After 7 days off the hiscores the player's
   `scrapingOffsets` move to `pausedScrapingOffsets`, so they're no longer queued, and this is reported on Discord. The
   API restores them on the next lookup (see the pause/resume contract in [DATA-MODEL.md](../../DATA-MODEL.md)).

@@ -88,16 +88,28 @@ export const handler = async (event: SQSEvent, context: Context) => {
       mapArrayPush(failedMap, scrapingOffset, usernames[i]);
     });
 
-    // Only bulk update if there are any updates, can be empty if all usernames failed. The layouts are stored first, in
-    // the same settled chain: an earlier message's write may already be running, so a failure here (e.g. a layout id
-    // collision) must not throw either; it fails this message's write, which is alerted on below
-    if (bulkUpdateOps.length)
-      bulkWrites.push({
-        usernames: bulkUpdateUsernames,
-        result: Promise.allSettled([
-          MU.ensureHiscoreLayouts(client, layouts).then(() => MU.bulkWrite(client, bulkUpdateOps)),
-        ]).then(([result]) => result),
-      });
+    // Only bulk update if there are any updates, can be empty if all usernames failed
+    if (!bulkUpdateOps.length) continue;
+
+    // Store the layouts before the entries that use them. If that fails (e.g. Atlas is briefly unreachable, or a layout
+    // id collision), nothing was written for these players yet, so they're retried like a failed fetch instead of
+    // missing today's entry. Not thrown: an earlier message's write may already be running
+    const layoutsStored = await MU.ensureHiscoreLayouts(client, layouts).then(
+      () => true,
+      (error) => {
+        console.error('Failed to store hiscore layouts', error);
+        return false;
+      },
+    );
+    if (!layoutsStored) {
+      bulkUpdateUsernames.forEach((username) => mapArrayPush(failedMap, scrapingOffset, username));
+      continue;
+    }
+
+    bulkWrites.push({
+      usernames: bulkUpdateUsernames,
+      result: Promise.allSettled([MU.bulkWrite(client, bulkUpdateOps)]).then(([result]) => result),
+    });
   }
 
   // wait for all bulk writes to finish. A failed write must not throw (an SQS retry would store duplicates for the
