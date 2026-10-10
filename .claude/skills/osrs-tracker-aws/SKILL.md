@@ -61,7 +61,8 @@ the agent.
   touches all four. process-players' `npm run lint` lints `lambda/shared/`; the root `npm run prettier:ci` formats it.
 - `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npx vitest run && npm run build` (`npm test` is watch mode)
-- `@osrs-tracker/models`: `npm run build`
+- `@osrs-tracker/models`: `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (Vitest doesn't type-check;
+  the `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)
 - Repo root: `npm run prettier:ci`
 
 Packages' `dist/` isn't committed: `prepublishOnly` builds it, and CI builds each changed package and loads it from the

@@ -125,6 +125,14 @@ jobs:
         run: npx vitest run
         working-directory: '@osrs-tracker/${{ matrix.package }}'
 
+      # Vitest doesn't type-check, and the build's tsconfig covers only src/index.ts (ts-jest checks hiscores' tests)
+      - name: Type-check tests
+        if: >-
+          hashFiles(format('@osrs-tracker/{0}/vitest.config.ts', matrix.package)) != '' &&
+          hashFiles(format('@osrs-tracker/{0}/tsconfig.spec.json', matrix.package)) != ''
+        run: npx tsc -p tsconfig.spec.json
+        working-directory: '@osrs-tracker/${{ matrix.package }}'
+
       - name: Build
         run: npm run build
         working-directory: '@osrs-tracker/${{ matrix.package }}'

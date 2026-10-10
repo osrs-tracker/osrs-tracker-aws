@@ -1,6 +1,7 @@
 // Test helpers for the codec and layout specs. Not exported from the package.
 import { readFileSync } from 'node:fs';
-import { HiscoreEntry, HiscoreLayoutNames, StoredHiscoreEntry, StoredHiscoreValue } from '../models/hiscores.js';
+import { HiscoreEntry, HiscoreLayoutNames, StoredHiscoreEntry } from '../models/hiscores.js';
+import { stripUnchangedValues } from './write-expression.js';
 
 export interface CodecFixture {
   skills: HiscoreEntry['skills'];
@@ -14,27 +15,14 @@ export function codecFixtures(): Record<string, CodecFixture> {
 }
 
 /**
- * What the write expression does, in plain code, so tests can build bare-value histories: prepend the new full entry;
- * the newest existing entry with the same `o`, only if it also has the same `l`, gets each full value except `s[0]`
- * whose xp/score equals the new entry's value at that position replaced by its bare rank (`0` if unranked).
+ * What the write expression does, in plain code, so tests can build bare-value histories: prepend the new full entry
+ * and strip the newest existing entry with the same `o` ({@link stripUnchangedValues}).
  */
 export function writeStoredEntry(history: StoredHiscoreEntry[], entry: StoredHiscoreEntry): StoredHiscoreEntry[] {
   const index = history.findIndex((older) => older.o === entry.o);
   const result = [entry, ...history];
-  if (index === -1 || history[index].l !== entry.l) return result;
-
-  const older = history[index];
-  result[index + 1] = {
-    ...older,
-    s: older.s.map((value, i) => (i === 0 ? value : strip(value, entry.s[i]))),
-    a: older.a.map((value, i) => strip(value, entry.a[i])),
-  };
+  if (index !== -1) result[index + 1] = stripUnchangedValues(entry, history[index]);
   return result;
-}
-
-function strip(older: StoredHiscoreValue, newer: StoredHiscoreValue): StoredHiscoreValue {
-  if (!Array.isArray(older) || !Array.isArray(newer)) return older;
-  return older[older.length - 1] === newer[newer.length - 1] ? (older[0] ?? 0) : older;
 }
 
 /** A copy of `entry` with every rank moved by `rankShift` (ranked values only) and the given values replaced. */

@@ -5,3 +5,6 @@ export * from './models/message.js';
 export * from './models/news.js';
 export * from './models/player.js';
 export * from './xp/levels.js';
+export * from './hiscores/codec.js';
+export * from './hiscores/layout.js';
+export * from './hiscores/write-expression.js';

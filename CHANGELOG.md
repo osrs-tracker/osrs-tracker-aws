@@ -3,6 +3,11 @@
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
 `CHANGELOG.md`.
 
+## 2026/10/10
+
+- CI type-checks the tests of packages that use Vitest and have a `tsconfig.spec.json` (models), since Vitest doesn't
+  and the build covers only `src/index.ts`.
+
 ## 2026/10/09
 
 ### Lambdas
