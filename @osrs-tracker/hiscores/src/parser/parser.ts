@@ -1,66 +1,56 @@
-import { HiscoreEntry } from '@osrs-tracker/models';
-import { SkillEnum } from '../models/hiscore.enum.js';
+import { HiscoreActivity, HiscoreEntry, HiscoreSkill, SkillEnum } from '@osrs-tracker/models';
 
 /**
- * Returns the difference between two hiscores as a new Hiscore object.
+ * Returns the difference between two hiscore entries, in the same keyed shape.
  *
- * @param recent The most recent hiscore.
- * @param old The older hiscore.
+ * Covers the union of both entries' names (a name can appear or disappear between entries). `null` (no value) or a
+ * missing name counts as 0, so every value in the result is an object of numbers, never `null`. Skills diff `rank`,
+ * `level` and `xp`, activities `rank` and `score`. `date` and `scrapingOffset` come from the older entry.
  *
- * @returns The difference between the two hiscores.
+ * @param recent The most recent hiscore entry.
+ * @param old The older hiscore entry.
  */
 export function hiscoreDiff(recent: HiscoreEntry, old: HiscoreEntry): HiscoreEntry {
-  const diffEntries = Object.entries(recent).map(([hiscoreKey, recentValue]) => {
-    switch (hiscoreKey) {
-      case 'skills':
-        return [
-          'skills',
-          (recentValue as HiscoreEntry['skills']).map((skill) => {
-            const oldSkill = old.skills.find((s) => s.name === skill.name);
-            return {
-              ...skill,
-              rank: skill.rank - (oldSkill?.rank ?? 0),
-              level: skill.level - (oldSkill?.level ?? 0),
-              xp: diff(skill.xp, oldSkill?.xp ?? 0),
-            };
-          }),
-        ];
-      case 'activities':
-        return [
-          'activities',
-          (recentValue as HiscoreEntry['activities']).map((activity) => {
-            const oldActivity = old.activities.find((a) => a.name === activity.name);
-            return {
-              ...activity,
-              rank: activity.rank - (oldActivity?.rank ?? 0),
-              score: diff(activity.score, oldActivity?.score ?? 0),
-            };
-          }),
-        ];
-      default:
-        return [hiscoreKey, old[hiscoreKey as keyof HiscoreEntry]];
-    }
-  });
+  const skills: Record<string, HiscoreSkill> = {};
+  for (const name of unionKeys(recent.skills, old.skills)) {
+    const r = recent.skills[name];
+    const o = old.skills[name];
+    skills[name] = {
+      rank: (r?.rank ?? 0) - (o?.rank ?? 0),
+      level: (r?.level ?? 0) - (o?.level ?? 0),
+      xp: diff(r?.xp, o?.xp),
+    };
+  }
 
-  return Object.fromEntries(diffEntries);
+  const activities: Record<string, HiscoreActivity> = {};
+  for (const name of unionKeys(recent.activities, old.activities)) {
+    const r = recent.activities[name];
+    const o = old.activities[name];
+    activities[name] = {
+      rank: (r?.rank ?? 0) - (o?.rank ?? 0),
+      score: diff(r?.score, o?.score),
+    };
+  }
+
+  return { date: old.date, scrapingOffset: old.scrapingOffset, skills, activities };
 }
 
 /**
- * Returns the difference in overall xp between two hiscore entries.
+ * Returns the difference in overall xp between two hiscore entries; a `null` or missing Overall counts as 0.
  *
  * @param today The most recent hiscore entry.
  * @param recent The older hiscore entry.
- *
- * @returns The difference in overall xp between the two hiscore entries.
  */
 export function getOverallXpDiff(today: HiscoreEntry, recent: HiscoreEntry): number {
-  const todayOverall = today.skills.find((s) => s.name === SkillEnum.Overall);
-  const recentOverall = recent.skills.find((s) => s.name === SkillEnum.Overall);
-
-  return diff(todayOverall?.xp ?? 0, recentOverall?.xp ?? 0);
+  return diff(today.skills[SkillEnum.Overall]?.xp, recent.skills[SkillEnum.Overall]?.xp);
 }
 
-/** For some reason skills and activities can have 0 or -1 exp in the hiscore API. */
-function diff(a: number, b: number): number {
-  return Math.max(a, 0) - Math.max(b, 0);
+/** The names in either object, the recent entry's first. */
+function unionKeys(a: object, b: object): Set<string> {
+  return new Set([...Object.keys(a), ...Object.keys(b)]);
+}
+
+/** Missing, `null` and negative values count as 0. */
+function diff(a: number | null | undefined, b: number | null | undefined): number {
+  return Math.max(a ?? 0, 0) - Math.max(b ?? 0, 0);
 }

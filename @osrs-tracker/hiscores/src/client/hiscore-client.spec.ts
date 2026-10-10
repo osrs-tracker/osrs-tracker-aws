@@ -1,9 +1,10 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { getHiscore, HiscoreFetch, HiscoreJson } from './hiscore-client';
+import { JagexHiscoreJson } from '../mapper/from-jagex';
+import { getHiscore, HiscoreFetch } from './hiscore-client';
 
 const baseUrl = 'https://hiscores.example';
 
-const hiscore: HiscoreJson = {
+const hiscore: JagexHiscoreJson = {
   name: 'lynx titan',
   skills: [{ id: 0, name: 'Overall', rank: 1, level: 2376, xp: 4_600_000_000 }],
   activities: [{ id: 0, name: 'Grid Points', rank: -1, score: -1 }],
@@ -18,9 +19,16 @@ function respond(status: number, body: unknown = hiscore) {
 }
 
 describe('getHiscore', () => {
-  it('returns found with the body', async () => {
+  it('returns found with the body mapped to the domain model and its layout', async () => {
     const result = await getHiscore({ baseUrl, username: 'lynx titan', fetch: respond(200) });
-    expect(result).toEqual({ status: 'found', hiscore });
+    expect(result).toEqual({
+      status: 'found',
+      hiscore: {
+        skills: { Overall: { rank: 1, level: 2376, xp: 4_600_000_000 } },
+        activities: { 'Grid Points': null },
+      },
+      layout: { skills: ['Overall'], activities: ['Grid Points'] },
+    });
   });
 
   it('URL-encodes the name and defaults to the normal table', async () => {
@@ -60,6 +68,7 @@ describe('getHiscore', () => {
     ['no skills', { name: 'zezima', activities: [] }],
     ['no activities', { name: 'zezima', skills: [] }],
     ['an HTML page', '<html></html>'],
+    ['a null skill', { name: 'zezima', skills: [null], activities: [] }],
   ])('returns failed on an unexpected body (%s)', async (_, body) => {
     const result = await getHiscore({ baseUrl, username: 'zezima', fetch: respond(200, body) });
     expect(result).toEqual({ status: 'failed', reason: 'unexpected body' });
