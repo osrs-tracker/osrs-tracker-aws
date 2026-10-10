@@ -1,0 +1,17 @@
+{
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "target": "es2024",
+    "lib": ["es2024"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true
+  }
+}
