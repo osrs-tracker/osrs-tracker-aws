@@ -1,11 +1,14 @@
 # osrs-tracker_clean-hiscores
 
-Runs every night at 00:00 UTC (EventBridge `daily`). Removes hiscore entries older than `MAX_AGE_IN_DAYS` (60 in
-production) from every player. When none were found it reports on Discord and fails the run, since every night should
-age out a day of entries. Then it deletes the layouts in `hiscoreLayouts` (same database) that no entry uses any more,
-except those from the last day, whose first entry may still be being written. Last, it deletes the players without
-hiscore entries: none left after the pull means the player wasn't scraped or looked up for `MAX_AGE_IN_DAYS`, and a
-lookup through the API creates it again.
+Runs every night at 00:00 UTC (EventBridge `daily`), in this order:
+
+1. Removes hiscore entries older than `MAX_AGE_IN_DAYS` (60 in production) from every player.
+2. Deletes the layouts in `hiscoreLayouts` (same database) that no entry uses any more, except those from the last day,
+   whose first entry may still be being written.
+3. Deletes the players without hiscore entries: none left after the pull means the player wasn't scraped or looked up
+   for `MAX_AGE_IN_DAYS`, and a lookup through the API creates it again.
+4. When step 1 found nothing to remove, reports on Discord and fails the run, since every night should age out a day of
+   entries. Steps 2 and 3 have run by then.
 
 Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
 variable): `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `MAX_AGE_IN_DAYS`, `WEBHOOK_URL`. Optional:

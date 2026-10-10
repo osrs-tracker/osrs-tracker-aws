@@ -1,3 +1,7 @@
+## Unreleased
+
+- README: the `hiscoreDiff` example says a missing skill counts as level 1 and the result is a `HiscoreDiff`.
+
 ## v4.1.0 - 2026/10/10
 
 - `hiscoreDiff` returns models' `HiscoreDiff`, whose values are typed as numbers (never `null`), so code reading a diff

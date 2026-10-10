@@ -79,8 +79,8 @@ skill or activity gives a new layout; older entries keep theirs.
 | `skills`, `activities` | `$setOnInsert` by process-players (`MU.ensureHiscoreLayouts`), the API, and once by the 2026-10-10 migration (a one-off script, removed since). Never changed after insert.                              | API, to decode entries.      |
 | `since`                | `$setOnInsert` (the first writer's scrape time); the migration lowered it with `$min` to the oldest entry using it.                                                                                      | clean-hiscores' 1-day guard. |
 
-clean-hiscores deletes layouts no entry uses that are older than a day (`since`), after its nightly pull (not on a night
-it pulled nothing). The guard protects a layout whose first entry is still being written.
+clean-hiscores deletes layouts no entry uses that are older than a day (`since`), after its nightly pull. The guard
+protects a layout whose first entry is still being written.
 
 ## `items`
 

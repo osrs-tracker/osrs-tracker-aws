@@ -51,7 +51,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   `LICENSE` and `NOTICE`. `models`, `hiscores`, `express-metrics` and `logger` ship `dist/cjs`, `dist/esm` and
   `dist/types`: osrs-tracker-api `require`s the CJS build and osrs-tracker-web bundles the ESM one, so a build change
   must keep both loading.
-- `DATA-MODEL.md`: who writes each `players`/`items` field and owns each index, and the pause/resume contract.
+- `DATA-MODEL.md`: who writes each `players`/`items`/`hiscoreLayouts` field and owns each index, the stored hiscore
+  format, and the pause/resume contract.
 - `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is the one required check.
   `.github/actions/setup-deps` caches each folder's `node_modules` by its lockfile.
 - `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file. `.claude/settings.json` runs

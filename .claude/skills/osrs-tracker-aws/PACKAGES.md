@@ -8,6 +8,13 @@ response (`fromJagex`), so a new skill or activity is stored, served and diffed 
 `name` in Jagex's JSON hiscores, only when code refers to that name (the web's display layouts and categories), and
 release a models minor; hiscores re-exports the enums.
 
+## Stored hiscore format
+
+`encodeHiscoreEntry`, `decodeHiscoreEntries`, `hiscoreEntriesWriteExpression` and `layoutId` in `@osrs-tracker/models`
+define what's stored in `players.hiscoreEntries` and `hiscoreLayouts` ([DATA-MODEL.md](../../../DATA-MODEL.md)). A
+change that existing entries can't be decoded with isn't a normal release: it needs a migration and every writer and
+reader switched together, like roadmap osrs-tracker/osrs-tracker-aws#52.
+
 ## Versioning
 
 Bump `package.json`, add a `## vX.Y.Z - YYYY/MM/DD` entry to the package's `CHANGELOG.md` (models: `## X.Y.Z - …`), and

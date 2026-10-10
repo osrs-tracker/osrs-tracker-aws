@@ -18,7 +18,7 @@ call the unqualified function (`$LATEST`), so it's live immediately. Every `aws`
 5. Watch the next run finish cleanly: `aws logs tail /aws/lambda/<fn> --profile claude --since 10m --follow`.
    queue-players and refresh-items run on the hour, process-players right after queue-players, clean-hiscores at 00:00
    UTC. Don't invoke a live Lambda by hand to check sooner: it does real writes, and a second clean-hiscores run on one
-   day finds nothing to pull, so it alerts and fails.
+   day finds nothing to pull, so after its real clean-ups it alerts and fails.
 6. Add a changelog entry with the new version number of each deployed Lambda.
 
 ## Rollback

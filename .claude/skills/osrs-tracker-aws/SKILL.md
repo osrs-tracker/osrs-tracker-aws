@@ -16,11 +16,11 @@ skills.
 **This repo is public.** Never write secret values, account IDs or resource IDs into code, docs or commits, and never
 print `.env` values.
 
-Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `players`/`items` field and owns which
-index; update it with any field or index change), [INFRA.md](INFRA.md) (AWS resources, infra changes),
-[PACKAGES.md](PACKAGES.md) (new hiscores skills and activities, versioning, publishing), [DEPLOY.md](DEPLOY.md) (deploy
-and rollback). The `conventions-reviewer` agent reviews diffs against these files at runtime, so keep rules here, not in
-the agent.
+Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `players`/`items`/`hiscoreLayouts` field and
+owns which index, the stored hiscore format; update it with any field or index change), [INFRA.md](INFRA.md) (AWS
+resources, infra changes), [PACKAGES.md](PACKAGES.md) (new hiscores skills and activities, versioning, publishing),
+[DEPLOY.md](DEPLOY.md) (deploy and rollback). The `conventions-reviewer` agent reviews diffs against these files at
+runtime, so keep rules here, not in the agent.
 
 ## Rules
 

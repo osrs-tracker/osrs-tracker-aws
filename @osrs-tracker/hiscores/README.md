@@ -21,7 +21,8 @@ npm install @osrs-tracker/hiscores @osrs-tracker/models
 ```ts
 import { calculateXPForSkillLevel, getOverallXpDiff, hiscoreDiff } from '@osrs-tracker/hiscores';
 
-// What changed between two snapshots: the same keyed shape over both entries' names, `null` or missing counts as 0
+// What changed between two snapshots (a `HiscoreDiff`): keyed over both entries' names, every value a number; `null` or
+// missing counts as 0, except a skill's level, which counts as 1
 const gains = hiscoreDiff(todayEntry, lastWeekEntry);
 const overallXpGained = getOverallXpDiff(todayEntry, lastWeekEntry);
 
