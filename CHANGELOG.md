@@ -44,6 +44,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   and the build covers only `src/index.ts`.
 - The root `package.json` declares the repo's Apache-2.0 license instead of MIT, matching `LICENSE` and every Lambda and
   package (#58).
+- queue-players no longer passes `background: true` when it ensures its `scrapingOffsets` index; MongoDB has ignored
+  that option since 4.2. A review of every index against the current queries (2026/10/10) found nothing else to change
+  here. Not deployed yet.
 
 ## 2026/10/09
 
