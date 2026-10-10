@@ -1,3 +1,10 @@
+## 2.1.0 - 2026/10/10
+
+- `HiscoreDiff` (with `HiscoreDiffSkill` and `HiscoreDiffActivity`): the result of `hiscoreDiff` in
+  `@osrs-tracker/hiscores` 4.1.0, in which no value is ever `null`, so code that reads a diff needs no fallbacks.
+- `skillLevel(skill)`: a skill's level, `UNTRAINED_LEVEL` (1) when it has no xp or isn't in the entry, the way Jagex
+  shows it. `overallOf(entry)`: an entry's Overall, which is never `null`; throws when it's missing.
+
 ## 2.0.0 - 2026/10/10
 
 - **Breaking:** hiscore entries are keyed by name. `HiscoreEntry.skills` and `.activities` are objects (`skills.Attack`,

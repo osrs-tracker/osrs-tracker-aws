@@ -72,3 +72,27 @@ export interface StoredHiscoreEntry {
   /** activities, by position in the layout */
   a: StoredHiscoreValue[];
 }
+
+/** A skill's change between two entries: every field is a number (missing or `null` values count as 0, level as 1). */
+export interface HiscoreDiffSkill {
+  rank: number;
+  level: number;
+  xp: number;
+}
+
+/** An activity's change between two entries: every field is a number (missing or `null` values count as 0). */
+export interface HiscoreDiffActivity {
+  rank: number;
+  score: number;
+}
+
+/**
+ * The difference between two entries (`hiscoreDiff` in `@osrs-tracker/hiscores`), keyed by name over the names of both
+ * entries. Unlike {@link HiscoreEntry}, no value is ever `null`. `date` and `scrapingOffset` are the older entry's.
+ */
+export interface HiscoreDiff {
+  date: Date;
+  scrapingOffset: number;
+  skills: Record<string, HiscoreDiffSkill>;
+  activities: Record<string, HiscoreDiffActivity>;
+}

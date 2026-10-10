@@ -8,3 +8,4 @@ export * from './xp/levels.js';
 export * from './hiscores/codec.js';
 export * from './hiscores/layout.js';
 export * from './hiscores/write-expression.js';
+export * from './hiscores/values.js';
