@@ -9,7 +9,7 @@ import { StoredHiscoreEntry, StoredHiscoreValue } from '../models/hiscores.js';
  * values on both sides are compared; `null` and bare values stay. Every other entry is untouched, so the newest entry
  * per offset is always full and bare values only point to newer entries.
  *
- * `hiscoreEntriesWriteExpression` does this in MongoDB, `stripUnchangedValues` in TypeScript (the migration script);
+ * `hiscoreEntriesWriteExpression` does this in MongoDB, `stripUnchangedValues` in TypeScript (for rewriting whole histories);
  * the integration tests check that both agree.
  */
 

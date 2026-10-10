@@ -1,3 +1,7 @@
+## Unreleased
+
+- The write expression's source comment no longer refers to the migration script, which was removed. Comment only.
+
 ## 2.1.0 - 2026/10/10
 
 - `HiscoreDiff` (with `HiscoreDiffSkill` and `HiscoreDiffActivity`): the result of `hiscoreDiff` in
