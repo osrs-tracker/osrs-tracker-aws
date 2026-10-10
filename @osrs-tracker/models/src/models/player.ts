@@ -41,8 +41,8 @@ export interface Player {
   pausedScrapingOffsets?: number[];
   /**
    * When a visitor last looked the player up per scraping offset, keyed by the offset as a string (`"-12"` to `"11"`).
-   * clean-hiscores drops an offset (and its hiscore entries) that wasn't looked up for 180 days, except the most recently
-   * looked up one. Never sent to the web.
+   * clean-hiscores drops an offset (and its hiscore entries) that wasn't looked up for 180 days, except the most
+   * recently looked up one. Never sent to the web.
    */
   scrapingOffsetLookups?: Record<string, Date>;
   /** Number of consecutive hiscore fetches that returned "not found". Reset on the next successful fetch. */
