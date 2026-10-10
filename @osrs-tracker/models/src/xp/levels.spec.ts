@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { calculateXPForSkillLevel, calculateXPToNextLevel, levelForXp, XP_TABLE } from './levels.js';
+import {
+  calculateXPForSkillLevel,
+  calculateXPToNextLevel,
+  levelForXp,
+  percentageToNextLevel,
+  XP_TABLE,
+} from './levels.js';
 
 describe('calculateTotalXP', () => {
   it('should return 0 for level 1', () => {
@@ -99,5 +105,16 @@ describe('levelForXp', () => {
       expect(levelForXp(XP_TABLE[level])).toBe(level);
       expect(levelForXp(XP_TABLE[level] - 1)).toBe(level - 1);
     }
+  });
+});
+
+describe('percentageToNextLevel', () => {
+  it('is 0 at the start of a level and 50 halfway', () => {
+    expect(percentageToNextLevel(83, 2)).toBe(0);
+    expect(percentageToNextLevel(128.5, 2)).toBe(50);
+  });
+
+  it('is capped at 100', () => {
+    expect(percentageToNextLevel(200_000_000, 98)).toBe(100);
   });
 });

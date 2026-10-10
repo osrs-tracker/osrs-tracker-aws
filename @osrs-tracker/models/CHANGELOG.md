@@ -1,3 +1,9 @@
+## 2.2.0 - 2026/10/10
+
+- `skillProgress(skill)`: a skill's level, xp and percentage into its level (`null` at 99), with a skill that has no xp
+  or isn't in the entry shown as untrained (level 1, 0 xp, 0%). `percentageToNextLevel(xp, level)`: the percentage on
+  its own, next to `calculateXPToNextLevel` (moved here from osrs-tracker-web).
+
 ## Unreleased
 
 - The write expression's source comment no longer refers to the migration script, which was removed. Comment only.

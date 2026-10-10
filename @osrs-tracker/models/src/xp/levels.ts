@@ -30,6 +30,13 @@ export function calculateXPToNextLevel(currentXP: number, currentLevel: number):
   return totalXPNextLevel - currentXP;
 }
 
+/** How far `xp` is into `level`, 0–100 (capped at 100). */
+export function percentageToNextLevel(xp: number, level: number): number {
+  const xpForCurrentLevel = calculateXPForSkillLevel(level);
+  const xpForNextLevel = calculateXPForSkillLevel(level + 1);
+  return Math.min(100, ((xp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100);
+}
+
 /** The skill level for an xp total (1 to 99), by binary search over {@link XP_TABLE}. */
 export function levelForXp(xp: number): number {
   let low = 1;

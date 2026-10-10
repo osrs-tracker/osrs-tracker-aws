@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HiscoreEntry } from '../models/hiscores.js';
-import { overallOf, skillLevel, UNTRAINED_LEVEL } from './values.js';
+import { overallOf, skillLevel, skillProgress, UNTRAINED_LEVEL } from './values.js';
 
 const entry = (skills: HiscoreEntry['skills']): HiscoreEntry => ({
   date: new Date(0),
@@ -30,5 +30,24 @@ describe('overallOf', () => {
   it('throws when Overall is missing or null', () => {
     expect(() => overallOf(entry({}))).toThrow('no Overall');
     expect(() => overallOf(entry({ Overall: null }))).toThrow('no Overall');
+  });
+});
+
+describe('skillProgress', () => {
+  it('gives the level, xp and progress into the level', () => {
+    // level 2 starts at 83 xp, level 3 at 174: 45 of 91 xp in
+    const progress = skillProgress({ rank: 5, level: 2, xp: 128 });
+    expect(progress).toMatchObject({ level: 2, xp: 128 });
+    expect(progress.percentToNextLevel).toBeCloseTo((45 / 91) * 100);
+  });
+
+  it('treats a skill without xp or not in the entry as untrained', () => {
+    const untrained = { level: 1, xp: 0, percentToNextLevel: 0 };
+    expect(skillProgress(null)).toEqual(untrained);
+    expect(skillProgress(undefined)).toEqual(untrained);
+  });
+
+  it('has no next level at 99', () => {
+    expect(skillProgress({ rank: 1, level: 99, xp: 200_000_000 }).percentToNextLevel).toBeNull();
   });
 });

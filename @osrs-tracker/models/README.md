@@ -45,8 +45,8 @@ const entries = decodeHiscoreEntries(player.hiscoreEntries, layoutsById); // new
 ### Reading entries
 
 A value is `null` when there's no xp or score; don't make up a value for it. Show an untrained skill's level with
-`skillLevel(entry.skills[name])` (1), read Overall with `overallOf(entry)`, and iterate a `HiscoreDiff` with
-`Object.entries`: its values are never `null`.
+`skillLevel(entry.skills[name])` (1), or its level, xp and progress with `skillProgress(entry.skills[name])`, read
+Overall with `overallOf(entry)`, and iterate a `HiscoreDiff` with `Object.entries`: its values are never `null`.
 
 ## Development
 
