@@ -12,7 +12,8 @@ Paths below are relative to each repo: `aws:` is this repo, `api:` is osrs-track
 
 ## `players`
 
-One document per tracked or looked-up player, keyed by `username`.
+One document per tracked or looked-up player, keyed by `username`. clean-hiscores deletes a player once it has no
+hiscore entries left (not scraped or looked up for `MAX_AGE_IN_DAYS`); a lookup creates it again.
 
 | Field                                             | Written by                                                                                                                                                                                                                                                                                                                                                                                                                                               | Read by                                                                          |
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -120,11 +121,13 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 
 What the live database holds beyond what the code above writes. Recheck (read-only) when changing a writer.
 
-- **`players` without tracking**: a few players looked up before tracking existed have neither `hiscoreEntries` nor
-  `scrapingOffsets`.
-- **`scrapingOffsets: []`** on some players, from older code (current code always adds the requested offset).
-  queue-players doesn't queue them and process-players won't pause them (it only pauses a non-empty `scrapingOffsets`);
-  a lookup gives them an offset again.
+- **`players` without entries**: 153 on 2026-10-10 (144 with `hiscoreEntries: []` and `scrapingOffsets: []` whose
+  entries aged out, 9 looked up before tracking existed with neither field). clean-hiscores deletes them from its
+  2026-10-11 run on, so after that none should be left.
+- **`scrapingOffsets: []`** on 8 players that still have entries (2026-10-10), from older code (current code always adds
+  the requested offset). queue-players doesn't queue them and process-players won't pause them (it only pauses a
+  non-empty `scrapingOffsets`); a lookup gives them an offset again. Otherwise their entries age out and clean-hiscores
+  deletes them.
 - **Offsets in use**: -12, -6, -4, -3, 0, 1, 2, 3; 0 for over 90% of entries.
 - **Size**: Atlas's free tier allows 512 MB of uncompressed data plus indexes. Since the compact format (2026-10-10), an
   entry is about 0.8 KB (24.2 MB for 31,822 entries of 514 players, was 223.9 MB); 60 days of entries for today's

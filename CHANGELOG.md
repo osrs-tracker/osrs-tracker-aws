@@ -22,6 +22,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - If process-players can't store a hiscore layout (for example Atlas is briefly unreachable), the message's players are
   retried like a failed fetch instead of missing the day's entry with a "Failed to store hiscores" alert: nothing was
   written for them yet, so a retry can't store duplicates. Deployed: process-players v49.
+- clean-hiscores also deletes players that have no hiscore entries left (not scraped or looked up for 60 days); a lookup
+  creates them again. Its first run deletes the 153 players without entries. Deployed: clean-hiscores vVERSION.
 
 ### Behind the scenes
 
