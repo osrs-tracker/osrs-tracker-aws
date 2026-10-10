@@ -1,32 +1,36 @@
-import { HiscoreActivity, HiscoreEntry, HiscoreSkill, SkillEnum } from '@osrs-tracker/models';
-
-/** The level of a skill without xp (`null`) or not on the hiscores, as Jagex shows it. */
-const MIN_LEVEL = 1;
+import {
+  HiscoreDiff,
+  HiscoreDiffActivity,
+  HiscoreDiffSkill,
+  HiscoreEntry,
+  SkillEnum,
+  skillLevel,
+} from '@osrs-tracker/models';
 
 /**
  * Returns the difference between two hiscore entries, in the same keyed shape.
  *
  * Covers the union of both entries' names (a name can appear or disappear between entries). `null` (no value) or a
- * missing name counts as 0, except a skill's level, which counts as 1 (the level Jagex shows without xp). Every value in
- * the result is an object of numbers, never `null`. Skills diff `rank`, `level` and `xp`, activities `rank` and
+ * missing name counts as 0, except a skill's level, which counts as 1 (`skillLevel`, the level Jagex shows without xp).
+ * Every value in the result is an object of numbers, never `null` ({@link HiscoreDiff}). Skills diff `rank`, `level` and `xp`, activities `rank` and
  * `score`. `date` and `scrapingOffset` come from the older entry.
  *
  * @param recent The most recent hiscore entry.
  * @param old The older hiscore entry.
  */
-export function hiscoreDiff(recent: HiscoreEntry, old: HiscoreEntry): HiscoreEntry {
-  const skills: Record<string, HiscoreSkill> = {};
+export function hiscoreDiff(recent: HiscoreEntry, old: HiscoreEntry): HiscoreDiff {
+  const skills: Record<string, HiscoreDiffSkill> = {};
   for (const name of unionKeys(recent.skills, old.skills)) {
     const r = recent.skills[name];
     const o = old.skills[name];
     skills[name] = {
       rank: (r?.rank ?? 0) - (o?.rank ?? 0),
-      level: (r?.level ?? MIN_LEVEL) - (o?.level ?? MIN_LEVEL),
+      level: skillLevel(r) - skillLevel(o),
       xp: diff(r?.xp, o?.xp),
     };
   }
 
-  const activities: Record<string, HiscoreActivity> = {};
+  const activities: Record<string, HiscoreDiffActivity> = {};
   for (const name of unionKeys(recent.activities, old.activities)) {
     const r = recent.activities[name];
     const o = old.activities[name];
