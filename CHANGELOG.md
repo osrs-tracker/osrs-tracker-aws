@@ -20,7 +20,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   failures. Dry run by default (`--write` to write). CI doesn't cover `scripts/`: run its tests locally.
 - If process-players can't store a hiscore layout (for example Atlas is briefly unreachable), the message's players are
   retried like a failed fetch instead of missing the day's entry with a "Failed to store hiscores" alert: nothing was
-  written for them yet, so a retry can't store duplicates. Deployed: process-players vVERSION.
+  written for them yet, so a retry can't store duplicates. Deployed: process-players v49.
 
 ### Behind the scenes
 
