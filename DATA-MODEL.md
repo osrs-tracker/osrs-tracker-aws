@@ -121,9 +121,9 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 
 What the live database holds beyond what the code above writes. Recheck (read-only) when changing a writer.
 
-- **`players` without entries**: 153 on 2026-10-10 (144 with `hiscoreEntries: []` and `scrapingOffsets: []` whose
-  entries aged out, 9 looked up before tracking existed with neither field). clean-hiscores deletes them from its
-  2026-10-11 run on, so after that none should be left.
+- **`players` without entries**: none. The 153 there were on 2026-10-10 (144 with `hiscoreEntries: []` and
+  `scrapingOffsets: []` whose entries aged out, 9 looked up before tracking existed with neither field) were deleted by
+  clean-hiscores that day; it deletes any new ones nightly.
 - **`scrapingOffsets: []`** on 8 players that still have entries (2026-10-10), from older code (current code always adds
   the requested offset). queue-players doesn't queue them and process-players won't pause them (it only pauses a
   non-empty `scrapingOffsets`); a lookup gives them an offset again. Otherwise their entries age out and clean-hiscores
