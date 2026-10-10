@@ -6,8 +6,7 @@ From `@osrs-tracker/hiscores` 4.0.0 (roadmap osrs-tracker/osrs-tracker-aws#52), 
 response (`fromJagex`), so a new skill or activity is stored, served and diffed without a release. Add the member to
 `SkillEnum` or `ActivityEnum` in `@osrs-tracker/models` (`src/models/hiscore.enum.ts`), with the value exactly as the
 `name` in Jagex's JSON hiscores, only when code refers to that name (the web's display layouts and categories), and
-release a models minor; hiscores re-exports the enums. Until 4.0.0 is live, the enums are in hiscores
-(`src/models/hiscore.enum.ts`) and the old rule applies: add the member there and release a hiscores minor.
+release a models minor; hiscores re-exports the enums.
 
 ## Versioning
 
