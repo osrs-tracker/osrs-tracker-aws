@@ -1,12 +1,13 @@
 {
   "name": "@osrs-tracker/models",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Typings for OSRS Tracker API",
   "license": "Apache-2.0",
   "author": "Freek Mencke",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist",
     "CHANGELOG.md",
@@ -30,10 +31,14 @@
     "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
     "build:esm": "tsc --module ESNext --outDir dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
     "build:types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir dist/types",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "vitest"
   },
   "devDependencies": {
     "@types/node": "^24.13.6",
-    "typescript": "5.8.2"
+    "mongodb": "^7.7.0",
+    "mongodb-memory-server": "^10.4.3",
+    "typescript": "5.8.2",
+    "vitest": "^5.0.3"
   }
 }

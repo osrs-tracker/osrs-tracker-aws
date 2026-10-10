@@ -1,4 +1,4 @@
-import { HiscoreEntry } from './hiscores.js';
+import { HiscoreEntry, StoredHiscoreEntry } from './hiscores.js';
 
 export enum PlayerType {
   Normal = 'normal',
@@ -55,4 +55,9 @@ export interface Player {
    * timeout), so the returned data may be stale. Set by `GET /players/:username`, never stored.
    */
   refreshFailed?: boolean;
+}
+
+/** A player as stored in `players`: hiscore entries in the stored format, decoded with `decode`. */
+export interface StoredPlayer extends Omit<Player, 'hiscoreEntries'> {
+  hiscoreEntries?: StoredHiscoreEntry[];
 }
