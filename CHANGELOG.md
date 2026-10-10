@@ -29,6 +29,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ### Behind the scenes
 
+- Prettier skips `.claude/worktrees/`, so another session's unfinished files there no longer fail the repo-wide check or
+  block a push.
 - CI type-checks the tests of packages that use Vitest and have a `tsconfig.spec.json` (models), since Vitest doesn't
   and the build covers only `src/index.ts`.
 
