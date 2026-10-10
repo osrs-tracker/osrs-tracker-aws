@@ -1,4 +1,5 @@
-import { HiscoreActivity, HiscoreSkill } from '@osrs-tracker/models';
+import { HiscoreEntry, HiscoreLayoutNames } from '@osrs-tracker/models';
+import { fromJagex, JagexHiscoreJson, MappedHiscore } from '../mapper/from-jagex.js';
 
 /** The hiscore tables a player can be on. Everyone is on `hiscore_oldschool`; ironmen are also on their own tables. */
 export type HiscoreTable =
@@ -7,21 +8,19 @@ export type HiscoreTable =
   | 'hiscore_oldschool_ultimate'
   | 'hiscore_oldschool_hardcore_ironman';
 
-/** Jagex's `index_lite.json` response. `name` echoes the queried name as sent, not the player's display name. */
-export type HiscoreJson = {
-  name: string;
-  skills: HiscoreSkill[];
-  activities: HiscoreActivity[];
-};
-
 /**
- * - `found`: the hiscore was fetched.
+ * - `found`: the hiscore was fetched and mapped with {@link fromJagex}. Add `date` and `scrapingOffset` to `hiscore` for
+ *   a `HiscoreEntry`; `layout` is its names in Jagex's order, for `layoutId`/`createHiscoreLayout` in models.
  * - `notFound`: HTTP 404 (or 400 for an invalid name), the player is not on this table (renamed, banned, unranked or
  *   not that account type). Permanent, so don't retry.
  * - `failed`: other non-2xx, network error, timeout or unexpected body. Worth retrying; `reason` is for logging.
  */
 export type HiscoreResult =
-  | { status: 'found'; hiscore: HiscoreJson }
+  | {
+      status: 'found';
+      hiscore: Pick<HiscoreEntry, 'skills' | 'activities'>;
+      layout: HiscoreLayoutNames;
+    }
   | { status: 'notFound'; httpStatus: 400 | 404 }
   | { status: 'failed'; reason: string };
 
@@ -64,12 +63,22 @@ export async function getHiscore({
     if (response.status === 404 || response.status === 400) return { status: 'notFound', httpStatus: response.status };
     if (!response.ok) return { status: 'failed', reason: `HTTP ${response.status}` };
 
-    const hiscore = (await response.json().catch(() => null)) as Partial<HiscoreJson> | null;
+    const json = (await response.json().catch(() => null)) as Partial<JagexHiscoreJson> | null;
     // Only the shape is checked: Jagex appends skills and activities over time, so an exact length would break scraping.
-    if (!Array.isArray(hiscore?.skills) || !Array.isArray(hiscore?.activities))
+    if (!Array.isArray(json?.skills) || !Array.isArray(json?.activities))
       return { status: 'failed', reason: 'unexpected body' };
 
-    return { status: 'found', hiscore: hiscore as HiscoreJson };
+    let mapped: MappedHiscore;
+    try {
+      mapped = fromJagex(json as JagexHiscoreJson);
+    } catch {
+      return { status: 'failed', reason: 'unexpected body' }; // e.g. a `null` in an array
+    }
+    return {
+      status: 'found',
+      hiscore: { skills: mapped.skills, activities: mapped.activities },
+      layout: mapped.layout,
+    };
   } catch (error) {
     // Checked by name, not instanceof: the timeout's DOMException can come from another realm (e.g. node-fetch, Jest).
     const { name, message } = (error ?? {}) as { name?: unknown; message?: unknown };

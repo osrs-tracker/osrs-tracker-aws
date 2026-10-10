@@ -1,7 +1,17 @@
-## Unreleased
+## v4.0.0 - 2026/10/10
 
+- **Breaking:** `getHiscore` returns hiscores mapped to `@osrs-tracker/models` 2.0.0's `HiscoreEntry` (keyed by name,
+  `rank: null` when unranked, `null` when there's no value, Overall never `null`) plus the `layout` names in Jagex's
+  order. The new `fromJagex` does the same mapping for a raw `index_lite.json` (`JagexHiscoreJson`, formerly
+  `HiscoreJson`) and needs no Node APIs, so a browser can map live hiscores too. It maps by name, so skills and
+  activities Jagex adds come through before the enums know them.
+- **Breaking:** `hiscoreDiff` and `getOverallXpDiff` take keyed entries, cover the union of both entries' names, count
+  `null` or a missing value as 0 (a skill's level as 1), and diff levels too. Every value in the result is a number.
+- `SkillEnum`, `ActivityEnum`, `calculateXPForSkillLevel` and `calculateXPToNextLevel` moved to models and are
+  re-exported here, with `levelForXp` and `XP_TABLE`, so imports from hiscores keep working.
+- Requires `@osrs-tracker/models` `^2.0.0`: the domain types changed shape, so older models can't work.
 - README: lists `getHiscore`'s options with their defaults (`table` with the full table names, `fetch`, `timeoutMs`) and
-  says it never throws.
+  says it never throws; describes the domain shape and `fromJagex`.
 
 ## v3.1.3 - 2026/10/09
 

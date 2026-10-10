@@ -1,8 +1,9 @@
 # @osrs-tracker/models &middot; [![NPM package](https://img.shields.io/npm/v/@osrs-tracker/models.svg)](https://www.npmjs.com/package/@osrs-tracker/models) [![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/main/LICENSE)
 
-The shared TypeScript types for [OSRS Tracker](https://osrs-tracker.freekmencke.com): players, hiscores, items and news.
-They're used by the website, the API and the background jobs, so all of them agree on the shape of the data. Works with
-both ES modules and CommonJS.
+The shared TypeScript types for [OSRS Tracker](https://osrs-tracker.freekmencke.com): players, hiscores, items and news,
+plus the code that stores hiscore entries compactly. They're used by the website, the API and the background jobs, so
+all of them agree on the shape of the data. Works with both ES modules and CommonJS, in Node and the browser, with no
+runtime dependencies.
 
 ## Install
 
@@ -18,6 +19,27 @@ import { Item, Player } from '@osrs-tracker/models';
 function describe(player: Player): string {
   return `${player.username} has ${player.hiscoreEntries?.length ?? 0} hiscore snapshots`;
 }
+```
+
+### Stored hiscore entries
+
+Entries are stored by position in a layout (the skill and activity names Jagex used), and a value that didn't change
+since the entry before is stored as its bare rank. Writers encode and prepend; readers load the layouts and decode:
+
+```ts
+import {
+  createHiscoreLayout,
+  decodeHiscoreEntries,
+  encodeHiscoreEntry,
+  hiscoreEntriesWriteExpression,
+} from '@osrs-tracker/models';
+
+const layout = createHiscoreLayout(names, new Date()); // upsert it in `hiscoreLayouts` before the entry
+await players.updateOne({ username }, [
+  { $set: { hiscoreEntries: hiscoreEntriesWriteExpression(encodeHiscoreEntry(entry, layout)) } },
+]);
+
+const entries = decodeHiscoreEntries(player.hiscoreEntries, layoutsById); // newest first, as stored
 ```
 
 ## Development

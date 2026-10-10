@@ -31,6 +31,12 @@ the API's `buildRefreshUpdate`, `api:src/features/players/player.policy.ts`). Th
 the first matching entry as the latest and the last as `trackedSince`. A few players have one entry out of order (see
 [Stored data](#stored-data)).
 
+**Planned format change:** roadmap osrs-tracker/osrs-tracker-aws#52 replaces these entries with a compact stored format
+(`d`/`o`/`l`/`s`/`a`, values by position in a layout from a new `hiscoreLayouts` collection, unchanged values as a bare
+rank), written with `hiscoreEntriesWriteExpression` and read with `decodeHiscoreEntries` from `@osrs-tracker/models`
+2.0.0. Nothing writes it yet: this file is rewritten for it in the cutover, osrs-tracker/osrs-tracker-aws#57, when every
+writer and reader switches at once.
+
 Each entry:
 
 | Field                  | Notes                                                                                                                            |

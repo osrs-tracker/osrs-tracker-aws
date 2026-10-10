@@ -1,5 +1,5 @@
-import { describe, expect, it } from '@jest/globals';
-import { calculateXPForSkillLevel, calculateXPToNextLevel } from './levels';
+import { describe, expect, it } from 'vitest';
+import { calculateXPForSkillLevel, calculateXPToNextLevel, levelForXp, XP_TABLE } from './levels.js';
 
 describe('calculateTotalXP', () => {
   it('should return 0 for level 1', () => {
@@ -68,5 +68,36 @@ describe('calculateXPToNextLevel', () => {
   it('should return correct XP for next level when current XP is halfway to next level', () => {
     const halfwayXP = calculateXPForSkillLevel(2) / 2;
     expect(calculateXPToNextLevel(halfwayXP, 1)).toBe(calculateXPForSkillLevel(2) - halfwayXP);
+  });
+});
+
+describe('XP_TABLE', () => {
+  it('matches the formula for every level', () => {
+    for (let level = 1; level <= 126; level++) {
+      let total = 0;
+      for (let i = 1; i < level; i++) total += Math.floor(i + 300 * Math.pow(2, i / 7));
+      expect(XP_TABLE[level]).toBe(Math.floor(total / 4));
+    }
+  });
+});
+
+describe('levelForXp', () => {
+  it.each([
+    [0, 1],
+    [-1, 1],
+    [82, 1],
+    [83, 2],
+    [13_034_430, 98],
+    [13_034_431, 99],
+    [200_000_000, 99],
+  ])('%i xp is level %i', (xp, level) => {
+    expect(levelForXp(xp)).toBe(level);
+  });
+
+  it('agrees with the table at every threshold', () => {
+    for (let level = 2; level <= 99; level++) {
+      expect(levelForXp(XP_TABLE[level])).toBe(level);
+      expect(levelForXp(XP_TABLE[level] - 1)).toBe(level - 1);
+    }
   });
 });

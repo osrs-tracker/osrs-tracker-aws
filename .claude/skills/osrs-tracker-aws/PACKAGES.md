@@ -2,9 +2,11 @@
 
 ## Jagex hiscore change (new skill, boss or activity)
 
-Add the member to `SkillEnum` or `ActivityEnum` in `@osrs-tracker/hiscores` (`src/models/hiscore.enum.ts`), with the
-value exactly as the `name` in Jagex's JSON hiscores (the web matches skills and activities by name), and release a
-minor version. Stored entries come from the JSON hiscores, so there's no parse order to add (removed in 3.0.0).
+From `@osrs-tracker/hiscores` 4.0.0 (roadmap osrs-tracker/osrs-tracker-aws#52), entries are mapped by name from Jagex's
+response (`fromJagex`), so a new skill or activity is stored, served and diffed without a release. Add the member to
+`SkillEnum` or `ActivityEnum` in `@osrs-tracker/models` (`src/models/hiscore.enum.ts`), with the value exactly as the
+`name` in Jagex's JSON hiscores, only when code refers to that name (the web's display layouts and categories), and
+release a models minor; hiscores re-exports the enums.
 
 ## Versioning
 
@@ -20,8 +22,9 @@ a fresh OTP and run `npm publish --otp=<code>` immediately, or let them publish.
 Order:
 
 1. `models`.
-2. `hiscores`, widening its models peer range (e.g. `^old || ^new`). Bump its models `devDependency` only once the new
-   models is live, or `npm ci` fails on the lockfile.
+2. `hiscores`, widening its models peer range (e.g. `^old || ^new`), or narrowing it to the new major when hiscores
+   needs it (hiscores 4.0.0 takes only models `^2.0.0`). Bump its models `devDependency` only once the new models is
+   live, or `npm ci` fails on the lockfile.
 3. Consumers: the Lambdas here, then web and API. **The web must bump models and hiscores together.**
 
 `express-metrics` stands alone (no `@osrs-tracker/*` dependencies); its consumers are the web and API servers. Its

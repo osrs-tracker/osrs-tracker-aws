@@ -1,3 +1,22 @@
+## 2.0.0 - 2026/10/10
+
+- **Breaking:** hiscore entries are keyed by name. `HiscoreEntry.skills` and `.activities` are objects (`skills.Attack`,
+  not an array with `name` and `id`); `rank` is `null` when unranked (the value is still there), a value is `null` when
+  there is none (was `-1`/`0`), and a missing key means the name wasn't on the hiscores then. `SkillName`/`ActivityName`
+  accept any string, so new skills and activities work before the enums know them. Overall is never `null`.
+  `HiscoreItem` is gone.
+- The compact stored format: `StoredHiscoreEntry` (`d`, `o`, `l`, `s`, `a`, values by position in a layout, unchanged
+  values as a bare rank), `HiscoreLayout` (a `hiscoreLayouts` document) and `StoredPlayer`. `encodeHiscoreEntry` and
+  `decodeHiscoreEntries` convert between it and the domain (`hiscoreLayoutIds` lists the layouts to load first,
+  `UnknownHiscoreLayoutError` names a missing one), `layoutId` and `createHiscoreLayout` make layouts, and
+  `hiscoreEntriesWriteExpression` is the aggregation expression that prepends an entry and strips unchanged values from
+  the previous one for the same offset (`stripUnchangedValues` does the same in TypeScript). About 87% smaller than
+  storing Jagex's JSON.
+- `SkillEnum`, `ActivityEnum`, `calculateXPForSkillLevel` and `calculateXPToNextLevel` moved here from
+  `@osrs-tracker/hiscores` (which re-exports them from 4.0.0), with `XP_TABLE` and `levelForXp` (a binary search instead
+  of a loop per level).
+- `"sideEffects": false`, so bundlers drop what isn't imported. Still no runtime dependencies.
+
 ## 1.0.0 - 2026/10/09
 
 - First stable release: the models are unchanged from 0.10.3, and 1.0.0 marks their API as stable. From here, a breaking
