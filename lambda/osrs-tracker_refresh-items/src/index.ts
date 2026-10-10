@@ -21,5 +21,14 @@ export const handler = async (_event: ScheduledEvent, context: Context) => {
 
   if (upsertedItemCount === 0) throw Error('No items processed');
 
+  const startRemoving = performance.now();
+
+  const removedItemCount = await MU.removeItemsNotIn(
+    client,
+    items.map(({ id }) => id),
+  );
+
+  console.info(`Removed ${removedItemCount} items in ${Math.trunc(performance.now() - startRemoving)}ms.`);
+
   return context.logStreamName;
 };
