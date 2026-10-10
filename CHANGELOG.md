@@ -41,7 +41,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - refresh-items deletes the items that left the OSRS Wiki's item list (items Jagex took off the Grand Exchange, which
   have no prices and only made thin pages on the website), after its hourly upsert (#73). It skips the delete when more
   than 50 items would go, so a truncated Wiki response never wipes the collection. The 19 that had piled up were removed
-  by hand on 2026/10/10 before this. Not deployed yet.
+  by hand on 2026/10/10 before this. Deployed: refresh-items v10.
 - `DATA-MODEL.md` follows the API's item browse and player sitemap (#72): the `items` `{ name: 1 }` index (collation
   `en`, strength 2) that `browseItems` hints, and `GET /sitemap/players` reading `scrapingOffsets`,
   `hiscoreNotFoundCount` and the newest `hiscoreEntries` date.
