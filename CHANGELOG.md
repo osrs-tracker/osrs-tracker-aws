@@ -18,6 +18,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - A one-off migration script (`scripts/migrate-hiscore-entries/`) rewrote the stored entries and filled
   `hiscoreLayouts`, one player at a time, checking every player by decoding the result: 514 players, 31,822 entries, 0
   failures. Dry run by default (`--write` to write). CI doesn't cover `scripts/`: run its tests locally.
+- If process-players can't store a hiscore layout (for example Atlas is briefly unreachable), the message's players are
+  retried like a failed fetch instead of missing the day's entry with a "Failed to store hiscores" alert: nothing was
+  written for them yet, so a retry can't store duplicates. Deployed: process-players vVERSION.
 
 ### Behind the scenes
 
