@@ -24,7 +24,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   written for them yet, so a retry can't store duplicates. Deployed: process-players v49.
 - clean-hiscores also deletes players that have no hiscore entries left (not scraped or looked up for 60 days); a lookup
   creates them again. Its first run deletes the 153 players without entries. The alert for a night with nothing to pull
-  now comes after the clean-ups, so they run every night. Deployed: clean-hiscores v9, then vVERSION.
+  now comes after the clean-ups, so they run every night. Deployed: clean-hiscores v9, then v10; triggered once by hand
+  on 2026-10-10 at 11:59 UTC, which deleted the 153 players (and sent the expected "nothing to pull" alert).
 
 ### Behind the scenes
 
