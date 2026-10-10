@@ -1,14 +1,14 @@
+## 2.3.0 - 2026/10/10
+
+- `Player.scrapingOffsetLookups`: when a visitor last looked the player up per scraping offset, keyed by the offset as a
+  string. Set by osrs-tracker-api, read by clean-hiscores to drop the offsets nobody uses.
+- The write expression's source comment no longer refers to the migration script, which was removed. Comment only.
+
 ## 2.2.0 - 2026/10/10
 
 - `skillProgress(skill)`: a skill's level, xp and percentage into its level (`null` at 99), with a skill that has no xp
   or isn't in the entry shown as untrained (level 1, 0 xp, 0%). `percentageToNextLevel(xp, level)`: the percentage on
   its own, next to `calculateXPToNextLevel` (moved here from osrs-tracker-web).
-
-## Unreleased
-
-- `Player.scrapingOffsetLookups`: when a visitor last looked the player up per scraping offset, keyed by the offset as a
-  string. Set by osrs-tracker-api, read by clean-hiscores to drop the offsets nobody uses.
-- The write expression's source comment no longer refers to the migration script, which was removed. Comment only.
 
 ## 2.1.0 - 2026/10/10
 
