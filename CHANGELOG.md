@@ -12,6 +12,9 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   new hook, `.claude/hooks/read-only-bash.sh`, limits its Bash to single git, gh and grep reads, so it can't run `aws`,
   `npm publish` or git writes. Its AWS-specific rules moved to the skill's new `## Review rules` section. The release
   flow reads its verdict and checks each finding against the code before fixing it.
+- The pre-push gate moved to `.claude/hooks/pre-push-check.sh`, adapted from osrs-tracker-web's. It also catches
+  `git -C <path> push`, `git -c … push` and chained commands, which the old `Bash(git push*)` filter let through, and
+  checks the checkout being pushed (the `-C` path or the command's cwd) instead of the hook's own.
 
 ## 2026/10/10
 
