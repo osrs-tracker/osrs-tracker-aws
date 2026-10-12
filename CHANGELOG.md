@@ -14,7 +14,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   flow reads its verdict and checks each finding against the code before fixing it.
 - The pre-push gate moved to `.claude/hooks/pre-push-check.sh`, adapted from osrs-tracker-web's. It also catches
   `git -C <path> push`, `git -c … push` and chained commands, which the old `Bash(git push*)` filter let through, and
-  checks the checkout being pushed (the `-C` path or the command's cwd) instead of the hook's own.
+  checks the checkout being pushed (the `-C` path or the command's cwd) instead of the hook's own. It now starts only
+  for git commands (`"if": "Bash(git *)"`), not on every Bash call.
+- A new `verify` skill runs the verify checks for the Lambdas and packages a staged change touches, plus the root
+  Prettier check. Claude Code runs it before each commit. It runs every check even after one fails, so all failures get
+  fixed in one round.
 
 ## 2026/10/10
 

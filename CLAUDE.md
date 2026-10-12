@@ -14,7 +14,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - Verify a package: `hiscores` `npx jest && npm run build`, `express-metrics` and `logger`
   `npx vitest run && npm run build` (`npm test` is watch mode in all of them); `models`
   `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (its integration tests start an in-memory MongoDB
-  8.0). Repo root: `npm run prettier:ci`.
+  8.0). Repo root: `npm run prettier:ci`. The `verify` skill (`.claude/skills/verify/`) picks the folders a staged
+  change touches and runs all of these checks, each separately; Claude Code runs it before each commit.
 - Run a Lambda locally: `npm run invoke:dry` (needs `.env` from `.env.example`). Reads and fetches are real; writes are
   only logged. There is no staging database.
 - Size per dependency in a bundle:
