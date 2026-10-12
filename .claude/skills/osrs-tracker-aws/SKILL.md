@@ -20,7 +20,7 @@ Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `pla
 owns which index, the stored hiscore format; update it with any field or index change), [INFRA.md](INFRA.md) (AWS
 resources, infra changes), [PACKAGES.md](PACKAGES.md) (new hiscores skills and activities, versioning, publishing),
 [DEPLOY.md](DEPLOY.md) (deploy and rollback). The `conventions-reviewer` agent reviews diffs against these files at
-runtime, so keep rules here, not in the agent.
+runtime, so keep rules here, not in the agent; repo-specific review rules go in `## Review rules`.
 
 ## Rules
 
@@ -67,6 +67,22 @@ runtime, so keep rules here, not in the agent.
 
 Packages' `dist/` isn't committed: `prepublishOnly` builds it, and CI builds each changed package and loads it from the
 packed tarball.
+
+## Review rules
+
+What `conventions-reviewer` checks beyond the rules above. It reads this section; keep repo rules here, not in the
+agent.
+
+- Read [PACKAGES.md](PACKAGES.md) when the diff touches `@osrs-tracker/`, [INFRA.md](INFRA.md) when it touches AWS
+  configuration or infra docs, [DEPLOY.md](DEPLOY.md) when it changes how a Lambda is deployed, and
+  [DATA-MODEL.md](../../../DATA-MODEL.md) when it changes a Mongo write, a query's fields or an index (its rows must
+  match the change).
+- A missing `DRY_RUN` guard may live in a helper in the Lambda's `src/utils/` or in `lambda/shared/src/`: check there
+  before flagging.
+- Rules that span files, checked against the whole diff: a change and its `CHANGELOG.md` entry (root or the package's).
+- **breaks** here also covers: writes to production in a dry run, leaks a secret, account ID or resource ID. A typical
+  **check**: a Lambda's live configuration (name the function and the setting; the caller runs the read-only `aws` call
+  with `--profile claude`, since the reviewer can't run `aws`).
 
 ## Release ("release it", "ship it")
 

@@ -55,7 +55,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   format, and the pause/resume contract.
 - `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is the one required check.
   `.github/actions/setup-deps` caches each folder's `node_modules` by its lockfile.
-- `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file. `.claude/settings.json` runs
-  Prettier on every file Claude edits and blocks `git push` when Prettier or a Lambda's lint fails.
+- `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file;
+  `.claude/hooks/read-only-bash.sh` keeps it to git, gh and grep reads. `.claude/settings.json` runs Prettier on every
+  file Claude edits and blocks `git push` when Prettier or a Lambda's lint fails.
 - AWS (eu-central-1, console-managed, no IaC): Lambda logs are kept 7 days, so a longer Logs Insights range silently
   returns only 7.
