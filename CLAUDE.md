@@ -57,6 +57,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   `.github/actions/setup-deps` caches each folder's `node_modules` by its lockfile.
 - `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file;
   `.claude/hooks/read-only-bash.sh` keeps it to git, gh and grep reads. `.claude/settings.json` runs Prettier on every
-  file Claude edits and blocks `git push` when Prettier or a Lambda's lint fails.
+  file Claude edits, and `.claude/hooks/pre-push-check.sh` blocks `git push` (also `git -C <path> push`) when Prettier
+  or a Lambda's lint fails in the checkout being pushed.
 - AWS (eu-central-1, console-managed, no IaC): Lambda logs are kept 7 days, so a longer Logs Insights range silently
   returns only 7.
