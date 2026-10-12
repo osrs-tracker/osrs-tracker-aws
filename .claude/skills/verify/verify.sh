@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Runs the verify checks for the Lambdas and packages a change touches, plus the root Prettier check, all at once (none
+# waits for or stops at another's failure). Then prints each failed check's log and a summary line per check. Exits 1
+# when any check failed. Run from the checkout's root.
+#
+#   verify.sh                 checks what `git diff --cached` touches (before a commit)
+#   verify.sh --all-changes   adds unstaged changes (verifying without a commit)
+set -u
+# Plain output: the logs are read by Claude, not a terminal
+export NO_COLOR=1 FORCE_COLOR=0
+
+lambdas=(osrs-tracker_clean-hiscores osrs-tracker_process-players osrs-tracker_queue-players osrs-tracker_refresh-items)
+
+changed=$(git diff --cached --name-only)
+if [ "${1:-}" = --all-changes ]; then
+  changed+=$'\n'$(git diff --name-only)
+fi
+
+# Each check: a name, the folder it runs in and its command
+names=() dirs=() commands=()
+add() { names+=("$1") dirs+=("$2") commands+=("$3"); }
+
+add prettier . 'npm run prettier:ci'
+folders=(.)
+
+for lambda in "${lambdas[@]}"; do
+  if grep -qE "^lambda/($lambda|shared)/" <<<"$changed"; then
+    dir=lambda/$lambda
+    folders+=("$dir")
+    add "$lambda prettier" "$dir" 'npm run prettier:ci'
+    add "$lambda lint" "$dir" 'npm run lint'
+    # esbuild doesn't type-check; this also checks the shared files the Lambda imports
+    add "$lambda types" "$dir" 'npx tsc --noEmit -p .'
+    add "$lambda build" "$dir" 'npm run build'
+  fi
+done
+
+# One job per package: the tests use what the build checks first. Never `npm test`: it's watch mode.
+for package in $(grep -oE '^@osrs-tracker/[^/]+/' <<<"$changed" | sort -u); do
+  dir=${package%/}
+  case $dir in
+    */hiscores) command='npm run build && npx jest' ;;
+    */models) command='npm run build && npx tsc -p tsconfig.spec.json && npx vitest run' ;;
+    *) command='npm run build && npx vitest run' ;;
+  esac
+  folders+=("$dir")
+  add "${dir#@osrs-tracker/} build+test" "$dir" "$command"
+done
+
+# A worktree has no node_modules of its own. One at a time: parallel installs compete for the npm cache.
+for dir in "${folders[@]}"; do
+  if [ ! -d "$dir/node_modules" ]; then
+    echo "npm ci in $dir"
+    (cd "$dir" && npm ci --no-audit --no-fund >/dev/null 2>&1) || { echo "npm ci failed in $dir"; exit 1; }
+  fi
+done
+
+out=$(mktemp -d)
+for i in "${!names[@]}"; do
+  (
+    start=$SECONDS
+    cd "${dirs[$i]}" && bash -c "${commands[$i]}" >"$out/$i.log" 2>&1
+    echo "$? $((SECONDS - start))" >"$out/$i.status"
+  ) &
+done
+wait
+
+summary=()
+failed=0
+for i in "${!names[@]}"; do
+  read -r code secs <"$out/$i.status"
+  line="${names[$i]} (${secs}s): ${dirs[$i]}: ${commands[$i]}"
+  if [ "$code" -eq 0 ]; then
+    summary+=("passed  $line")
+  else
+    failed=1
+    summary+=("FAILED  $line")
+    echo "=== ${names[$i]} failed: ${dirs[$i]}: ${commands[$i]}"
+    if [ "$(wc -l <"$out/$i.log")" -gt 60 ]; then
+      echo "(last 60 lines; full log: $out/$i.log)"
+      tail -n 60 "$out/$i.log"
+    else
+      cat "$out/$i.log"
+    fi
+    echo
+  fi
+done
+
+echo '=== Summary'
+printf '%s\n' "${summary[@]}"
+# Keep the logs a failure points to
+[ "$failed" -eq 0 ] && rm -rf "$out"
+exit "$failed"
