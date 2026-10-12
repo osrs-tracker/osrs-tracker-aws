@@ -3,6 +3,11 @@
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
 `CHANGELOG.md`.
 
+## 2026/10/13
+
+- refresh-items reads the item list from v2 of the OSRS Wiki prices API (`/api/v2/osrs/mapping`) instead of v1, which
+  the Wiki says may be removed. The response is the same. Deployed as version 11.
+
 ## 2026/10/12
 
 ### Behind the scenes

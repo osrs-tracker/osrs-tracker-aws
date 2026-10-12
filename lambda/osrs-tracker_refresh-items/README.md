@@ -1,7 +1,7 @@
 # osrs-tracker_refresh-items
 
 Runs every hour (EventBridge `Hourly`). Fetches the full item list from the
-[OSRS Wiki prices API](https://prices.runescape.wiki/api/v1/osrs/mapping) and upserts each item into the `items`
+[OSRS Wiki prices API](https://prices.runescape.wiki/api/v2/osrs/mapping) and upserts each item into the `items`
 collection by `id`, then deletes the items missing from that list (no longer on the GE), unless more than 50 would go.
 Fails the run when no items were upserted.
 
