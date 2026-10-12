@@ -10,7 +10,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - The `conventions-reviewer` agent is the one shared with osrs-tracker-web: it runs Sonnet at medium effort with the
   `osrs-tracker-aws` skill preloaded, starts its report with a `VERDICT:` line and reports at most 3 **check** items. A
   new hook, `.claude/hooks/read-only-bash.sh`, limits its Bash to single git, gh and grep reads, so it can't run `aws`,
-  `npm publish` or git writes. Its AWS-specific rules moved to the skill's new `## Review rules` section.
+  `npm publish` or git writes. Its AWS-specific rules moved to the skill's new `## Review rules` section. The release
+  flow reads its verdict and checks each finding against the code before fixing it.
 
 ## 2026/10/10
 

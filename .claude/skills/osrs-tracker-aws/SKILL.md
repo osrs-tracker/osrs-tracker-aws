@@ -91,7 +91,9 @@ what the change touches; mutating infra commands still need their own approval. 
 after that CI is the gate (builds needed for a deploy or publish still run).
 
 1. Commit on a `<type>/<short-name>` branch, push, `gh pr create --base main`.
-2. Review `gh pr diff` for bugs and leftovers while the `conventions-reviewer` agent checks the PR; fix both and push.
+2. Review `gh pr diff` for bugs and leftovers while the `conventions-reviewer` agent checks the PR (spawn it without a
+   `model`, which would override its Sonnet pin). Its first line is a `VERDICT:`; check each finding against the code
+   before fixing it and drop the ones that don't hold. Fix both and push.
 3. Once CI passes, deploy changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish changed packages
    ([PACKAGES.md](PACKAGES.md)), and check they work: a Lambda's new `CodeSha256` and a clean next run (DEPLOY.md steps
    4 and 5), a package's registry 200 (PACKAGES.md, "Publishing").
