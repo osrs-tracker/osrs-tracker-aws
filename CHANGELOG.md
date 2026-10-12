@@ -17,8 +17,10 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   checks the checkout being pushed (the `-C` path or the command's cwd) instead of the hook's own. It now starts only
   for git commands (`"if": "Bash(git *)"`), not on every Bash call.
 - A new `verify` skill runs the verify checks for the Lambdas and packages a staged change touches, plus the root
-  Prettier check. Claude Code runs it before each commit. It runs every check even after one fails, so all failures get
-  fixed in one round.
+  Prettier check. Claude Code runs it before each commit. Its script, `.claude/skills/verify/verify.sh`, runs every
+  check at once in one call (about 8 s instead of 17 s for a change to `lambda/shared/` and `models`), never stopping at
+  a failure, and prints only the failed checks' logs plus a summary line per check, so all failures get fixed in one
+  round.
 
 ## 2026/10/10
 
