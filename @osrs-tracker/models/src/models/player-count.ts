@@ -19,8 +19,9 @@ export interface PlayerCount {
   worlds: number;
 
   /**
-   * Players per world location, keyed by Jagex's raw location code as a string. RuneLite names 0 (US), 1 (UK), 3 (AU)
-   * and 7 (DE); 8, 9, 10 and 12 were also seen (2026-10-13) and are unknown.
+   * Players per world location, keyed by Jagex's raw location code as a string: 0 United States (east and west
+   * together), 1 United Kingdom, 3 Australia, 7 Germany, 8 Brazil, 9 Japan, 10 Singapore, 12 South Africa (8 to 12
+   * matched on 2026-10-13 by their worlds' numbers). A new code can appear when Jagex adds a location.
    */
   byLocation: Record<string, number>;
 }

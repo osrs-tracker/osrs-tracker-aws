@@ -1,3 +1,8 @@
+## Unreleased
+
+- `PlayerCount.byLocation`: the source comment names every location code (8 Brazil, 9 Japan, 10 Singapore, 12 South
+  Africa were unknown). Comment only.
+
 ## 2.4.0 - 2026-10-13
 
 - `PlayerCount`: a `playerCounts` document, the number of players online summed over Jagex's world list (`total`,
