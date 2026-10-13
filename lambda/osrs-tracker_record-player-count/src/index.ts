@@ -1,9 +1,10 @@
+import { fetchWorldList, parseWorldList } from '@osrs-tracker/hiscores';
 import { PlayerCount } from '@osrs-tracker/models';
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlertNeverRejects } from '@lambda/shared/discord-alert';
 import { ensureIndex } from '@lambda/shared/mongo.utils';
+import { USER_AGENT } from '@lambda/shared/user-agent';
 import { MU } from './utils/mongo.utils';
-import { fetchWorldList, parseWorldList } from './utils/world-list.utils';
 import { env } from './env';
 
 const client = MU.client();
@@ -13,7 +14,10 @@ export const handler = async (_event: ScheduledEvent, context: Context) => {
 
   let playerCount: PlayerCount;
   try {
-    const counts = parseWorldList(await fetchWorldList());
+    const counts = parseWorldList(
+      // undici's own timeouts are 300 s; fail a stalled request well within the Lambda's 30 s timeout
+      await fetchWorldList({ timeoutMs: 15_000, userAgent: USER_AGENT }),
+    );
     if (counts.worlds === 0 || counts.total === 0)
       throw new Error(`The world list has ${counts.worlds} worlds and ${counts.total} players.`);
     playerCount = { date, ...counts };

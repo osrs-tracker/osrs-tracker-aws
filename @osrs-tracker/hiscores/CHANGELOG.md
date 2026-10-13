@@ -1,5 +1,12 @@
-## Unreleased
+## 4.2.0 - 2026-10-13
 
+- `fetchWorldList` and `parseWorldList` count the players online from Jagex's world list (`WORLD_LIST_URL`, the binary
+  list the game client's World Select uses), moved here from the record-player-count Lambda so osrs-tracker-api can
+  serve a live count with the same parser. `parseWorldList` returns a `WorldListCounts` (models' `PlayerCount` without
+  `date`) and throws when the response doesn't match the format. `fetchWorldList` takes `fetch`, `timeoutMs` (default 10
+  seconds) and `userAgent` options like `getHiscore`, but throws on failure. Node only: the world list sends no CORS
+  headers.
+- Requires `@osrs-tracker/models` `^2.4.0`, for `PlayerCount`.
 - README: the `hiscoreDiff` example says a missing skill counts as level 1 and the result is a `HiscoreDiff`.
 
 ## 4.1.0 - 2026-10-10

@@ -1,10 +1,10 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { describe, expect, it } from 'vitest';
-import { parseWorldList } from './world-list.utils';
+import { describe, expect, it, jest } from '@jest/globals';
+import { fetchWorldList, parseWorldList, WORLD_LIST_URL, WorldListFetch } from './world-list-client';
 
 /** The world list response on 2026-10-13 12:55 UTC: 30,000 bytes, of which 14,617 payload. */
-const captured = new Uint8Array(readFileSync(join(__dirname, 'fixtures/world-list-2026-10-13.bin')));
+const captured = new Uint8Array(readFileSync(join(__dirname, '../fixtures/world-list-2026-10-13.bin')));
 
 interface World {
   flags: number;
@@ -95,5 +95,39 @@ describe('parseWorldList', () => {
     new DataView(bytes.buffer).setInt32(0, 16);
 
     expect(() => parseWorldList(bytes)).toThrow("isn't terminated");
+  });
+});
+
+describe('fetchWorldList', () => {
+  function respond(status: number, body = captured) {
+    return jest.fn<WorldListFetch>(async () => ({
+      status,
+      ok: status >= 200 && status < 300,
+      arrayBuffer: async () => body.slice().buffer,
+    }));
+  }
+
+  it('returns the response bytes, which parse', async () => {
+    const bytes = await fetchWorldList({ fetch: respond(200) });
+    expect(parseWorldList(bytes).worlds).toBe(321);
+  });
+
+  it('requests the world list with no-cache and a timeout signal, and no user-agent by default', async () => {
+    const fetch = respond(200);
+    await fetchWorldList({ fetch });
+    const [url, init] = fetch.mock.calls[0];
+    expect(url).toBe(WORLD_LIST_URL);
+    expect(init.headers).toEqual({ 'cache-control': 'no-cache' });
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('sends the given user-agent', async () => {
+    const fetch = respond(200);
+    await fetchWorldList({ fetch, userAgent: 'github:example' });
+    expect(fetch.mock.calls[0][1].headers).toEqual({ 'cache-control': 'no-cache', 'user-agent': 'github:example' });
+  });
+
+  it('throws on a non-2xx response', async () => {
+    await expect(fetchWorldList({ fetch: respond(503) })).rejects.toThrow('HTTP 503');
   });
 });

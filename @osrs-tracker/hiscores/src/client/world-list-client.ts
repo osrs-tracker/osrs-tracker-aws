@@ -1,5 +1,4 @@
 import { PlayerCount } from '@osrs-tracker/models';
-import { USER_AGENT } from '@lambda/shared/user-agent';
 
 /**
  * Jagex's world list, as used by the client and the World Select page. Undocumented; checked on 2026-10-13. Don't
@@ -10,15 +9,39 @@ export const WORLD_LIST_URL = 'https://www.runescape.com/g=oldscape/slr.ws?order
 /** A world's type flag for a members world; any other world is free-to-play. */
 const MEMBERS_FLAG = 0x1;
 
-export async function fetchWorldList(): Promise<Uint8Array> {
-  const response = await fetch(WORLD_LIST_URL, {
-    headers: {
-      'cache-control': 'no-cache',
-      'user-agent': USER_AGENT,
-    },
-    // undici's own timeouts are 300 s; fail a stalled request well within the Lambda's 30 s timeout
-    signal: AbortSignal.timeout(15_000),
-  });
+/** The part of `fetch` {@link fetchWorldList} uses, so callers can pass global `fetch` or add their own agent. */
+export type WorldListFetch = (
+  url: string,
+  init: { headers: Record<string, string>; signal: AbortSignal },
+) => Promise<{ status: number; ok: boolean; arrayBuffer(): Promise<ArrayBuffer> }>;
+
+export type FetchWorldListOptions = {
+  /** Defaults to the global `fetch`. */
+  fetch?: WorldListFetch;
+  /** Max time for the request, defaults to 10 seconds. */
+  timeoutMs?: number;
+  /** Sent as `user-agent`, so Jagex knows where to report a problem. Not sent when left out. */
+  userAgent?: string;
+};
+
+/** The players online summed over a world list: a `PlayerCount` without its `date`. */
+export type WorldListCounts = Omit<PlayerCount, 'date'>;
+
+const DEFAULT_TIMEOUT_MS = 10_000;
+
+/**
+ * Fetches the raw world list, for {@link parseWorldList}. Unlike `getHiscore`, it throws: on a non-2xx response, a
+ * network error or the timeout. Not for browsers: `www.runescape.com` sends no CORS headers.
+ */
+export async function fetchWorldList({
+  fetch: fetchFn = fetch,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+  userAgent,
+}: FetchWorldListOptions = {}): Promise<Uint8Array> {
+  const headers: Record<string, string> = { 'cache-control': 'no-cache' };
+  if (userAgent) headers['user-agent'] = userAgent;
+
+  const response = await fetchFn(WORLD_LIST_URL, { headers, signal: AbortSignal.timeout(timeoutMs) });
 
   if (!response.ok) throw new Error(`World list request failed: HTTP ${response.status}`);
 
@@ -43,7 +66,7 @@ export async function fetchWorldList(): Promise<Uint8Array> {
  * Throws when the worlds don't end exactly at the payload's end, so a change to the format fails instead of being
  * miscounted.
  */
-export function parseWorldList(bytes: Uint8Array): Omit<PlayerCount, 'date'> {
+export function parseWorldList(bytes: Uint8Array): WorldListCounts {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
   if (bytes.byteLength < 6) throw new Error(`World list too short: ${bytes.byteLength} bytes`);

@@ -2,8 +2,8 @@
 
 Helpers for Old School RuneScape hiscores in [OSRS Tracker](https://osrs-tracker.freekmencke.com): a client for Jagex's
 JSON hiscores, the mapping from Jagex's JSON to the domain model (`HiscoreEntry` in `@osrs-tracker/models`), and
-comparing two hiscore snapshots. The skill and activity names and the XP helpers live in `@osrs-tracker/models` and are
-re-exported here.
+comparing two hiscore snapshots, plus a client for Jagex's world list that counts the players online. The skill and
+activity names and the XP helpers live in `@osrs-tracker/models` and are re-exported here.
 
 A `HiscoreEntry` keys `skills` and `activities` by name. A value is `{ rank, level, xp }` / `{ rank, score }` with
 `rank: null` when unranked (below Jagex's ranking cut-off) but with xp or a score, `null` when there's no xp or score,
@@ -55,6 +55,19 @@ import { fromJagex, JagexHiscoreJson } from '@osrs-tracker/hiscores';
 
 const { skills, activities, layout } = fromJagex(json as JagexHiscoreJson);
 ```
+
+Counting the players online from Jagex's world list (Node 18+; `www.runescape.com` sends no CORS headers, so not from a
+browser). `fetchWorldList` throws on a non-2xx response, a network error or the timeout, and `parseWorldList` throws
+when the response doesn't match the expected format. Don't poll it faster than once a minute.
+
+```ts
+import { fetchWorldList, parseWorldList } from '@osrs-tracker/hiscores';
+
+const counts = parseWorldList(await fetchWorldList({ userAgent: 'github:me/my-app' }));
+const playerCount = { date: new Date(), ...counts }; // a PlayerCount: total, members, f2p, worlds, byLocation
+```
+
+Options: `fetch` (default the global `fetch`), `timeoutMs` (default 10 seconds) and `userAgent` (not sent by default).
 
 ## Development
 
