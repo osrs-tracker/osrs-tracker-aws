@@ -57,8 +57,9 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
 ## Verify
 
 - Each touched Lambda: `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build` (esbuild doesn't
-  type-check; `tsc` also checks the shared files that Lambda imports, and CI runs it). A change in `lambda/shared/`
-  touches all four. process-players' `npm run lint` lints `lambda/shared/`; the root `npm run prettier:ci` formats it.
+  type-check; `tsc` also checks the shared files that Lambda imports, and CI runs it), plus `npx vitest run` in a Lambda
+  with a `vitest.config.ts` (record-player-count). A change in `lambda/shared/` touches all five. process-players'
+  `npm run lint` lints `lambda/shared/`; the root `npm run prettier:ci` formats it.
 - `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npx vitest run && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/models`: `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (Vitest doesn't type-check;

@@ -16,7 +16,7 @@ Run the script from the checkout's root (the worktree, not the main checkout), i
 Before a commit it checks what the staged files touch (`git diff --cached --name-only`). To verify without a commit, add
 `--all-changes`, which adds unstaged changes (`git diff --name-only`). It checks:
 
-- every `lambda/<function>/` with a changed file; a change in `lambda/shared/` touches all four Lambdas;
+- every `lambda/<function>/` with a changed file; a change in `lambda/shared/` touches every Lambda;
 - every `@osrs-tracker/<package>/` with a changed file;
 - always the repo root.
 
@@ -32,13 +32,14 @@ change), never stopping at a failure:
    2. `npm run lint`
    3. `npx tsc --noEmit -p .` (the esbuild build doesn't type-check; this also checks the shared files it imports)
    4. `npm run build`
+   5. `npx vitest run`, for a Lambda with a `vitest.config.ts` (record-player-count)
 3. Each touched package, from its folder, as one check in this order (its `npm run build` is `tsc`, so it type-checks):
    - `hiscores`: `npm run build`, then `npx jest`
    - `express-metrics`, `logger`: `npm run build`, then `npx vitest run`
    - `models`: `npm run build`, `npx tsc -p tsconfig.spec.json`, then `npx vitest run` (its integration tests start an
      in-memory MongoDB 8.0)
 
-Never run `npm test`: it's watch mode in every package.
+Never run `npm test`: it's watch mode in every package and Lambda that has it.
 
 It prints each failed check's log (the last 60 lines of a long one, with the full log's path), then a `passed`/`FAILED`
 line per check with its folder, command and seconds, and exits 1 when any failed.

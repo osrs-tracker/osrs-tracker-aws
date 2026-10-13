@@ -1,3 +1,9 @@
+## 2.4.0 - 2026/10/13
+
+- `PlayerCount`: a `playerCounts` document, the number of players online summed over Jagex's world list (`total`,
+  `members`, `f2p`, `worlds`, and `byLocation` keyed by the raw location code). Written every 10 minutes by the
+  record-player-count Lambda, read by osrs-tracker-api.
+
 ## 2.3.0 - 2026/10/10
 
 - `Player.scrapingOffsetLookups`: when a visitor last looked the player up per scraping offset, keyed by the offset as a

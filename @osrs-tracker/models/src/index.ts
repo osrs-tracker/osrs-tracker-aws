@@ -4,6 +4,7 @@ export * from './models/item.js';
 export * from './models/message.js';
 export * from './models/news.js';
 export * from './models/player.js';
+export * from './models/player-count.js';
 export * from './xp/levels.js';
 export * from './hiscores/codec.js';
 export * from './hiscores/layout.js';

@@ -7,6 +7,13 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ### Lambdas
 
+- New Lambda record-player-count (issue #88): every 10 minutes it sums the players on Jagex's world list (the binary
+  `slr.ws` the client's World Select uses) and stores one `PlayerCount` (`@osrs-tracker/models` 2.4.0) in the new
+  `playerCounts` collection, kept forever, for the player count chart (osrs-tracker/osrs-tracker-api#146,
+  osrs-tracker/osrs-tracker-web#255). A failed request, a response that doesn't parse, or 0 worlds or players inserts
+  nothing and sends the `Player count not recorded` alert. Its parser is the first Lambda code with tests (Vitest, on a
+  captured response); CI and the `verify` skill run them for any Lambda with a `vitest.config.ts`, and `verify.sh` now
+  finds the Lambda folders itself.
 - clean-hiscores keeps hiscore entries 90 days instead of 60 (`MAX_AGE_IN_DAYS`), for goal dates and day comparisons in
   the web app; players nobody scraped or looked up are now also deleted after 90 days. The history reaches 90 days on
   2026-11-12. Its nightly alert now fires when no player got an entry in the last 2 days (scraping stopped), renamed
