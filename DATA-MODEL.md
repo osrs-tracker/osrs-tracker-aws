@@ -1,7 +1,7 @@
 # Data model
 
 The `players` and `items` collections in MongoDB are written by two repos (`hiscoreLayouts` and `playerCounts` by the
-Lambdas only, and read by both): the Lambdas in this repo and
+Lambdas only, and read by both; `news` by the API only): the Lambdas in this repo and
 [osrs-tracker-api](https://github.com/osrs-tracker/osrs-tracker-api). This file says which side writes each field and
 owns each index, so a change on one side doesn't break the other. The TypeScript shapes are in
 [`@osrs-tracker/models`](@osrs-tracker/models/src/models); this file covers who writes what and when.
@@ -110,6 +110,27 @@ One document per sample of the players online (`PlayerCount` in models), every 1
 A run that can't read the world list, or reads 0 worlds or 0 players, inserts nothing, so a gap in `date` is a missed
 sample, not a count of 0.
 
+## `news`
+
+One document per Jagex news post (`OsrsNewsItem` in models; the API types a stored post as `StoredNewsItem`, with
+`description` and `enclosure` optional), keyed by `link`. Written and read by the API only; no Lambda touches it. Kept
+forever: about 200 new posts a year, under 1 MB in all.
+
+| Field                                                      | Written by                                                                                                                                                                                                                                                                                                                                                                             | Read by                                    |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `link`                                                     | API `storeNews` (`api:src/features/news/news.service.ts`): on every news feed refresh (Jagex's RSS, the newest 15 posts; at most every 5 minutes per pod, on the first `/news` or `/news/since/:date` request after that), a `bulkWrite` of `updateOne({ link }, { $set: item }, { upsert: true })` per post. `https://secure.runescape.com/m=news/<slug>?oldschool=1`.                | API (the upsert key).                      |
+| `title`, `pubDate`, `category`, `description`, `enclosure` | API `storeNews`, `$set` of the whole feed item, so a post Jagex republishes under the same link (e.g. Game Status Information Centre) gets the newer title and date. `pubDate` is a Date at midnight UTC, as the feed sends it; `category` is Jagex's (`Game Updates`, `Community`, `Technical`, `Future Updates`, …); `enclosure` is `{ url, type }` (the image itself isn't stored). | API `GET /news/since/:date`, then the web. |
+
+`GET /news/since/:date` (`getNewsSince`) refreshes the feed first, then reads `find({ pubDate: { $gt: date } })`, sorted
+`pubDate: -1`, limit 200, `_id` projected out. `GET /news` still serves the feed from memory, not this collection. A
+failed `storeNews` is logged, not thrown.
+
+**Backfill.** `api:scripts/backfill-news.mjs`, a one-off run in October 2026 (after osrs-tracker/osrs-tracker-api#155),
+inserts about 1,840 posts since 2013 from the OSRS Wiki's `update` bucket with `$setOnInsert`, so it never overwrites a
+feed post. They have only `link`, `title`, `pubDate` (midnight UTC) and `category` (mapped to Jagex's names): no
+`description` or `enclosure`, because the Wiki's text is CC BY-NC-SA. A backfilled post is about 200 bytes, a feed post
+about 435.
+
 ## Indexes
 
 One owner per index. The owner creates it; everyone else may rely on it (`hint`) but shouldn't create it.
@@ -124,6 +145,8 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | `items`        | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).                     |
 | `items`        | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                                | API `getLastFetchedItems` (`hint`).                                                                                                   |
 | `playerCounts` | `{ date: 1 }`                                   | record-player-count, on every run (`aws:lambda/osrs-tracker_record-player-count/src/index.ts`) | API latest count and history ranges.                                                                                                  |
+| `news`         | `{ link: 1 }`, unique                           | API, at startup                                                                                | API `storeNews` upsert, the backfill script's upsert (no `hint`).                                                                     |
+| `news`         | `{ pubDate: -1 }`                               | API, at startup                                                                                | API `getNewsSince` (no `hint`).                                                                                                       |
 
 `name_autocomplete` is an Atlas Search index (`listSearchIndexes`, not `indexes()`): `name` as `autocomplete`
 (`edgeGram`, `minGrams` 2, `maxGrams` 15, `foldDiacritics`) and `string`, `dynamic: false`. The API creates it only when
@@ -138,6 +161,8 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 - `Item.members` is typed `true`; stored values are `true` or `false`.
 - One player has `type: 'CLEARED'`, which isn't a `PlayerType`, with `lastModified` set to 1900 and no `combatLevel`: a
   record cleared by hand.
+- `OsrsNewsItem.description` and `enclosure` are required; the backfilled `news` posts have neither (the API's
+  `StoredNewsItem` makes them optional).
 - Nothing checks stored documents against the models.
 
 ## Stored data
