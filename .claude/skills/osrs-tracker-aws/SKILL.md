@@ -80,7 +80,8 @@ agent.
   match the change).
 - A missing `DRY_RUN` guard may live in a helper in the Lambda's `src/utils/` or in `lambda/shared/src/`: check there
   before flagging.
-- Rules that span files, checked against the whole diff: a change and its `CHANGELOG.md` entry (root or the package's).
+- Rules that span files, checked against the whole diff: a change and its `CHANGELOG.md` entry (root or the package's),
+  except where `CLAUDE.md` exempts it; a package change that breaks a consumer and its `**Breaking:**` entry.
 - **breaks** here also covers: writes to production in a dry run, leaks a secret, account ID or resource ID. A typical
   **check**: a Lambda's live configuration (name the function and the setting; the caller runs the read-only `aws` call
   with `--profile claude`, since the reviewer can't run `aws`).
@@ -110,11 +111,11 @@ after that CI is the gate (builds needed for a deploy or publish still run).
   merged. Commit and push in the same session as any deploy or publish.
 - Conventional commits. Scopes: `hiscores`/`models`/…, `lambda` or `osrs-tracker_<function>`, `ci(actions)`,
   `docs(skill)`.
-- **Every change gets a changelog entry**: Lambda, infra and CI changes (including deploys) in the root `CHANGELOG.md`
-  under `## YYYY/MM/DD` (newest first); package changes in the package's `CHANGELOG.md` ([PACKAGES.md](PACKAGES.md)).
-  Busy days get `###` subtitles by area ("Behind the scenes" last), not repeated in their entries. Extend an existing
-  entry rather than add a near-duplicate. When adding an entry, reread the whole day: add subtitles once it's busy, and
-  merge entries about the same feature.
+- **Changelog entries**: which changes get one, and where, is in `CLAUDE.md` (deploys count). Root days are
+  `## YYYY/MM/DD`, newest first; package entries follow [PACKAGES.md](PACKAGES.md). Say what changed and why. Busy days
+  get `###` subtitles by area ("Behind the scenes" last), not repeated in their entries. Extend an existing entry rather
+  than add a near-duplicate. When adding an entry, reread the whole day: add subtitles once it's busy, and merge entries
+  about the same feature.
 - GPG "Inappropriate ioctl for device": ask the user to run `echo test | gpg --clearsign > /dev/null` in their terminal.
   Never use `--no-gpg-sign`.
 - `gh pr edit` can fail on a Projects (classic) error; use

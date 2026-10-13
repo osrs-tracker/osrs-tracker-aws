@@ -1,7 +1,8 @@
 # Changelog
 
 Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
-`CHANGELOG.md`.
+`CHANGELOG.md`. Housekeeping (tooling, CI) is logged on purpose, because sessions read this as the repo's history;
+doc-only changes are not.
 
 ## 2026/10/13
 
