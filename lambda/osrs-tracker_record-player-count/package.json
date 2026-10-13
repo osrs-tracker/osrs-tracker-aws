@@ -14,12 +14,12 @@
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
     "start": "node ../shared/build/esbuild.js --dev --watch --run",
-    "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js",
-    "test": "vitest"
+    "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
   },
   "prettier": "./.prettierrc.json",
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.1145.0",
+    "@osrs-tracker/hiscores": "^4.2.0",
     "@osrs-tracker/models": "^2.4.0",
     "envalid": "^8.2.0",
     "mongodb": "^7.7.0"
@@ -36,8 +36,7 @@
     "globals": "^17.13.0",
     "prettier": "^3.9.9",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.71.0",
-    "vitest": "^5.0.4"
+    "typescript-eslint": "^8.71.0"
   },
   "engines": {
     "node": ">=24"
