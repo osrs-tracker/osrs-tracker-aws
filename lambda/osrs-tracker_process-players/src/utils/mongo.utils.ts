@@ -1,6 +1,7 @@
 import { HiscoreLayout, hiscoreEntriesWriteExpression, StoredHiscoreEntry, StoredPlayer } from '@osrs-tracker/models';
 import { subDays } from 'date-fns';
 import { AnyBulkWriteOperation, Document, MongoClient } from 'mongodb';
+import { isDeepStrictEqual } from 'node:util';
 import { DRY_RUN, logDryRun } from '@lambda/shared/dry-run.utils';
 import { mongoUtils } from '@lambda/shared/mongo.utils';
 
@@ -9,10 +10,6 @@ export const HISCORE_NOT_FOUND_PAUSE_DAYS = 7;
 
 /** Layout ids this warm Lambda has upserted or found with the same names, so each is upserted once per container. */
 const knownLayoutIds = new Set<number>();
-
-function sameNames(a: readonly string[], b: readonly string[]): boolean {
-  return a.length === b.length && a.every((name, i) => name === b[i]);
-}
 
 /**
  * Short for MongoUtils.
@@ -42,7 +39,11 @@ export class MU extends mongoUtils<StoredPlayer>() {
       );
       if (!upsertedCount) {
         const existing = await this.layouts(mongo).findOne({ _id });
-        if (!existing || !sameNames(existing.skills, skills) || !sameNames(existing.activities, activities))
+        if (
+          !existing ||
+          !isDeepStrictEqual(existing.skills, skills) ||
+          !isDeepStrictEqual(existing.activities, activities)
+        )
           throw new Error(`Hiscore layout ${_id} is stored with other names (a layout id hash collision)`);
       }
       knownLayoutIds.add(_id);
