@@ -23,7 +23,10 @@ header or CORS change from the web and API sides too**.
 
 ## Schedules and queue
 
-- EventBridge `Hourly` triggers queue-players and refresh-items; `daily` (00:00 UTC) triggers clean-hiscores.
+- EventBridge `Hourly` triggers queue-players and refresh-items; `daily` (00:00 UTC) triggers clean-hiscores;
+  `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers record-player-count, with async retries off
+  (`put-function-event-invoke-config --maximum-retry-attempts 0`): a missed sample stays missed, and a retry would send
+  the same alert again.
 - queue-players feeds SQS `osrs-tracker_players-to-scrape` → process-players (batch 1, max concurrency 5); redrive to
   `osrs-tracker_players-to-scrape-dead` after 3 receives.
 - **Keep the queue's visibility timeout above process-players' timeout** (currently 2×), or messages reappear mid-run.
@@ -49,5 +52,6 @@ first (logs are kept 7 days).
 | process-players `Failed to store hiscores`       | A bulk write failed after the fetches: those players have no entry for today.                                                                                      | Check Atlas (limits, connectivity) in the logs. Don't requeue by hand on a day they already have an entry. |
 | process-players `Failed to queue retries`        | SQS rejected the retry messages for failed players: they miss today.                                                                                               | Read the logged errors.                                                                                    |
 | process-players `Paused scraping`                | Players off the hiscores for 7 days were paused (expected for renames and bans).                                                                                   | Nothing; a lookup in the API resumes them ([DATA-MODEL.md](../../../DATA-MODEL.md)).                       |
+| record-player-count `Player count not recorded`  | Jagex's world list failed, didn't parse (a format change) or had no worlds or players: no sample for those 10 minutes. Repeats every run until it's fixed.         | Read the error in the alert. A format change needs `parseWorldList` updated against a fresh response.      |
 
 refresh-items has no alert: a failed run only shows as a Lambda error in its logs.

@@ -27,7 +27,7 @@ function invokeDry(functionName, event) {
 
 /**
  * The scheduled event for the ISO time passed as argument (`npm run invoke:dry -- 2026-10-02T18:00:00Z`), or now. Only
- * queue-players reads `event.time`; clean-hiscores and refresh-items ignore it.
+ * queue-players reads `event.time`; the other scheduled Lambdas ignore it.
  */
 function scheduledEvent() {
   return { time: process.argv[2] ?? new Date().toISOString() };

@@ -9,7 +9,12 @@ set -u
 # Plain output: the logs are read by Claude, not a terminal
 export NO_COLOR=1 FORCE_COLOR=0
 
-lambdas=(osrs-tracker_clean-hiscores osrs-tracker_process-players osrs-tracker_queue-players osrs-tracker_refresh-items)
+# Every Lambda folder; lambda/shared is code they bundle, not a Lambda
+lambdas=()
+for dir in lambda/*/; do
+  dir=${dir%/}
+  [ -f "$dir/package.json" ] && lambdas+=("${dir#lambda/}")
+done
 
 changed=$(git diff --cached --name-only)
 if [ "${1:-}" = --all-changes ]; then
@@ -32,6 +37,7 @@ for lambda in "${lambdas[@]}"; do
     # esbuild doesn't type-check; this also checks the shared files the Lambda imports
     add "$lambda types" "$dir" 'npx tsc --noEmit -p .'
     add "$lambda build" "$dir" 'npm run build'
+    [ -f "$dir/vitest.config.ts" ] && add "$lambda test" "$dir" 'npx vitest run'
   fi
 done
 

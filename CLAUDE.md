@@ -1,6 +1,6 @@
 # osrs-tracker-aws
 
-Four AWS Lambdas (`lambda/<function>/`, Node 24, one npm project each) that keep OSRS Tracker's MongoDB Atlas data
+Five AWS Lambdas (`lambda/<function>/`, Node 24, one npm project each) that keep OSRS Tracker's MongoDB Atlas data
 fresh, plus the npm packages in `@osrs-tracker/` (`models`, `hiscores`, `express-metrics`, `logger`). Sibling repos:
 `../osrs-tracker-api` (writes the same collections) and `../osrs-tracker-web`. **This repo is public.**
 
@@ -10,7 +10,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 
 ## Commands
 
-- Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`.
+- Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`,
+  plus `npx vitest run` where it has a `vitest.config.ts`.
 - Verify a package: `hiscores` `npx jest && npm run build`, `express-metrics` and `logger`
   `npx vitest run && npm run build` (`npm test` is watch mode in all of them); `models`
   `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (its integration tests start an in-memory MongoDB
@@ -23,7 +24,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   `npx esbuild src/index.ts --bundle --platform=node --minify --metafile=<tmp>/meta.json --outfile=<tmp>/out.js`, then
   group `outputs[*].inputs` by `node_modules/<pkg>`.
 - Worktrees in `.claude/worktrees/` find only the root `node_modules` in the main checkout. Run `npm ci` in each Lambda
-  or package folder you build, lint or test. The pre-push hook lints every Lambda, so all four need it before a push.
+  or package folder you build, lint or test. The pre-push hook lints every Lambda, so all five need it before a push.
   `.worktreeinclude` copies each Lambda's `.env` into a new worktree, so `invoke:dry` works there.
 
 ## Hard rules
@@ -48,7 +49,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   and a `README.md` with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
 - `lambda/shared/`: code every Lambda bundles, no `package.json` (imports resolve from the Lambda's `node_modules`):
   `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`), `build/esbuild.js`,
-  `build/invoke.js` and `eslint.config.mjs`. A change there touches all four Lambdas.
+  `build/invoke.js` and `eslint.config.mjs`. A change there touches all five Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
   tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root
   `LICENSE` and `NOTICE`. `models`, `hiscores`, `express-metrics` and `logger` ship `dist/cjs`, `dist/esm` and

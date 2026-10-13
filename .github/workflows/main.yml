@@ -179,6 +179,11 @@ jobs:
         run: npm run build
         working-directory: lambda/${{ matrix.lambda_function }}
 
+      - name: Test (Vitest)
+        if: hashFiles(format('lambda/{0}/vitest.config.ts', matrix.lambda_function)) != ''
+        run: npx vitest run
+        working-directory: lambda/${{ matrix.lambda_function }}
+
   # The only required check: skipped jobs pass, failed or cancelled ones (including change detection) don't
   ci:
     name: CI
