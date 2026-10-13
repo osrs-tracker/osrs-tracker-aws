@@ -116,10 +116,11 @@ One document per Jagex news post (`OsrsNewsItem` in models; the API types a stor
 `description` and `enclosure` optional), keyed by `link`. Written and read by the API only; no Lambda touches it. Kept
 forever: about 200 new posts a year, under 1 MB in all.
 
-| Field                                                      | Written by                                                                                                                                                                                                                                                                                                                                                                             | Read by                                    |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `link`                                                     | API `storeNews` (`api:src/features/news/news.service.ts`): on every news feed refresh (Jagex's RSS, the newest 15 posts; at most every 5 minutes per pod, on the first `/news` or `/news/since/:date` request after that), a `bulkWrite` of `updateOne({ link }, { $set: item }, { upsert: true })` per post. `https://secure.runescape.com/m=news/<slug>?oldschool=1`.                | API (the upsert key).                      |
-| `title`, `pubDate`, `category`, `description`, `enclosure` | API `storeNews`, `$set` of the whole feed item, so a post Jagex republishes under the same link (e.g. Game Status Information Centre) gets the newer title and date. `pubDate` is a Date at midnight UTC, as the feed sends it; `category` is Jagex's (`Game Updates`, `Community`, `Technical`, `Future Updates`, …); `enclosure` is `{ url, type }` (the image itself isn't stored). | API `GET /news/since/:date`, then the web. |
+| Field                          | Written by                                                                                                                                                                                                                                                                                                                                                              | Read by                                    |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `link`                         | API `storeNews` (`api:src/features/news/news.service.ts`): on every news feed refresh (Jagex's RSS, the newest 15 posts; at most every 5 minutes per pod, on the first `/news` or `/news/since/:date` request after that), a `bulkWrite` of `updateOne({ link }, { $set: item }, { upsert: true })` per post. `https://secure.runescape.com/m=news/<slug>?oldschool=1`. | API (the upsert key).                      |
+| `title`, `pubDate`, `category` | API `storeNews`, `$set` of the whole feed item, so a post Jagex republishes under the same link (e.g. Game Status Information Centre) gets the newer title and date. `pubDate` is a Date at midnight UTC, as the feed sends it; `category` is Jagex's (`Game Updates`, `Community`, `Technical`, `Future Updates`, …).                                                  | API `GET /news/since/:date`, then the web. |
+| `description`, `enclosure`     | API `storeNews`, as above; `api:scripts/backfill-news-images.mjs` only where a post lacks them (see **Backfill.**). `enclosure` is `{ url, type }` (the image itself isn't stored).                                                                                                                                                                                     | API `GET /news/since/:date`, then the web. |
 
 `GET /news/since/:date` (`getNewsSince`) refreshes the feed first, then reads `find({ pubDate: { $gt: date } })`, sorted
 `pubDate: -1`, limit 200, `_id` projected out. `GET /news` still serves the feed from memory, not this collection. A
@@ -127,9 +128,21 @@ failed `storeNews` is logged, not thrown.
 
 **Backfill.** `api:scripts/backfill-news.mjs`, a one-off run in October 2026 (after osrs-tracker/osrs-tracker-api#155),
 inserts about 1,840 posts since 2013 from the OSRS Wiki's `update` bucket with `$setOnInsert`, so it never overwrites a
-feed post. They have only `link`, `title`, `pubDate` (midnight UTC) and `category` (mapped to Jagex's names): no
-`description` or `enclosure`, because the Wiki's text is CC BY-NC-SA. A backfilled post is about 200 bytes, a feed post
-about 435.
+feed post. It stores only `link`, `title`, `pubDate` (midnight UTC) and `category` (mapped to Jagex's names): no
+`description` or `enclosure`, because the Wiki's text is CC BY-NC-SA.
+
+`api:scripts/backfill-news-images.mjs`, a one-off run on 2026-10-13 (osrs-tracker/osrs-tracker-api#162), then gave most
+of them Jagex's own teaser and image. It walks Jagex's monthly news archive
+(`secure.runescape.com/m=news/archive?oldschool=true&year&month&page`) and, matched on `link` (or the same slug apart
+from Jagex's `-1` suffix), `$set`s `description` and `enclosure` only where a post lacks them (filtered on
+`$exists: false`), so the feed's version wins. It stores image URLs only, and only `https://cdn.runescape.com/` ones
+(the only origin `GET /news/image` serves). 1,809 posts got a teaser, 1,322 an image. 503 of the 1,840 stored posts have
+no image: posts from 2013 to 2016 pointed at the gone `services.runescape.com/m=rswikiimages` host, and some later ones
+at imgur or a generic fallback. 16 posts that the archive doesn't list have neither. The teaser is Jagex's text, not the
+Wiki's, so the CC BY-NC-SA note above still holds for Wiki text.
+
+Measured on 2026-10-13: a post with teaser and image is about 420 bytes, one with a teaser only about 265, one with
+neither about 200; the collection is about 700 KB.
 
 ## Indexes
 
@@ -145,7 +158,7 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | `items`        | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).                     |
 | `items`        | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                                | API `getLastFetchedItems` (`hint`).                                                                                                   |
 | `playerCounts` | `{ date: 1 }`                                   | record-player-count, on every run (`aws:lambda/osrs-tracker_record-player-count/src/index.ts`) | API latest count and history ranges.                                                                                                  |
-| `news`         | `{ link: 1 }`, unique                           | API, at startup                                                                                | API `storeNews` upsert, the backfill script's upsert (no `hint`).                                                                     |
+| `news`         | `{ link: 1 }`, unique                           | API, at startup                                                                                | API `storeNews` upsert, the backfill scripts' writes (no `hint`).                                                                     |
 | `news`         | `{ pubDate: -1 }`                               | API, at startup                                                                                | API `getNewsSince` (no `hint`).                                                                                                       |
 
 `name_autocomplete` is an Atlas Search index (`listSearchIndexes`, not `indexes()`): `name` as `autocomplete`
@@ -161,8 +174,9 @@ clean-hiscores' `$pull` runs over the whole collection without an index; that's 
 - `Item.members` is typed `true`; stored values are `true` or `false`.
 - One player has `type: 'CLEARED'`, which isn't a `PlayerType`, with `lastModified` set to 1900 and no `combatLevel`: a
   record cleared by hand.
-- `OsrsNewsItem.description` and `enclosure` are required; the backfilled `news` posts have neither (the API's
-  `StoredNewsItem` makes them optional).
+- `OsrsNewsItem.description` and `enclosure` are required; the backfilled `news` posts Jagex's archive has no image or
+  teaser for still lack them (about 500 without an image, 16 with neither), so the API's `StoredNewsItem` keeps both
+  optional.
 - Nothing checks stored documents against the models.
 
 ## Stored data
