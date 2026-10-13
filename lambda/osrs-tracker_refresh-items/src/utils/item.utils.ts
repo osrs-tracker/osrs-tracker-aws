@@ -1,10 +1,11 @@
+import { USER_AGENT } from '@lambda/shared/user-agent';
 import { Item } from '@osrs-tracker/models';
 
 export async function fetchItems(): Promise<Item[]> {
   const itemResponse = await fetch('https://prices.runescape.wiki/api/v2/osrs/mapping', {
     headers: {
       'cache-control': 'no-cache',
-      'user-agent': 'github:osrs-tracker/osrs-tracker-aws', // https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices#Please_set_a_descriptive_User-Agent!
+      'user-agent': USER_AGENT,
     },
     // undici's own timeouts are 300 s; fail a stalled request well within the Lambda's 30 s timeout
     signal: AbortSignal.timeout(15_000),
