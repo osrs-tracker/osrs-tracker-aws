@@ -4,7 +4,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 `CHANGELOG.md`. Housekeeping (tooling, CI) is logged on purpose, because sessions read this as the repo's history;
 doc-only changes are not.
 
-## 2026/10/13
+## 2026-10-13
 
 ### Lambdas
 
@@ -34,8 +34,11 @@ doc-only changes are not.
 
 - A new `.worktreeinclude` copies each Lambda's `.env` from the main checkout into new Claude Code worktrees, so
   `npm run invoke:dry` works there without copying it by hand.
+- CI gets a `Link check` job (lychee, offline) that fails on a broken local link or `#anchor` in any Markdown file,
+  `.claude/` included, on every push, doc-only ones too (issue #95). Changelog days are now ISO dates (`2026-10-13`),
+  and package entries drop the `v` (`## 4.1.0 - 2026-10-10`), the same in all osrs-tracker repos.
 
-## 2026/10/12
+## 2026-10-12
 
 ### Behind the scenes
 
@@ -54,7 +57,7 @@ doc-only changes are not.
   a failure, and prints only the failed checks' logs plus a summary line per check, so all failures get fixed in one
   round.
 
-## 2026/10/10
+## 2026-10-10
 
 ### Unused scraping offsets
 
@@ -62,7 +65,7 @@ doc-only changes are not.
   player isn't scraped once per offset forever after a single lookup from another timezone (worst case 24 times a day).
   It always keeps the most recently looked up offset, so every player is still scraped once a day. Lookups are recorded
   per offset by osrs-tracker-api in the new `scrapingOffsetLookups`; offsets without a date get the date of the run, so
-  nothing is dropped before 2027/04. Deployed: clean-hiscores v11; its first run at 00:00 UTC on 2026/10/11 dates every
+  nothing is dropped before 2027-04. Deployed: clean-hiscores v11; its first run at 00:00 UTC on 2026-10-11 dates every
   offset.
 
 ### Compact hiscore storage
@@ -92,7 +95,7 @@ doc-only changes are not.
 - refresh-items deletes the items that left the OSRS Wiki's item list (items Jagex took off the Grand Exchange, which
   have no prices and only made thin pages on the website), after its hourly upsert (#73). It skips the delete when more
   than 50 items would go, so a truncated Wiki response never wipes the collection. The 19 that had piled up were removed
-  by hand on 2026/10/10 before this. Deployed: refresh-items v10.
+  by hand on 2026-10-10 before this. Deployed: refresh-items v10.
 - `DATA-MODEL.md` follows the API's item browse and player sitemap (#72): the `items` `{ name: 1 }` index (collation
   `en`, strength 2) that `browseItems` hints, and `GET /sitemap/players` reading `scrapingOffsets`,
   `hiscoreNotFoundCount` and the newest `hiscoreEntries` date.
@@ -106,10 +109,10 @@ doc-only changes are not.
 - The root `package.json` declares the repo's Apache-2.0 license instead of MIT, matching `LICENSE` and every Lambda and
   package (#58).
 - queue-players no longer passes `background: true` when it ensures its `scrapingOffsets` index; MongoDB has ignored
-  that option since 4.2. A review of every index against the current queries (2026/10/10) found nothing else to change
+  that option since 4.2. A review of every index against the current queries (2026-10-10) found nothing else to change
   here. Not deployed yet.
 
-## 2026/10/09
+## 2026-10-09
 
 ### Lambdas
 
@@ -206,7 +209,7 @@ doc-only changes are not.
 - Added a `CLAUDE.md` for Claude Code: what the repo is, the verify and local-run commands, the hard rules and where
   things live, pointing to the project skill for detail. The `conventions-reviewer` agent checks its hard rules too.
 
-## 2026/10/08
+## 2026-10-08
 
 ### Hiscore entries without `sourceString`
 
@@ -248,7 +251,7 @@ doc-only changes are not.
 - Prettier ignores `.claude/settings.local.json`, which Claude Code rewrites in its own layout when a permission is
   allowed, so it no longer fails the Prettier check that guards every push.
 
-## 2026/10/07
+## 2026-10-07
 
 - CI reuses each project's installed `node_modules` until its `package-lock.json` changes, instead of running `npm ci`
   every time. A new push to a PR only checks the packages and Lambdas changed since the previous push, so a version or
@@ -258,11 +261,11 @@ doc-only changes are not.
 - Claude Code: edited files are formatted with Prettier automatically, a push is blocked when the Prettier check or a
   Lambda's lint fails, and a `conventions-reviewer` agent reviews PRs against the project skill during a release.
 
-## 2026/10/04
+## 2026-10-04
 
 - Project skill: documented the changelog conventions (`###` subtitles on busy days, no near-duplicate entries).
 
-## 2026/10/03
+## 2026-10-03
 
 - Project skill: documented the release flow (PR, review, deploy and publish, update the PR, merge).
 - Removed the unused `commitizen` and `cz-conventional-changelog` dev dependencies and their `config.commitizen` blocks
@@ -276,7 +279,7 @@ doc-only changes are not.
   result, so it's the only check branch protection needs to require.
 - Project skill: ask whether to commit straight to `main` or open a PR, and how to clean up after a merge.
 
-## 2026/10/02
+## 2026-10-02
 
 - Restructured the project skill: `SKILL.md` keeps the rules, local runs, verification and commit workflow; infra,
   package publishing and deploy details moved to `INFRA.md`, `PACKAGES.md` and `DEPLOY.md` next to it. Removed account

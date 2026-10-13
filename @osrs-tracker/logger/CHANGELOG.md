@@ -3,7 +3,7 @@
 - README: the Nest section says Nest has to run on its Express adapter (Nest 11 or later, for the Express 5 peer
   dependency).
 
-## v0.2.0 - 2026/10/09
+## 0.2.0 - 2026-10-09
 
 Breaking: the `error` field's format and `responseTime`'s precision change.
 
@@ -16,7 +16,7 @@ Breaking: the `error` field's format and `responseTime`'s precision change.
 - `requestLogger`'s `responseTime` is pino-http's own timing, in whole milliseconds (`12ms`, was `12.345ms`), and
   `logOutgoingRequests` rounds its own to whole milliseconds to match.
 
-## v0.1.1 - 2026/10/09
+## 0.1.1 - 2026-10-09
 
 - The `error` field follows the stack with the error's `cause` chain, Node style (`Caused by: ` and the cause's own
   stack, or a non-Error cause as text, JSON for an object), and an `AggregateError`'s errors (`Error 1 of 2: …`), up to
@@ -24,7 +24,7 @@ Breaking: the `error` field's format and `responseTime`'s precision change.
 - README: the Nest section links to osrs-tracker-api's `NestLogger` instead of a `LoggerService` sketch that tagged
   every line `lifecycle` and misread Nest's `(message, ...optionalParams)` arguments.
 
-## v0.1.0 - 2026/10/09
+## 0.1.0 - 2026-10-09
 
 - First release: `createLogger` (pino, one JSON line per log with `level` as Loki names it, an ISO `time`, `type`,
   `message`, and an error's stack as one string under `error`; `context` adds per-line fields such as the request ID),

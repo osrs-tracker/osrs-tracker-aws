@@ -38,7 +38,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - A change to a shared field or index updates `DATA-MODEL.md` in the same change, plus an issue in osrs-tracker-api when
   it has to follow.
 - Every change except a doc-only one gets a changelog entry: Lambdas, infra, CI and tooling (`.claude/hooks/`,
-  `.claude/settings.json`) in the root `CHANGELOG.md` under today's `## YYYY/MM/DD`, packages in their own
+  `.claude/settings.json`) in the root `CHANGELOG.md` under today's `## YYYY-MM-DD`, packages in their own
   `CHANGELOG.md`. Doc-only means `docs/`, `README.md` files (also a Lambda's or package's), `CLAUDE.md`,
   `.claude/skills/`, `.claude/agents/`, and `DATA-MODEL.md` edits that only document (one that comes with a data change
   is logged with it). A dependency bump gets an entry only when it changes behaviour (a new feature used, a fix that

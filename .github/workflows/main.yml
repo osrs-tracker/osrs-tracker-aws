@@ -95,6 +95,23 @@ jobs:
       - name: Prettier
         run: npm run prettier:ci
 
+  # Local links and #anchors in every Markdown file, on every push (doc-only ones too). --offline skips external URLs,
+  # --hidden includes .claude/; .gitignored files (node_modules, dist) are skipped
+  links:
+    name: Link check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Lychee
+        uses: lycheeverse/lychee-action@v2.9.0
+        with:
+          args: --offline --include-fragments --hidden --no-progress './**/*.md'
+          fail: true
+          jobSummary: false
+
   packages:
     name: Package CI
     needs: changes
@@ -188,7 +205,7 @@ jobs:
   ci:
     name: CI
     if: always()
-    needs: [changes, root, packages, lambda]
+    needs: [changes, root, links, packages, lambda]
     runs-on: ubuntu-latest
 
     steps:

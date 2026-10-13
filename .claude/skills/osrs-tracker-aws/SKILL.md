@@ -112,7 +112,7 @@ after that CI is the gate (builds needed for a deploy or publish still run).
 - Conventional commits. Scopes: `hiscores`/`models`/…, `lambda` or `osrs-tracker_<function>`, `ci(actions)`,
   `docs(skill)`.
 - **Changelog entries**: which changes get one, and where, is in `CLAUDE.md` (deploys count). Root days are
-  `## YYYY/MM/DD`, newest first; package entries follow [PACKAGES.md](PACKAGES.md). Say what changed and why. Busy days
+  `## YYYY-MM-DD`, newest first; package entries follow [PACKAGES.md](PACKAGES.md). Say what changed and why. Busy days
   get `###` subtitles by area ("Behind the scenes" last), not repeated in their entries. Extend an existing entry rather
   than add a near-duplicate. When adding an entry, reread the whole day: add subtitles once it's busy, and merge entries
   about the same feature.
