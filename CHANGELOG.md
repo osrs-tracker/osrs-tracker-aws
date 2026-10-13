@@ -4,7 +4,7 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 `CHANGELOG.md`. Housekeeping (tooling, CI) is logged on purpose, because sessions read this as the repo's history;
 doc-only changes are not.
 
-## 2026/10/13
+## 2026-10-13
 
 ### Lambdas
 
@@ -34,8 +34,11 @@ doc-only changes are not.
 
 - A new `.worktreeinclude` copies each Lambda's `.env` from the main checkout into new Claude Code worktrees, so
   `npm run invoke:dry` works there without copying it by hand.
+- CI gets a `Link check` job (lychee, offline) that fails on a broken local link or `#anchor` in any Markdown file,
+  `.claude/` included, on every push, doc-only ones too (issue #95). Changelog days are now ISO dates (`2026-10-13`),
+  and package entries drop the `v` (`## 4.1.0 - 2026-10-10`), the same in all osrs-tracker repos.
 
-## 2026/10/12
+## 2026-10-12
 
 ### Behind the scenes
 
@@ -54,7 +57,7 @@ doc-only changes are not.
   a failure, and prints only the failed checks' logs plus a summary line per check, so all failures get fixed in one
   round.
 
-## 2026/10/10
+## 2026-10-10
 
 ### Unused scraping offsets
 
@@ -109,7 +112,7 @@ doc-only changes are not.
   that option since 4.2. A review of every index against the current queries (2026/10/10) found nothing else to change
   here. Not deployed yet.
 
-## 2026/10/09
+## 2026-10-09
 
 ### Lambdas
 
@@ -206,7 +209,7 @@ doc-only changes are not.
 - Added a `CLAUDE.md` for Claude Code: what the repo is, the verify and local-run commands, the hard rules and where
   things live, pointing to the project skill for detail. The `conventions-reviewer` agent checks its hard rules too.
 
-## 2026/10/08
+## 2026-10-08
 
 ### Hiscore entries without `sourceString`
 
@@ -248,7 +251,7 @@ doc-only changes are not.
 - Prettier ignores `.claude/settings.local.json`, which Claude Code rewrites in its own layout when a permission is
   allowed, so it no longer fails the Prettier check that guards every push.
 
-## 2026/10/07
+## 2026-10-07
 
 - CI reuses each project's installed `node_modules` until its `package-lock.json` changes, instead of running `npm ci`
   every time. A new push to a PR only checks the packages and Lambdas changed since the previous push, so a version or
@@ -258,11 +261,11 @@ doc-only changes are not.
 - Claude Code: edited files are formatted with Prettier automatically, a push is blocked when the Prettier check or a
   Lambda's lint fails, and a `conventions-reviewer` agent reviews PRs against the project skill during a release.
 
-## 2026/10/04
+## 2026-10-04
 
 - Project skill: documented the changelog conventions (`###` subtitles on busy days, no near-duplicate entries).
 
-## 2026/10/03
+## 2026-10-03
 
 - Project skill: documented the release flow (PR, review, deploy and publish, update the PR, merge).
 - Removed the unused `commitizen` and `cz-conventional-changelog` dev dependencies and their `config.commitizen` blocks
@@ -276,7 +279,7 @@ doc-only changes are not.
   result, so it's the only check branch protection needs to require.
 - Project skill: ask whether to commit straight to `main` or open a PR, and how to clean up after a merge.
 
-## 2026/10/02
+## 2026-10-02
 
 - Restructured the project skill: `SKILL.md` keeps the rules, local runs, verification and commit workflow; infra,
   package publishing and deploy details moved to `INFRA.md`, `PACKAGES.md` and `DEPLOY.md` next to it. Removed account

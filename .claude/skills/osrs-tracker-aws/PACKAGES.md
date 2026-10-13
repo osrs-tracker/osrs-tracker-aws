@@ -17,10 +17,10 @@ reader switched together, like roadmap osrs-tracker/osrs-tracker-aws#52.
 
 ## Versioning
 
-Bump `package.json`, add a `## vX.Y.Z - YYYY/MM/DD` entry to the package's `CHANGELOG.md` (models: `## X.Y.Z - …`), and
-verify (the build is a local check only: `dist/` isn't committed, and `prepublishOnly` rebuilds it on publish). An
-`## Unreleased` section becomes that version's entry. Start an entry that breaks a consumer (osrs-tracker-api,
-osrs-tracker-web) with `**Breaking:**`, and say what the consumer has to change.
+Bump `package.json`, add a `## X.Y.Z - YYYY-MM-DD` entry (no `v`) to the package's `CHANGELOG.md`, and verify (the build
+is a local check only: `dist/` isn't committed, and `prepublishOnly` rebuilds it on publish). An `## Unreleased` section
+becomes that version's entry. Start an entry that breaks a consumer (osrs-tracker-api, osrs-tracker-web) with
+`**Breaking:**`, and say what the consumer has to change.
 
 ## Publishing
 
