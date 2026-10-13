@@ -14,7 +14,9 @@ doc-only changes are not.
   osrs-tracker/osrs-tracker-web#255). A failed request, a response that doesn't parse, or 0 worlds or players inserts
   nothing and sends the `Player count not recorded` alert. Its parser is the first Lambda code with tests (Vitest, on a
   captured response); CI and the `verify` skill run them for any Lambda with a `vitest.config.ts`, and `verify.sh` now
-  finds the Lambda folders itself.
+  finds the Lambda folders itself. Created in the console (256 MB, 30 s, arm64, role `AWS_Lambda`, async retries off),
+  deployed as version 1, triggered by the new EventBridge rule `osrs-tracker_record-player-count` (`rate(10 minutes)`);
+  its log group keeps 7 days like the others.
 - clean-hiscores keeps hiscore entries 90 days instead of 60 (`MAX_AGE_IN_DAYS`), for goal dates and day comparisons in
   the web app; players nobody scraped or looked up are now also deleted after 90 days. The history reaches 90 days on
   2026-11-12. Its nightly alert now fires when no player got an entry in the last 2 days (scraping stopped), renamed
