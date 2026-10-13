@@ -7,6 +7,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 - refresh-items reads the item list from v2 of the OSRS Wiki prices API (`/api/v2/osrs/mapping`) instead of v1, which
   the Wiki says may be removed. The response is the same. Deployed as version 11.
+- process-players' hiscore requests to Jagex and every Lambda's Discord alerts now send the
+  `User-Agent: github:osrs-tracker/osrs-tracker-aws` that refresh-items already sent to the Wiki, instead of undici's
+  `node`, so the receiver can tell where to report a problem. The value is one constant, `USER_AGENT` in
+  `lambda/shared/src/user-agent.ts`. Deployed as clean-hiscores 12, process-players 50, queue-players 24 and
+  refresh-items 12.
 
 ## 2026/10/12
 

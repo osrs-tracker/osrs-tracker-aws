@@ -1,5 +1,6 @@
 import { Context } from 'aws-lambda/handler';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
+import { USER_AGENT } from './user-agent';
 
 /** @see https://discord.com/developers/docs/resources/message#embed-object-embed-limits */
 const DISCORD_DESCRIPTION_MAX_LENGTH = 4096;
@@ -59,7 +60,7 @@ export async function discordAlert(
   // fetch resolves on 4xx/5xx too (e.g. a revoked webhook), so check the status or the alert is lost without a trace
   const response = await fetch(webhookUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'content-type': 'application/json', 'user-agent': USER_AGENT },
     body: JSON.stringify(message),
     // undici's own timeouts are 300 s; a stalled request must not hold the Lambda until it times out (process-players
     // would then be retried by SQS after its bulk writes, storing duplicate hiscore entries)
