@@ -10,7 +10,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 - process-players' hiscore requests to Jagex and every Lambda's Discord alerts now send the
   `User-Agent: github:osrs-tracker/osrs-tracker-aws` that refresh-items already sent to the Wiki, instead of undici's
   `node`, so the receiver can tell where to report a problem. The value is one constant, `USER_AGENT` in
-  `lambda/shared/src/user-agent.ts`.
+  `lambda/shared/src/user-agent.ts`. Deployed as clean-hiscores 12, process-players 50, queue-players 24 and
+  refresh-items 12.
 
 ## 2026/10/12
 
