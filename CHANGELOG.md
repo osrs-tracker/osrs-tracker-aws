@@ -21,7 +21,7 @@ doc-only changes are not.
   `parseWorldList`), with their tests, so osrs-tracker-api can serve a live count with the same parser (issue #100,
   osrs-tracker/osrs-tracker-api#163). The Lambda still fetches Jagex itself, with the same timeout, user agent, checks
   and alert, so recording doesn't depend on the API. It no longer has tests of its own, so it drops Vitest; CI and
-  `verify.sh` still run them for any Lambda with a `vitest.config.ts`.
+  `verify.sh` still run them for any Lambda with a `vitest.config.ts`. Deployed as version 2.
 - clean-hiscores keeps hiscore entries 90 days instead of 60 (`MAX_AGE_IN_DAYS`), for goal dates and day comparisons in
   the web app; players nobody scraped or looked up are now also deleted after 90 days. The history reaches 90 days on
   2026-11-12. Its nightly alert now fires when no player got an entry in the last 2 days (scraping stopped), renamed
