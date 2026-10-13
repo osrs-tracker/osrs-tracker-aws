@@ -65,7 +65,7 @@ doc-only changes are not.
   player isn't scraped once per offset forever after a single lookup from another timezone (worst case 24 times a day).
   It always keeps the most recently looked up offset, so every player is still scraped once a day. Lookups are recorded
   per offset by osrs-tracker-api in the new `scrapingOffsetLookups`; offsets without a date get the date of the run, so
-  nothing is dropped before 2027/04. Deployed: clean-hiscores v11; its first run at 00:00 UTC on 2026/10/11 dates every
+  nothing is dropped before 2027-04. Deployed: clean-hiscores v11; its first run at 00:00 UTC on 2026-10-11 dates every
   offset.
 
 ### Compact hiscore storage
@@ -95,7 +95,7 @@ doc-only changes are not.
 - refresh-items deletes the items that left the OSRS Wiki's item list (items Jagex took off the Grand Exchange, which
   have no prices and only made thin pages on the website), after its hourly upsert (#73). It skips the delete when more
   than 50 items would go, so a truncated Wiki response never wipes the collection. The 19 that had piled up were removed
-  by hand on 2026/10/10 before this. Deployed: refresh-items v10.
+  by hand on 2026-10-10 before this. Deployed: refresh-items v10.
 - `DATA-MODEL.md` follows the API's item browse and player sitemap (#72): the `items` `{ name: 1 }` index (collation
   `en`, strength 2) that `browseItems` hints, and `GET /sitemap/players` reading `scrapingOffsets`,
   `hiscoreNotFoundCount` and the newest `hiscoreEntries` date.
@@ -109,7 +109,7 @@ doc-only changes are not.
 - The root `package.json` declares the repo's Apache-2.0 license instead of MIT, matching `LICENSE` and every Lambda and
   package (#58).
 - queue-players no longer passes `background: true` when it ensures its `scrapingOffsets` index; MongoDB has ignored
-  that option since 4.2. A review of every index against the current queries (2026/10/10) found nothing else to change
+  that option since 4.2. A review of every index against the current queries (2026-10-10) found nothing else to change
   here. Not deployed yet.
 
 ## 2026-10-09
