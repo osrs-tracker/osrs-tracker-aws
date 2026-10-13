@@ -13,7 +13,7 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
 | [refresh‑items](lambda/osrs-tracker_refresh-items)     | Hourly     | Fetches the full item list from the [OSRS Wiki prices API](https://prices.runescape.wiki) and saves it to the database.                                                                                                                   |
 | [queue‑players](lambda/osrs-tracker_queue-players)     | Hourly     | Finds the tracked players whose daily snapshot is due at that hour and puts them in a queue.                                                                                                                                              |
 | [process‑players](lambda/osrs-tracker_process-players) | From queue | Fetches the player's current hiscores and saves them as a new daily snapshot. Failures are retried, and persistent ones are reported on Discord. Players off the hiscores for 7 days stop being queued until someone looks them up again. |
-| [clean‑hiscores](lambda/osrs-tracker_clean-hiscores)   | Nightly    | Removes snapshots older than 60 days, at midnight (UTC), and deletes players with no snapshots left.                                                                                                                                      |
+| [clean‑hiscores](lambda/osrs-tracker_clean-hiscores)   | Nightly    | Removes snapshots older than 90 days, at midnight (UTC), and deletes players with no snapshots left.                                                                                                                                      |
 
 ## Shared packages
 
@@ -58,7 +58,7 @@ What goes in `.env` (each job's `.env.example` lists the ones it needs):
 | `OSRS_API_BASE_URL`                    | The hiscore proxy, `https://runescape-api.freekmencke.com/rs`.                                        |
 | `PLAYERS_PER_SQS_MESSAGE`              | Any whole number of at least 1; it only changes how the logged messages are grouped.                  |
 | `SQS_QUEUE_URL`, `WEBHOOK_URL`         | Any valid URL: a dry run never sends to the queue or Discord.                                         |
-| `MAX_AGE_IN_DAYS`                      | `60`, as in production.                                                                               |
+| `MAX_AGE_IN_DAYS`                      | `90`, as in production.                                                                               |
 
 ## Built with
 

@@ -9,6 +9,9 @@ const client = MU.client();
 /** Days without a lookup after which a player's scraping offset is dropped, together with its hiscore entries. */
 const UNUSED_SCRAPING_OFFSET_DAYS = 180;
 
+/** Days without any new hiscore entry after which the run reports that scraping stopped. */
+const MAX_DAYS_WITHOUT_SCRAPES = 2;
+
 export const handler = async (event: ScheduledEvent, context: Context) => {
   const maxAgeInDays = env.MAX_AGE_IN_DAYS;
 
@@ -32,16 +35,13 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   const deletedPlayerCount = await MU.deletePlayersWithoutEntries(client);
   console.log(`Deleted ${deletedPlayerCount} players without hiscore entries.`);
 
-  // Every night should age out a day of entries; none points at scraping that stopped. Checked last, so the clean-ups
-  // above run either way
-  if (modifiedCount === 0) {
-    await discordAlert(
-      env.WEBHOOK_URL,
-      'Error cleaning hiscores',
-      `No hiscores older than ${maxAgeInDays} days were found.`,
-      context,
-    );
-    throw new Error(`No hiscores older than ${maxAgeInDays} days were found.`);
+  // Every hour scrapes some players, so no entry for days means scraping stopped. Not "nothing was pulled": that's also
+  // expected for MAX_AGE_IN_DAYS nights after a raise of it. Checked last, so the clean-ups above run either way
+  const scrapedSince = subDays(now, MAX_DAYS_WITHOUT_SCRAPES);
+  if (!(await MU.hasHiscoreEntriesSince(client, scrapedSince))) {
+    const message = `No hiscores were scraped in the last ${MAX_DAYS_WITHOUT_SCRAPES} days.`;
+    await discordAlert(env.WEBHOOK_URL, 'No hiscores scraped', message, context);
+    throw new Error(message);
   }
 
   return context.logStreamName;

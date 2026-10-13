@@ -5,13 +5,14 @@ Runs every night at 00:00 UTC (EventBridge `daily`), in this order:
 1. Drops each player's scraping offsets (active or paused) that nobody looked up for 180 days (`scrapingOffsetLookups`,
    set by the API on every lookup), together with all their hiscore entries, but always keeps the most recently looked
    up offset, so every player keeps being scraped once a day. An offset without a lookup date gets the current time.
-2. Removes hiscore entries older than `MAX_AGE_IN_DAYS` (60 in production) from every player.
+2. Removes hiscore entries older than `MAX_AGE_IN_DAYS` (90 in production) from every player.
 3. Deletes the layouts in `hiscoreLayouts` (same database) that no entry uses any more, except those from the last day,
    whose first entry may still be being written.
 4. Deletes the players without hiscore entries: none left after the pull means the player wasn't scraped or looked up
    for `MAX_AGE_IN_DAYS`, and a lookup through the API creates it again.
-5. When step 2 found nothing to remove, reports on Discord and fails the run, since every night should age out a day of
-   entries. Steps 1, 3 and 4 have run by then.
+5. When no player has an entry from the last 2 days, reports on Discord and fails the run, since every hour scrapes some
+   players. Steps 1 to 4 have run by then. Step 2 finding nothing is only logged: it's expected for `MAX_AGE_IN_DAYS`
+   nights after raising it.
 
 Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
 variable): `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `MAX_AGE_IN_DAYS`, `WEBHOOK_URL`. Optional:
