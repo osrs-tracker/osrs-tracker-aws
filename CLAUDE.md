@@ -24,6 +24,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   group `outputs[*].inputs` by `node_modules/<pkg>`.
 - Worktrees in `.claude/worktrees/` find only the root `node_modules` in the main checkout. Run `npm ci` in each Lambda
   or package folder you build, lint or test. The pre-push hook lints every Lambda, so all four need it before a push.
+  `.worktreeinclude` copies each Lambda's `.env` into a new worktree, so `invoke:dry` works there.
 
 ## Hard rules
 

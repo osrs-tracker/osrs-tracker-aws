@@ -5,6 +5,8 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/13
 
+### Lambdas
+
 - clean-hiscores keeps hiscore entries 90 days instead of 60 (`MAX_AGE_IN_DAYS`), for goal dates and day comparisons in
   the web app; players nobody scraped or looked up are now also deleted after 90 days. The history reaches 90 days on
   2026-11-12. Its nightly alert now fires when no player got an entry in the last 2 days (scraping stopped), renamed
@@ -17,6 +19,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
   `node`, so the receiver can tell where to report a problem. The value is one constant, `USER_AGENT` in
   `lambda/shared/src/user-agent.ts`. Deployed as clean-hiscores 12, process-players 50, queue-players 24 and
   refresh-items 12.
+
+### Behind the scenes
+
+- A new `.worktreeinclude` copies each Lambda's `.env` from the main checkout into new Claude Code worktrees, so
+  `npm run invoke:dry` works there without copying it by hand.
 
 ## 2026/10/12
 
