@@ -5,6 +5,11 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 
 ## 2026/10/13
 
+- clean-hiscores keeps hiscore entries 90 days instead of 60 (`MAX_AGE_IN_DAYS`), for goal dates and day comparisons in
+  the web app; players nobody scraped or looked up are now also deleted after 90 days. The history reaches 90 days on
+  2026-11-12. Its nightly alert now fires when no player got an entry in the last 2 days (scraping stopped), renamed
+  `No hiscores scraped`, instead of when it found nothing to remove, which would have alerted every night until then and
+  only noticed a stopped scrape 60 days late. Deployed as version 13, then `MAX_AGE_IN_DAYS` set to 90.
 - refresh-items reads the item list from v2 of the OSRS Wiki prices API (`/api/v2/osrs/mapping`) instead of v1, which
   the Wiki says may be removed. The response is the same. Deployed as version 11.
 - process-players' hiscore requests to Jagex and every Lambda's Discord alerts now send the

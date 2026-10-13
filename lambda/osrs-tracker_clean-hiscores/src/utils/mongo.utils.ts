@@ -114,6 +114,11 @@ export class MU extends mongoUtils<StoredPlayer>() {
     return modifiedCount;
   }
 
+  /** Whether any player has a hiscore entry from `date` or later. */
+  static async hasHiscoreEntriesSince(mongo: MongoClient, date: Date): Promise<boolean> {
+    return !!(await this.col(mongo).findOne({ 'hiscoreEntries.d': { $gte: date } }, { projection: { _id: 1 } }));
+  }
+
   /**
    * Deletes the hiscore layouts no entry uses and returns how many. Layouts from the last day are kept: a writer stores
    * a layout before the first entry that uses it. When `DRY_RUN` is set it only logs the ids it would delete.
