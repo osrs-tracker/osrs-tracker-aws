@@ -8,6 +8,7 @@ import {
 } from '@osrs-tracker/models';
 import { Context, SQSEvent } from 'aws-lambda';
 import { AnyBulkWriteOperation, ServerApiVersion } from 'mongodb';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { chunk } from './utils/array.utils';
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
@@ -61,7 +62,7 @@ export const handler = async (event: SQSEvent, context: Context) => {
     const scrapeResults = await Promise.allSettled(
       usernames.map(async (username, index) => {
         // Add 2000ms (2 second) delay for each subsequent request to avoid 503 errors
-        if (index > 0) await new Promise((resolve) => setTimeout(resolve, index * 2000));
+        if (index > 0) await sleep(index * 2000);
 
         const result = await fetchHiscore(username);
         if (result.status === 'notFound') {
@@ -108,7 +109,10 @@ export const handler = async (event: SQSEvent, context: Context) => {
 
     bulkWrites.push({
       usernames: bulkUpdateUsernames,
-      result: Promise.allSettled([MU.bulkWrite(client, bulkUpdateOps)]).then(([result]) => result),
+      result: MU.bulkWrite(client, bulkUpdateOps).then(
+        (value) => ({ status: 'fulfilled' as const, value }),
+        (reason: unknown) => ({ status: 'rejected' as const, reason }),
+      ),
     });
   }
 

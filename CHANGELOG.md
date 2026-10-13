@@ -42,6 +42,10 @@ doc-only changes are not.
 - CI gets a `Link check` job (lychee, offline) that fails on a broken local link or `#anchor` in any Markdown file,
   `.claude/` included, on every push, doc-only ones too (issue #95). Changelog days are now ISO dates (`2026-10-13`),
   and package entries drop the `v` (`## 4.1.0 - 2026-10-10`), the same in all osrs-tracker repos.
+- process-players uses Node built-ins instead of hand-written helpers: `setTimeout` from `node:timers/promises` for the
+  staggered hiscore requests and `isDeepStrictEqual` from `node:util` for the layout collision check. A bulk write is
+  settled with `.then` instead of `Promise.allSettled` on a single promise, and `mapArrayPush` appends in place instead
+  of copying the array. No change in behaviour; not deployed.
 
 ## 2026-10-12
 
