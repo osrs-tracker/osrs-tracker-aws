@@ -11,7 +11,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 ## Commands
 
 - Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`,
-  plus `npx vitest run` where it has a `vitest.config.ts`.
+  plus `npx vitest run` where it has a `vitest.config.ts` (`npm test` is watch mode).
 - Verify a package: `hiscores` `npx jest && npm run build`, `express-metrics` and `logger`
   `npx vitest run && npm run build` (`npm test` is watch mode in all of them); `models`
   `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (its integration tests start an in-memory MongoDB

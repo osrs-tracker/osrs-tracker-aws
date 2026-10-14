@@ -12,6 +12,7 @@ export default defineConfig({
     // read and validated when src/env.ts and ../shared/src/env.ts load. Nothing connects to these: the in-memory MongoDB
     // specs pass their own client, and fetch and SQS are mocked
     env: {
+      // nothing listens on port 1: a connection made by mistake fails at once
       MONGODB_URI: 'mongodb://127.0.0.1:1',
       MONGODB_DATABASE: 'test',
       MONGODB_COLLECTION: 'players',

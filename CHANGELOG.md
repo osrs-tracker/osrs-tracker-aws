@@ -38,7 +38,9 @@ doc-only changes are not.
   request, a list that doesn't parse, or 0 worlds or players sends the alert, stores nothing and fails with the world
   list's error even when the alert fails; otherwise it stores one document with the counts and the run's date.
   `lambda/tsconfig.lambda.json` sets `skipLibCheck`: Vitest's declarations don't type-check under the Lambdas'
-  `moduleResolution: node`. No behaviour change; not deployed.
+  `moduleResolution: node`. Every Lambda's `npm test` runs Vitest in watch mode, as in the packages, and every Lambda's
+  specs get the same dummy environment: `DRY_RUN=false` and a MongoDB URI on port 1, where a connection made by mistake
+  fails at once. No behaviour change; not deployed.
 - process-players gets its first tests (issue #110, from #103): Vitest, plus an in-memory MongoDB 8.0
   (`mongodb-memory-server`) as in `@osrs-tracker/models`. They pin the rule that it must not throw after its bulk
   writes, fixed four times on 2026-10-09 and 2026-10-10 without a test: the handler resolves once a write started (a
