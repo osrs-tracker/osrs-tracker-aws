@@ -38,7 +38,7 @@ for lambda in "${lambdas[@]}"; do
     # esbuild doesn't type-check; this also checks the shared files the Lambda imports
     add "$lambda types" "$dir" 'npx tsc --noEmit -p .'
     add "$lambda build" "$dir" 'npm run build'
-    [ -f "$dir/vitest.config.ts" ] && add "$lambda test" "$dir" 'npx vitest run'
+    compgen -G "$dir/vitest.config.*" > /dev/null && add "$lambda test" "$dir" 'npx vitest run'
   fi
 done
 

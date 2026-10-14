@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanLambdaEnv, nonEmptyStr, positiveInt } from './env';
 
-// cleanLambdaEnv reads process.env; the shared variables are set in vitest.config.ts
+// cleanLambdaEnv reads process.env; the shared variables are set in vitest.config.mts
 afterEach(() => {
   vi.unstubAllEnvs();
 });

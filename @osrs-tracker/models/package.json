@@ -37,8 +37,8 @@
   "devDependencies": {
     "@types/node": "^24.13.6",
     "mongodb": "^7.7.0",
-    "mongodb-memory-server": "^10.4.3",
-    "typescript": "5.8.2",
+    "mongodb-memory-server": "^11.3.0",
+    "typescript": "^5.9.3",
     "vitest": "^5.0.3"
   }
 }

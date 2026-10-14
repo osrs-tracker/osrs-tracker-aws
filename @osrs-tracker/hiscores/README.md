@@ -56,9 +56,9 @@ import { fromJagex, JagexHiscoreJson } from '@osrs-tracker/hiscores';
 const { skills, activities, layout } = fromJagex(json as JagexHiscoreJson);
 ```
 
-Counting the players online from Jagex's world list (Node 18+; `www.runescape.com` sends no CORS headers, so not from a
-browser). `fetchWorldList` throws on a non-2xx response, a network error or the timeout, and `parseWorldList` throws
-when the response doesn't match the expected format. Don't poll it faster than once a minute.
+Counting the players online from Jagex's world list (`WORLD_LIST_URL`; Node 18+; `www.runescape.com` sends no CORS
+headers, so not from a browser). `fetchWorldList` throws on a non-2xx response, a network error or the timeout, and
+`parseWorldList` throws when the response doesn't match the expected format. Don't poll it faster than once a minute.
 
 ```ts
 import { fetchWorldList, parseWorldList } from '@osrs-tracker/hiscores';

@@ -1,3 +1,10 @@
+## Unreleased
+
+- Dev tooling only (issue #108, from the tech-debt roadmap #103): TypeScript `^5.9.3` instead of an exact 5.8.2 pin (the
+  build is byte-for-byte the same), `mongodb-memory-server` 11 for the in-memory MongoDB 8.0.12 tests, and
+  `vitest.config.mts`, which silences Vite's warning about ESM syntax in a file loaded as CommonJS. New specs cover
+  `calculateXPForSkillLevel` above level 126 and for a non-integer level (it counts up to the next whole level).
+
 ## 2.5.0 - 2026-10-14
 
 - `PlayerCountDay`: a `playerCountsDaily` document, one UTC day's averages of the `playerCounts` samples (`total`,

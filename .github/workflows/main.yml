@@ -133,14 +133,14 @@ jobs:
           working-directory: '@osrs-tracker/${{ matrix.package }}'
 
       - name: Test (Vitest)
-        if: hashFiles(format('@osrs-tracker/{0}/vitest.config.ts', matrix.package)) != ''
+        if: hashFiles(format('@osrs-tracker/{0}/vitest.config.*', matrix.package)) != ''
         run: npx vitest run
         working-directory: '@osrs-tracker/${{ matrix.package }}'
 
       # Vitest doesn't type-check, and the build's tsconfig covers only src/index.ts
       - name: Type-check tests
         if: >-
-          hashFiles(format('@osrs-tracker/{0}/vitest.config.ts', matrix.package)) != '' &&
+          hashFiles(format('@osrs-tracker/{0}/vitest.config.*', matrix.package)) != '' &&
           hashFiles(format('@osrs-tracker/{0}/tsconfig.spec.json', matrix.package)) != ''
         run: npx tsc -p tsconfig.spec.json
         working-directory: '@osrs-tracker/${{ matrix.package }}'
@@ -192,7 +192,7 @@ jobs:
         working-directory: lambda/${{ matrix.lambda_function }}
 
       - name: Test (Vitest)
-        if: hashFiles(format('lambda/{0}/vitest.config.ts', matrix.lambda_function)) != ''
+        if: hashFiles(format('lambda/{0}/vitest.config.*', matrix.lambda_function)) != ''
         run: npx vitest run
         working-directory: lambda/${{ matrix.lambda_function }}
 

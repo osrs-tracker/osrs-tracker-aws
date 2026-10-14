@@ -61,6 +61,16 @@ describe('calculateTotalXP', () => {
   it('should return 13.034.431 for level 99', () => {
     expect(calculateXPForSkillLevel(99)).toBe(13034431);
   });
+
+  it('keeps applying the formula above the table (126)', () => {
+    expect(calculateXPForSkillLevel(126)).toBe(188884740);
+    expect(calculateXPForSkillLevel(127)).toBe(208545572);
+  });
+
+  it('counts a non-integer level up to the next whole level', () => {
+    expect(calculateXPForSkillLevel(2.5)).toBe(calculateXPForSkillLevel(3));
+    expect(calculateXPForSkillLevel(99.5)).toBe(calculateXPForSkillLevel(100));
+  });
 });
 
 describe('calculateXPToNextLevel', () => {

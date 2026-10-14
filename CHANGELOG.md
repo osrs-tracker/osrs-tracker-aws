@@ -30,6 +30,11 @@ doc-only changes are not.
 
 ### Behind the scenes
 
+- Every Lambda's and package's Vitest config is `vitest.config.mts` (issue #108, from the tech-debt roadmap #103): Vite
+  warned that the `.ts` ones use ESM syntax in a file loaded as CommonJS, which its native config loader, planned as a
+  future default, doesn't support. CI and `verify.sh` find the config as `vitest.config.*`, and the Lambdas' ESLint
+  config lints `.mts` files. clean-hiscores, process-players, record-player-count and refresh-items move to
+  `mongodb-memory-server` 11 (still MongoDB 8.0.12 in memory). Tests only; not deployed.
 - CI drops its Jest step: `@osrs-tracker/hiscores` tests run on Vitest (issue #107), so its package job runs the same
   Vitest and `tsc -p tsconfig.spec.json` steps as models', and `verify.sh` does the same.
 - process-players' handler is split (issue #115, from the tech-debt roadmap #103): `scrapeMessage` in
