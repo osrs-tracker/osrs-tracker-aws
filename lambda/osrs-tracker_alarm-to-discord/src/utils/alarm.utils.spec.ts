@@ -6,7 +6,7 @@ const alarm = (change: Partial<AlarmNotification>): AlarmNotification => ({
   AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
   NewStateValue: 'ALARM',
   OldStateValue: 'OK',
-  AlarmDescription: 'osrs-tracker_refresh-items failed (error, timeout or out of memory): read its latest log stream',
+  AlarmDescription: 'Failed (error, timeout or out of memory): read its latest log stream',
   NewStateReason: 'Threshold Crossed',
   Trigger: {
     Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }],
@@ -37,8 +37,7 @@ describe('alarmAlert', () => {
   it('turns an ALARM into a red alert about the alarmed function, with its description and the reason', () => {
     expect(alarmAlert(alarm({}))).toEqual({
       title: 'Alarm: osrs-tracker_refresh-items-errors',
-      description:
-        'osrs-tracker_refresh-items failed (error, timeout or out of memory): read its latest log stream\n\nThreshold Crossed',
+      description: 'Failed (error, timeout or out of memory): read its latest log stream\n\nThreshold Crossed',
       color: 0xff0000,
       functionName: 'osrs-tracker_refresh-items',
     });

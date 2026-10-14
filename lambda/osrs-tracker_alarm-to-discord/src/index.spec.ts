@@ -24,7 +24,7 @@ const alarm: AlarmNotification = {
   AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
   NewStateValue: 'ALARM',
   OldStateValue: 'OK',
-  AlarmDescription: 'osrs-tracker_refresh-items failed (error, timeout or out of memory): read its latest log stream',
+  AlarmDescription: 'Failed (error, timeout or out of memory): read its latest log stream',
   NewStateReason: 'Threshold Crossed: 1 out of the last 1 datapoints [1.0 (14/10/26 10:00:00)]',
   Trigger: { Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }], Period: 3600 },
 };

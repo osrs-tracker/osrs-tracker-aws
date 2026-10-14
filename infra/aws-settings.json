@@ -7,7 +7,7 @@
       ],
       "comparison": "GreaterThanOrEqualToThreshold",
       "datapointsToAlarm": null,
-      "description": "osrs-tracker_alarm-to-discord failed (error, timeout or out of memory): read its latest log stream",
+      "description": "Failed (error, timeout or out of memory): read its latest log stream",
       "dimensions": {
         "FunctionName": "osrs-tracker_alarm-to-discord"
       },
@@ -30,7 +30,7 @@
       ],
       "comparison": "GreaterThanOrEqualToThreshold",
       "datapointsToAlarm": null,
-      "description": "osrs-tracker_clean-hiscores failed (error, timeout or out of memory): read its latest log stream",
+      "description": "Failed (error, timeout or out of memory): read its latest log stream",
       "dimensions": {
         "FunctionName": "osrs-tracker_clean-hiscores"
       },
@@ -77,7 +77,7 @@
       ],
       "comparison": "GreaterThanOrEqualToThreshold",
       "datapointsToAlarm": null,
-      "description": "osrs-tracker_process-players failed (error, timeout or out of memory): read its latest log stream",
+      "description": "Failed (error, timeout or out of memory): read its latest log stream",
       "dimensions": {
         "FunctionName": "osrs-tracker_process-players"
       },
@@ -100,7 +100,7 @@
       ],
       "comparison": "GreaterThanOrEqualToThreshold",
       "datapointsToAlarm": null,
-      "description": "osrs-tracker_queue-players failed (error, timeout or out of memory): read its latest log stream",
+      "description": "Failed (error, timeout or out of memory): read its latest log stream",
       "dimensions": {
         "FunctionName": "osrs-tracker_queue-players"
       },
@@ -123,7 +123,7 @@
       ],
       "comparison": "GreaterThanOrEqualToThreshold",
       "datapointsToAlarm": null,
-      "description": "osrs-tracker_record-player-count failed (error, timeout or out of memory): read its latest log stream",
+      "description": "Failed (error, timeout or out of memory): read its latest log stream",
       "dimensions": {
         "FunctionName": "osrs-tracker_record-player-count"
       },
@@ -146,7 +146,7 @@
       ],
       "comparison": "GreaterThanOrEqualToThreshold",
       "datapointsToAlarm": null,
-      "description": "osrs-tracker_refresh-items failed (error, timeout or out of memory): read its latest log stream",
+      "description": "Failed (error, timeout or out of memory): read its latest log stream",
       "dimensions": {
         "FunctionName": "osrs-tracker_refresh-items"
       },

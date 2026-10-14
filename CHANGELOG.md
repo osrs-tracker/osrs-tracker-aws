@@ -48,7 +48,8 @@ doc-only changes are not.
   subscription's filter policy. Later that day the alerts became readable: the red one starts with the alarm's own
   description (what it means, what to do) before AWS's reason, and the green one says
   `Back to normal: no threshold crossed for 1 hour.` (from the alarm's period) instead of AWS's datapoint wording.
-  Deployed as version 2, commit 62f42d9.
+  Deployed as version 2, commit 62f42d9. The Lambda alarms' descriptions no longer start with the function's name
+  (`Failed (error, timeout or out of memory): read its latest log stream`), which the alert's author already shows.
 - `infra/snapshot.sh` writes the live AWS settings to `infra/aws-settings.json` (issue #133, from the tech-debt roadmap
   #103): each Lambda's runtime, limits, async retries, env var names and log retention, the schedules, the queues and
   their redrive, the alarms, the alert topic's subscription counts and the hiscore proxy's routes, CORS and domain. The
