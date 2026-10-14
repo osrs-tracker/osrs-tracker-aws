@@ -1,9 +1,11 @@
 ## Unreleased
 
-- Dev tooling only (issue #130, from the tech-debt roadmap #103): ESLint with the Lambdas' config (`npm run lint`, also
-  in CI). It found nothing to fix; the build is unchanged.
-- Dev tooling only (issue #129, from the tech-debt roadmap #103): TypeScript `~6.0.3` (was `^5.9.3`), with `bundler`
-  module resolution and `rootDir: "src"`, the options TypeScript 7 requires. The build is byte-for-byte the same.
+- Dev tooling only (issues #130 and #131, from the tech-debt roadmap #103): linted with the Lambdas' config
+  (`npm run lint`, also in CI), with oxlint instead of ESLint until typescript-eslint supports TypeScript 7 (#143). It
+  found nothing to fix; the build is unchanged.
+- Dev tooling only (issues #129 and #131, from the tech-debt roadmap #103): TypeScript `^7.0.2` (was `^5.9.3`), with
+  `bundler` module resolution and `rootDir: "src"`, the options TypeScript 7 requires. The JavaScript and `.d.ts` files
+  are byte-for-byte the same; the CommonJS source maps and `codec.d.ts.map` map some lines differently.
 - Dev tooling only (issue #108, from the tech-debt roadmap #103): TypeScript `^5.9.3` instead of an exact 5.8.2 pin (the
   build is byte-for-byte the same), `mongodb-memory-server` 11 for the in-memory MongoDB 8.0.12 tests, and
   `vitest.config.mts`, which silences Vite's warning about ESM syntax in a file loaded as CommonJS. New specs cover
