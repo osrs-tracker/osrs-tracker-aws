@@ -20,8 +20,8 @@ export const handler = async (event: SNSEvent, context: Context) => {
       continue;
     }
 
-    const { title, description, color, functionName } = alert;
-    await discordAlert(env.WEBHOOK_URL, title, description, context, { functionName, color });
+    const { title, description, ...options } = alert;
+    await discordAlert(env.WEBHOOK_URL, title, description, context, options);
     console.info(`Posted ${alarm.AlarmName}: ${alarm.OldStateValue} -> ${alarm.NewStateValue}`);
   }
 };

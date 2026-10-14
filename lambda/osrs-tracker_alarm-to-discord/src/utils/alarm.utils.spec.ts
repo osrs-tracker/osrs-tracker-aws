@@ -3,6 +3,7 @@ import { alarmAlert, AlarmNotification, parseAlarm } from './alarm.utils';
 
 const alarm = (change: Partial<AlarmNotification>): AlarmNotification => ({
   AlarmName: 'osrs-tracker_refresh-items-errors',
+  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
   NewStateValue: 'ALARM',
   OldStateValue: 'OK',
   NewStateReason: 'Threshold Crossed',
@@ -53,7 +54,18 @@ describe('alarmAlert', () => {
     expect(alarmAlert(alarm({ OldStateValue, NewStateValue }))).toBeUndefined();
   });
 
-  it('leaves the function out for an alarm without a FunctionName dimension', () => {
-    expect(alarmAlert(alarm({ Trigger: {} }))?.functionName).toBeUndefined();
+  it('links an alarm on anything but a Lambda to the alarm itself', () => {
+    const proxyAlarm = alarm({
+      AlarmName: 'osrs-tracker_hiscore-proxy-requests',
+      AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_hiscore-proxy-requests',
+      Trigger: { Dimensions: [{ value: 'api-id', name: 'ApiId' }] },
+    });
+
+    expect(alarmAlert(proxyAlarm)).toEqual({
+      title: 'Alarm: osrs-tracker_hiscore-proxy-requests',
+      description: 'Threshold Crossed',
+      color: 0xff0000,
+      url: 'https://console.aws.amazon.com/cloudwatch/home?region=eu-central-1#alarmsV2:alarm/osrs-tracker_hiscore-proxy-requests',
+    });
   });
 });

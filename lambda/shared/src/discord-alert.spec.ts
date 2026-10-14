@@ -61,6 +61,12 @@ describe('discordAlert', () => {
     });
   });
 
+  it('links the title to `url` when given', async () => {
+    await discordAlert(WEBHOOK_URL, 'Title', 'Description', context, { url: 'https://console.invalid/alarm' });
+
+    expect(sentEmbed()).toMatchObject({ url: 'https://console.invalid/alarm', author: { name: 'osrs-tracker_test' } });
+  });
+
   it("truncates a description over Discord's 4096 characters", async () => {
     await discordAlert(WEBHOOK_URL, 'Title', 'x'.repeat(5000), context);
 

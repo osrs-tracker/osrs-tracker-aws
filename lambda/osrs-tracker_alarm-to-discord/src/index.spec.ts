@@ -21,6 +21,7 @@ const context = {
 
 const alarm: AlarmNotification = {
   AlarmName: 'osrs-tracker_refresh-items-errors',
+  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
   NewStateValue: 'ALARM',
   OldStateValue: 'OK',
   NewStateReason: 'Threshold Crossed: 1 out of the last 1 datapoints [1.0 (14/10/26 10:00:00)]',

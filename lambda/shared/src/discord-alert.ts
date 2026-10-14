@@ -28,6 +28,8 @@ export interface DiscordAlertOptions {
    * links to its log group instead of this invocation's log stream, and the author to its monitoring tab.
    */
   functionName?: string;
+  /** The title's link, instead of the logs (an alarm on something other than a Lambda). */
+  url?: string;
   /** The embed's colour, red by default. */
   color?: number;
 }
@@ -57,10 +59,12 @@ export async function discordAlert(
       {
         title,
         description,
-        url: options.functionName
-          ? // the log group, its streams newest first (the console's encoding: `/` as `$252F`)
-            `https://console.aws.amazon.com/cloudwatch/home?region=${region}#logsV2:log-groups/log-group/$252Faws$252Flambda$252F${functionName}`
-          : `https://console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=/aws/lambda/${functionName};stream=${context.logStreamName}`,
+        url:
+          options.url ??
+          (options.functionName
+            ? // the log group, its streams newest first (the console's encoding: `/` as `$252F`)
+              `https://console.aws.amazon.com/cloudwatch/home?region=${region}#logsV2:log-groups/log-group/$252Faws$252Flambda$252F${functionName}`
+            : `https://console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=/aws/lambda/${functionName};stream=${context.logStreamName}`),
         author: {
           name: functionName,
           url: `https://console.aws.amazon.com/lambda/home?region=${region}#/functions/${functionName}?tab=monitoring`,
