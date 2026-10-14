@@ -1,9 +1,9 @@
 # osrs-tracker-aws
 
-Six AWS Lambdas (`lambda/<function>/`, Node 24, one npm project each): five keep OSRS Tracker's MongoDB Atlas data
-fresh, alarm-to-discord posts the CloudWatch alarms to Discord. Plus the npm packages in `@osrs-tracker/` (`models`,
-`hiscores`, `express-metrics`, `logger`). Sibling repos: `../osrs-tracker-api` (writes the same collections) and
-`../osrs-tracker-web`. **This repo is public.**
+Six AWS Lambdas (`lambda/<function>/`, Node 24, one npm workspace in `lambda/`): five keep OSRS Tracker's MongoDB Atlas
+data fresh, alarm-to-discord posts the CloudWatch alarms to Discord. Plus the npm packages in `@osrs-tracker/`
+(`models`, `hiscores`, `express-metrics`, `logger`). Sibling repos: `../osrs-tracker-api` (writes the same collections)
+and `../osrs-tracker-web`. **This repo is public.**
 
 **Load the `osrs-tracker-aws` skill before writing, reviewing, running, deploying, publishing or committing anything
 here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra, deploy and package steps in its
@@ -24,9 +24,10 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - Size per dependency in a bundle:
   `npx esbuild src/index.ts --bundle --platform=node --minify --metafile=<tmp>/meta.json --outfile=<tmp>/out.js`, then
   group `outputs[*].inputs` by `node_modules/<pkg>`.
-- Worktrees in `.claude/worktrees/` find only the root `node_modules` in the main checkout. Run `npm ci` in each Lambda
-  or package folder you build, lint or test. The pre-push hook lints every Lambda, so all six need it before a push.
-  `.worktreeinclude` copies each Lambda's `.env` into a new worktree, so `invoke:dry` works there.
+- Worktrees in `.claude/worktrees/` find only the root `node_modules` in the main checkout. Run `npm ci` in `lambda/`
+  (all six Lambdas) and in each package folder you build, lint or test. The pre-push hook lints every Lambda, so
+  `lambda/` needs it before a push. `.worktreeinclude` copies each Lambda's `.env` into a new worktree, so `invoke:dry`
+  works there.
 
 ## Hard rules
 
@@ -52,11 +53,13 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - `lambda/<function>/`: `src/index.ts` (handler, clients at module scope), `src/env.ts` (its env schema), `src/utils/`
   (`mongo.utils.ts` = `MU` with its own queries, Lambda-specific helpers), `build/invoke.js` (its `invoke:dry` event),
   and a `README.md` with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
-- `lambda/shared/`: code every Lambda bundles, no `package.json` (imports resolve from the Lambda's `node_modules`):
-  `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`,
-  `user-agent.ts` (the `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players'
-  `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs` (the packages re-export it too). A
-  change there touches all six Lambdas.
+- `lambda/package.json`: the workspace root (the Lambdas and `shared`) with every Lambda's devDependencies, and the one
+  `lambda/package-lock.json`. Each Lambda's `package.json` holds its runtime dependencies and scripts.
+- `lambda/shared/`: code every Lambda bundles, the workspace package `@lambda/shared`: `src/` (`env.ts`,
+  `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`, `user-agent.ts` (the
+  `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players' `vitest.config.mts`),
+  `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs` (the packages re-export it too). A change there touches
+  all six Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
   tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root
   `LICENSE` and `NOTICE`. `models`, `hiscores`, `express-metrics` and `logger` ship `dist/cjs`, `dist/esm` and
@@ -65,7 +68,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - `DATA-MODEL.md`: who writes each `players`/`items`/`hiscoreLayouts` field and owns each index, the stored hiscore
   format, and the pause/resume contract.
 - `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is the one required check.
-  `.github/actions/setup-deps` caches each folder's `node_modules` by its lockfile.
+  `.github/actions/setup-deps` caches each npm project's `node_modules` (the repo root, `lambda/`, each package) by its
+  lockfile.
 - `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file;
   `.claude/hooks/read-only-bash.sh` keeps it to git, gh and grep reads. `.claude/settings.json` runs Prettier on every
   file Claude edits, and `.claude/hooks/pre-push-check.sh` blocks `git push` (also `git -C <path> push`) when Prettier

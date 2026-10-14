@@ -1,8 +1,5 @@
 {
   "extends": "../tsconfig.lambda.json",
-  "compilerOptions": {
-    "typeRoots": ["node_modules/@types"]
-  },
   // lambda/shared's specs run from here (vitest.config.mts), so they're type-checked here too
   "include": ["src/**/*.ts", "../shared/src/**/*.spec.ts"],
   "exclude": ["node_modules"]

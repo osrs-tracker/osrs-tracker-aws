@@ -9,9 +9,9 @@ description:
 
 # osrs-tracker-aws
 
-Scheduled and SQS-driven Lambdas (`lambda/<function>/`, one npm project each) that keep OSRS Tracker's MongoDB data
-fresh, plus the packages in `@osrs-tracker/`. Consumers `../osrs-tracker-web` and `../osrs-tracker-api` have their own
-skills.
+Scheduled and SQS-driven Lambdas (`lambda/<function>/`, one npm workspace in `lambda/`) that keep OSRS Tracker's MongoDB
+data fresh, plus the packages in `@osrs-tracker/`. Consumers `../osrs-tracker-web` and `../osrs-tracker-api` have their
+own skills.
 
 **This repo is public.** Never write secret values, account IDs or resource IDs into code, docs or commits, and never
 print `.env` values.
@@ -39,18 +39,22 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
 ## Lambda notes
 
 - Create clients at module scope so warm invocations reuse them.
-- Code every Lambda needs lives once in `lambda/shared/` (no `package.json`, bundled into each Lambda), imported as
-  `@lambda/shared/<module>`: `src/` holds `env.ts` (`sharedEnv`: `DRY_RUN`, validated at load; `cleanLambdaEnv` adds the
-  Lambda's own schema from its `src/env.ts`; `cleanMongoEnv`: the MongoDB variables, validated when `mongo.utils.ts`
-  loads, so alarm-to-discord, which has no database, needs none), `dry-run.utils.ts`, `mongo.utils.ts` (each Lambda's
-  `MU` extends `mongoUtils<Schema>()` with its own queries; `ensureIndex`), `sqs.utils.ts` and `discord-alert.ts` (the
-  Lambda passes its queue or webhook URL; `discordAlertNeverRejects` for code that must not throw;
-  `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called at module scope in
-  every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts` (`USER_AGENT`, sent with
-  every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds `esbuild.js` and the
-  `invoke.js` runner; `eslint.config.mjs` is every Lambda's and package's ESLint config. Its imports resolve from the
-  Lambda being built or checked (esbuild `alias` and `nodePaths`, `paths` in `lambda/tsconfig.lambda.json`). Keep
+- Code every Lambda needs lives once in `lambda/shared/` (the workspace package `@lambda/shared`, bundled into each
+  Lambda), imported as `@lambda/shared/<module>`: `src/` holds `env.ts` (`sharedEnv`: `DRY_RUN`, validated at load;
+  `cleanLambdaEnv` adds the Lambda's own schema from its `src/env.ts`; `cleanMongoEnv`: the MongoDB variables, validated
+  when `mongo.utils.ts` loads, so alarm-to-discord, which has no database, needs none), `dry-run.utils.ts`,
+  `mongo.utils.ts` (each Lambda's `MU` extends `mongoUtils<Schema>()` with its own queries; `ensureIndex`),
+  `sqs.utils.ts` and `discord-alert.ts` (the Lambda passes its queue or webhook URL; `discordAlertNeverRejects` for code
+  that must not throw; `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called
+  at module scope in every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts`
+  (`USER_AGENT`, sent with every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds
+  `esbuild.js` and the `invoke.js` runner; `eslint.config.mjs` is every Lambda's and package's ESLint config. Keep
   Lambda-specific logic in the Lambda.
+- Dependencies: devDependencies go in `lambda/package.json`, a runtime dependency in the Lambda that imports it
+  (`npm install <pkg> -w <lambda folder>`, from `lambda/`). Shared code's imports resolve from `lambda/node_modules`:
+  each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version
+  hoisted there (without one, mongodb-memory-server's older mongodb takes that place, and a bundle gets two). Add one
+  for a new import, and bump its range with the Lambdas'.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
 - Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures. process-players must not throw

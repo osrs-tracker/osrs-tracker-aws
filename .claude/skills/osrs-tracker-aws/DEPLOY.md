@@ -32,9 +32,9 @@ Either redeploy an earlier version's code:
    presigned URL (valid for 10 minutes); download it to a zip outside the repo.
 2. `aws lambda update-function-code --profile claude --function-name <fn> --zip-file fileb://<zip> --publish`
 
-Or rebuild an earlier commit: `git checkout <prev> -- lambda/<fn> lambda/shared lambda/tsconfig.lambda.json`, `npm ci`
-in `lambda/<fn>/`, `AWS_PROFILE=claude npm run deploy`, then `git checkout HEAD -- <same paths>` and `npm ci` again.
-Checking out only `lambda/<fn>/src` keeps a bad change in `lambda/shared/` or the lockfile. This build logs the current
-`HEAD` with `-dirty`; record `<prev>` in the changelog.
+Or rebuild an earlier commit in a worktree of its own, so no file from a later commit (`lambda/shared/`, the lockfile)
+gets into the build: `git worktree add <dir outside the repo> <prev>`, `npm ci` in its `lambda/` (for a commit from
+before the workspace of 2026-10-14: in `lambda/<fn>/`), `AWS_PROFILE=claude npm run deploy` in `lambda/<fn>/`, then
+`git worktree remove <dir>`. The bundle logs `<prev>` as its commit; record it in the changelog.
 
 Record the rollback in the changelog like a deploy.
