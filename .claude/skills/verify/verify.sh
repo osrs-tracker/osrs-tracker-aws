@@ -13,7 +13,7 @@ export NO_COLOR=1 FORCE_COLOR=0
 lambdas=()
 for dir in lambda/*/; do
   dir=${dir%/}
-  [ -f "$dir/package.json" ] && lambdas+=("${dir#lambda/}")
+  [ -f "$dir/package.json" ] && [ "$dir" != lambda/shared ] && lambdas+=("${dir#lambda/}")
 done
 
 changed=$(git diff --cached --name-only)
@@ -28,11 +28,13 @@ add() { names+=("$1") dirs+=("$2") commands+=("$3"); }
 add prettier . 'npm run prettier:ci'
 folders=(.)
 
+lambda_checked=
 for lambda in "${lambdas[@]}"; do
-  # every Lambda bundles lambda/shared and extends lambda/tsconfig.lambda.json, as in CI
-  if grep -qE "^lambda/(($lambda|shared)/|tsconfig\.lambda\.json$)" <<<"$changed"; then
+  # every Lambda bundles lambda/shared, extends lambda/tsconfig.lambda.json and installs from the lambda/ workspace, as
+  # in CI
+  if grep -qE "^lambda/(($lambda|shared)/|tsconfig\.lambda\.json$|package(-lock)?\.json$)" <<<"$changed"; then
     dir=lambda/$lambda
-    folders+=("$dir")
+    lambda_checked=1
     add "$lambda prettier" "$dir" 'npm run prettier:ci'
     add "$lambda lint" "$dir" 'npm run lint'
     # esbuild doesn't type-check; this also checks the shared files the Lambda imports
@@ -41,6 +43,9 @@ for lambda in "${lambdas[@]}"; do
     compgen -G "$dir/vitest.config.*" > /dev/null && add "$lambda test" "$dir" 'npx vitest run'
   fi
 done
+
+# The Lambdas are one npm workspace: one install in lambda/ for all of them
+[ -n "$lambda_checked" ] && folders+=(lambda)
 
 # Every package's ESLint config re-exports the Lambdas' one, as in CI
 packages=$(grep -oE '^@osrs-tracker/[^/]+/' <<<"$changed")

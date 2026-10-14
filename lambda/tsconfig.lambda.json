@@ -12,14 +12,6 @@
     // since TypeScript 6 no @types package is included unless listed (aws-lambda's are imported, not global)
     "types": ["node"],
     // specs: mongodb-memory-server's declarations import semver, which has no types here
-    "skipLibCheck": true,
-    // Lambdas import shared code as `@lambda/shared/<module>`. lambda/shared/ has no node_modules: its imports resolve
-    // from the Lambda being checked. build/esbuild.js in shared/ does the same for the bundle (alias and nodePaths).
-    // @types first: under `bundler` a package folder resolves to its untyped JS (Vitest's import of chai), which would
-    // hide its @types package
-    "paths": {
-      "@lambda/shared/*": ["${configDir}/../shared/src/*"],
-      "*": ["${configDir}/node_modules/@types/*", "${configDir}/node_modules/*"]
-    }
+    "skipLibCheck": true
   }
 }

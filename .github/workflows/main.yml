@@ -68,8 +68,9 @@ jobs:
             selected=$folders
           else
             selected=$(grep -Fxf <(cut -d/ -f1-2 <<< "$changed" | sort -u) <<< "$folders" || true)
-            # Every Lambda bundles lambda/shared and extends lambda/tsconfig.lambda.json: a change there checks them all
-            if grep -qE '^lambda/(shared/|tsconfig\.lambda\.json$)' <<< "$changed"; then
+            # Every Lambda bundles lambda/shared, extends lambda/tsconfig.lambda.json and installs from the lambda/
+            # workspace (package.json, package-lock.json): a change there checks them all
+            if grep -qE '^lambda/(shared/|tsconfig\.lambda\.json$|package(-lock)?\.json$)' <<< "$changed"; then
               selected=$(printf '%s\n%s\n' "$selected" "$(grep '^lambda/' <<< "$folders")" | sed '/^$/d' | sort -u)
             fi
             # Every package's ESLint config re-exports the Lambdas' one: a change there checks them all
@@ -177,10 +178,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # The Lambdas are one npm workspace, installed (and cached) once at lambda/
       - name: Install
         uses: ./.github/actions/setup-deps
         with:
-          working-directory: lambda/${{ matrix.lambda_function }}
+          working-directory: lambda
 
       - name: ESlint
         run: npm run lint

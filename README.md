@@ -38,7 +38,8 @@ field and owns each index.
 
 ## Running a job locally
 
-Each job is its own npm project. From its folder, install and build it with `npm ci` and `npm run build`.
+The jobs share one npm workspace: install them all with `npm ci` in `lambda/`, then build a job with `npm run build`
+from its folder.
 
 To run a job against the real services without changing anything, copy `.env.example` to `.env`, fill in the values, and
 run:

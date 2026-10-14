@@ -76,6 +76,20 @@ doc-only changes are not.
 
 ### Behind the scenes
 
+- The six Lambdas are one npm workspace (issue #132, from the tech-debt roadmap #103): `lambda/package.json` holds the
+  devDependencies every Lambda repeated, each Lambda's `package.json` keeps its runtime dependencies and scripts, and
+  one `lambda/package-lock.json` replaces six. `lambda/shared/` is the workspace package `@lambda/shared`, so its
+  modules resolve like any package's and the four workarounds for its missing `node_modules` are gone (esbuild's `alias`
+  and `nodePaths`, the tsconfig `paths`, the Vitest aliases); the ESLint config still loads its plugins from the folder
+  ESLint runs in, for the packages, and otherwise from `lambda/`. What `lambda/shared/src/` imports is a
+  `peerDependency` of `@lambda/shared`: without that, mongodb-memory-server's mongodb 7.5 took the hoisted place, and
+  the shared code would have bundled it beside the Lambda's 7.7. A worktree needs one `npm ci`, in `lambda/`; CI
+  installs and caches `lambda/` once, `verify.sh` installs it once, the pre-push hook skips `lambda/shared` (no lint
+  script of its own), and a change to the workspace's `package.json` or lockfile checks every Lambda. Bundles compared
+  with `main`'s: alarm-to-discord's and record-player-count's are identical apart from the commit stamp; the other four
+  take the versions the single lockfile unifies (the newest any Lambda had: `@osrs-tracker/models` 2.5.0,
+  `@aws-sdk/credential-providers` 3.1150.0 and its credential providers, `@smithy/core` 3.35.2, `@mongodb-js/saslprep`
+  1.6.0). Not deployed: each Lambda's next deploy ships it.
 - The four `@osrs-tracker/*` packages are linted with the Lambdas' ESLint config (issue #130, from the tech-debt roadmap
   #103): each package's `eslint.config.mjs` re-exports `lambda/shared/eslint.config.mjs`, which loads its plugins from
   the folder ESLint runs in, and `npm run lint` runs in CI's package job and in `verify.sh`. A change to that config now

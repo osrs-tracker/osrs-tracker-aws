@@ -7,20 +7,14 @@
  * No rule needs type information, so files are parsed without a TypeScript project: a shared file a Lambda doesn't import
  * isn't in that Lambda's project. `npx tsc --noEmit -p .` type-checks the shared files each Lambda imports.
  */
-import { readdirSync } from 'fs';
 import { createRequire } from 'module';
-import { dirname, join, resolve } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { resolve } from 'path';
+import { pathToFileURL } from 'url';
 
-// lambda/shared/ has no node_modules: load the plugins from the Lambda or package ESLint runs in (package CI installs only
-// that package), or else (an editor, or ESLint run from the repo root) from the first Lambda that has them installed
-const lambdaDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const candidates = [
-  resolve('package.json'),
-  ...readdirSync(lambdaDir)
-    .filter((name) => name !== 'shared')
-    .map((name) => join(lambdaDir, name, 'package.json')),
-];
+// Not plain imports, which resolve from lambda/node_modules: package CI installs only the package it checks. So load the
+// plugins from the folder ESLint runs in (a package, or a Lambda through the workspace's hoisted node_modules), or else
+// (an editor, or ESLint run from the repo root) from lambda/node_modules
+const candidates = [resolve('package.json'), new URL('../package.json', import.meta.url)];
 const resolvePlugin = (name) => {
   for (const candidate of candidates) {
     try {
@@ -29,7 +23,7 @@ const resolvePlugin = (name) => {
       // not installed there, try the next
     }
   }
-  throw new Error(`${name} not found: run npm ci in a Lambda or package folder`);
+  throw new Error(`${name} not found: run npm ci in lambda/ or the package folder`);
 };
 const load = async (name) => (await import(pathToFileURL(resolvePlugin(name)).href)).default;
 
