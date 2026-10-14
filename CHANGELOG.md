@@ -34,6 +34,15 @@ doc-only changes are not.
   April 2027), and the handler spec pins their order and the alert before the throw when nothing was scraped in 2 days.
   `lambda/tsconfig.lambda.json` sets `skipLibCheck`: Vitest's declarations don't type-check under the Lambdas'
   `moduleResolution: node`. No behaviour change; not deployed.
+- process-players gets its first tests (issue #110, from #103): Vitest, plus an in-memory MongoDB 8.0
+  (`mongodb-memory-server`) as in `@osrs-tracker/models`. They pin the rule that it must not throw after its bulk
+  writes, fixed four times on 2026-10-09 and 2026-10-10 without a test: the handler resolves once a write started (a
+  failed write, also one that fails while a later message is scraped, a retry batch SQS rejects or fails to send, a
+  failed alert), throws only when nothing was written and no 404 recorded, and requeues failed players and those of a
+  message whose layouts failed to store. The not-found streak and pause and the layout id collision check run against
+  MongoDB. `lambda/shared/` gets specs for `sendMessageBatch`, the Discord alert (truncation, non-2xx, 5 s timeout) and
+  the env validators; they run, and are type-checked, from process-players, which already lints it. The bundle is
+  unchanged; not deployed.
 
 ## 2026-10-13
 

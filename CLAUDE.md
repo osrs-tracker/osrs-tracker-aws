@@ -52,8 +52,9 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   (`mongo.utils.ts` = `MU` with its own queries, Lambda-specific helpers), `build/invoke.js` (its `invoke:dry` event),
   and a `README.md` with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
 - `lambda/shared/`: code every Lambda bundles, no `package.json` (imports resolve from the Lambda's `node_modules`):
-  `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`),
-  `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs`. A change there touches all five Lambdas.
+  `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`; its
+  `*.spec.ts` run from process-players' `vitest.config.ts`), `build/esbuild.js`, `build/invoke.js` and
+  `eslint.config.mjs`. A change there touches all five Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
   tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root
   `LICENSE` and `NOTICE`. `models`, `hiscores`, `express-metrics` and `logger` ship `dist/cjs`, `dist/esm` and
