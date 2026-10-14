@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Dev tooling only (issue #129, from the tech-debt roadmap #103): TypeScript `~6.0.3` (was `^5.9.3`), with `bundler`
+  module resolution and `rootDir: "src"`, the options TypeScript 7 requires. The build is byte-for-byte the same.
 - Dev tooling only (issue #108, from the tech-debt roadmap #103): TypeScript `^5.9.3` (the build is byte-for-byte the
   same) and `vitest.config.mts`, which silences Vite's warning about ESM syntax in a file loaded as CommonJS.
 

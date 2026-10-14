@@ -43,6 +43,12 @@ doc-only changes are not.
 
 ### Behind the scenes
 
+- Every Lambda and package moves to TypeScript `~6.0.3` (issue #129, from the tech-debt roadmap #103), with the options
+  TypeScript 7 requires: `bundler` module resolution instead of `node`, which 7 removes, `rootDir: "src"` in the
+  packages, and `types: ["node"]` in `lambda/tsconfig.lambda.json`, because 6 no longer includes every `@types` package.
+  Its catch-all path now tries a Lambda's `@types` before its packages: under `bundler`, Vitest's import of `chai`
+  resolved to the untyped JS. The tilde stays below 6.1, where typescript-eslint's supported range ends; TypeScript 7
+  waits on typescript-eslint (#131). The bundles are byte-for-byte the same apart from the commit stamp: not deployed.
 - Every Lambda's and package's Vitest config is `vitest.config.mts` (issue #108, from the tech-debt roadmap #103): Vite
   warned that the `.ts` ones use ESM syntax in a file loaded as CommonJS, which its native config loader, planned as a
   future default, doesn't support. CI and `verify.sh` find the config as `vitest.config.*`, and the Lambdas' ESLint
