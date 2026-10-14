@@ -15,8 +15,9 @@ doc-only changes are not.
   every sample on the first run, which is the backfill) with one aggregation ending in `$merge`, so a failed or repeated
   run is repaired by the next one instead of skewing a running sum for good. The grouping and rounding are the API's, so
   its answers don't change. A failed recompute alerts on Discord (`Daily player counts not updated`) but doesn't fail
-  the run: the sample is stored. New env var `MONGODB_DAILY_COLLECTION`; the documents are `PlayerCountDay` from
-  `@osrs-tracker/models` 2.5.0.
+  the run: the sample is stored. New env var `MONGODB_DAILY_COLLECTION`, set on the live function before the deploy; the
+  documents are `PlayerCountDay` from `@osrs-tracker/models` 2.5.0. Deployed as version 3, commit 3348c4e (rebased as
+  3a0f7bd, same code).
 
 ### Infra
 
