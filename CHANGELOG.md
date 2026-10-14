@@ -80,32 +80,35 @@ doc-only changes are not.
   devDependencies every Lambda repeated, each Lambda's `package.json` keeps its runtime dependencies and scripts, and
   one `lambda/package-lock.json` replaces six. `lambda/shared/` is the workspace package `@lambda/shared`, so its
   modules resolve like any package's and the four workarounds for its missing `node_modules` are gone (esbuild's `alias`
-  and `nodePaths`, the tsconfig `paths`, the Vitest aliases); the ESLint config still loads its plugins from the folder
-  ESLint runs in, for the packages, and otherwise from `lambda/`. What `lambda/shared/src/` imports is a
-  `peerDependency` of `@lambda/shared`: without that, mongodb-memory-server's mongodb 7.5 took the hoisted place, and
-  the shared code would have bundled it beside the Lambda's 7.7. A worktree needs one `npm ci`, in `lambda/`; CI
-  installs and caches `lambda/` once, `verify.sh` installs it once, the pre-push hook skips `lambda/shared` (no lint
-  script of its own), and a change to the workspace's `package.json` or lockfile checks every Lambda. Bundles compared
-  with `main`'s: alarm-to-discord's and record-player-count's are identical apart from the commit stamp; the other four
-  take the versions the single lockfile unifies (the newest any Lambda had: `@osrs-tracker/models` 2.5.0,
-  `@aws-sdk/credential-providers` 3.1150.0 and its credential providers, `@smithy/core` 3.35.2, `@mongodb-js/saslprep`
-  1.6.0). Not deployed: each Lambda's next deploy ships it.
-- The four `@osrs-tracker/*` packages are linted with the Lambdas' ESLint config (issue #130, from the tech-debt roadmap
-  #103): each package's `eslint.config.mjs` re-exports `lambda/shared/eslint.config.mjs`, which loads its plugins from
-  the folder ESLint runs in, and `npm run lint` runs in CI's package job and in `verify.sh`. A change to that config now
-  checks every package in CI and `verify.sh`, as it already checked every Lambda. The pre-push hook still lints only the
-  Lambdas, so a worktree needs no `npm ci` in the packages before a push. The rules found nothing to fix.
-- Every Lambda and package moves to TypeScript `~6.0.3` (issue #129, from the tech-debt roadmap #103), with the options
-  TypeScript 7 requires: `bundler` module resolution instead of `node`, which 7 removes, `rootDir: "src"` in the
-  packages, and `types: ["node"]` in `lambda/tsconfig.lambda.json`, because 6 no longer includes every `@types` package.
-  Its catch-all path now tries a Lambda's `@types` before its packages: under `bundler`, Vitest's import of `chai`
-  resolved to the untyped JS. The tilde stays below 6.1, where typescript-eslint's supported range ends; TypeScript 7
-  waits on typescript-eslint (#131). The bundles are byte-for-byte the same apart from the commit stamp: not deployed.
+  and `nodePaths`, the tsconfig `paths`, the Vitest aliases). What `lambda/shared/src/` imports is a `peerDependency` of
+  `@lambda/shared`: without that, mongodb-memory-server's mongodb 7.5 took the hoisted place, and the shared code would
+  have bundled it beside the Lambda's 7.7. A worktree needs one `npm ci`, in `lambda/`; CI installs and caches `lambda/`
+  once, `verify.sh` installs it once, the pre-push hook skips `lambda/shared` (no lint script of its own), and a change
+  to the workspace's `package.json` or lockfile checks every Lambda. Bundles compared with `main`'s: alarm-to-discord's
+  and record-player-count's are identical apart from the commit stamp; the other four take the versions the single
+  lockfile unifies (the newest any Lambda had: `@osrs-tracker/models` 2.5.0, `@aws-sdk/credential-providers` 3.1150.0
+  and its credential providers, `@smithy/core` 3.35.2, `@mongodb-js/saslprep` 1.6.0). Not deployed: each Lambda's next
+  deploy ships it.
+- The four `@osrs-tracker/*` packages are linted like the Lambdas (issues #130 and #131, from the tech-debt roadmap
+  #103), and the linter is oxlint instead of ESLint until typescript-eslint, which ESLint parsed TypeScript with,
+  supports TypeScript 7 (#143): oxlint parses TypeScript itself. One config, `lambda/shared/.oxlintrc.json`, which every
+  Lambda's and package's `lint` passes with `-c`, replaces the `eslint.config.mjs` files and their plugin loading
+  (process-players' runs from `lambda/` to include `shared/`: oxlint takes no `..` paths). Same rules (`prefer-const`,
+  `no-redeclare`) apart from ESLint's deprecated `no-return-await`, which oxlint doesn't have. `npm run lint` runs in
+  CI's package job and in `verify.sh`, and a change to the config checks every package there, as it already checked
+  every Lambda. The pre-push hook still lints only the Lambdas, so a worktree needs no `npm ci` in the packages before a
+  push. The rules found nothing to fix.
+- Every Lambda and package moves to TypeScript `^7.0.2` (issues #129 and #131, from the tech-debt roadmap #103), by way
+  of 6.0 with the options 7 requires: `bundler` module resolution instead of `node`, which 7 removes, `rootDir: "src"`
+  in the packages, and `types: ["node"]` in `lambda/tsconfig.lambda.json`, because 6 no longer includes every `@types`
+  package. Its catch-all path now tries a Lambda's `@types` before its packages: under `bundler`, Vitest's import of
+  `chai` resolved to the untyped JS. 7 needed no further changes; the repo keeps one TypeScript version, so the linter
+  changed with it (entry above). The bundles are byte-for-byte the same apart from the commit stamp: not deployed.
 - Every Lambda's and package's Vitest config is `vitest.config.mts` (issue #108, from the tech-debt roadmap #103): Vite
   warned that the `.ts` ones use ESM syntax in a file loaded as CommonJS, which its native config loader, planned as a
-  future default, doesn't support. CI and `verify.sh` find the config as `vitest.config.*`, and the Lambdas' ESLint
-  config lints `.mts` files. clean-hiscores, process-players, record-player-count and refresh-items move to
-  `mongodb-memory-server` 11 (still MongoDB 8.0.12 in memory). Tests only; not deployed.
+  future default, doesn't support. CI and `verify.sh` find the config as `vitest.config.*`, and the lint covers `.mts`
+  files. clean-hiscores, process-players, record-player-count and refresh-items move to `mongodb-memory-server` 11
+  (still MongoDB 8.0.12 in memory). Tests only; not deployed.
 - CI drops its Jest step: `@osrs-tracker/hiscores` tests run on Vitest (issue #107), so its package job runs the same
   Vitest and `tsc -p tsconfig.spec.json` steps as models', and `verify.sh` does the same.
 - process-players' handler is split (issue #115, from the tech-debt roadmap #103): `scrapeMessage` in

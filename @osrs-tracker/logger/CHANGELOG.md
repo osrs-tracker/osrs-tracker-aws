@@ -1,9 +1,11 @@
 ## Unreleased
 
-- Dev tooling only (issue #130, from the tech-debt roadmap #103): ESLint with the Lambdas' config (`npm run lint`, also
-  in CI). It found nothing to fix; the build is unchanged.
-- Dev tooling only (issue #129, from the tech-debt roadmap #103): TypeScript `~6.0.3` (was `^5.9.3`), with `bundler`
-  module resolution and `rootDir: "src"`, the options TypeScript 7 requires. The build is byte-for-byte the same.
+- Dev tooling only (issues #130 and #131, from the tech-debt roadmap #103): linted with the Lambdas' config
+  (`npm run lint`, also in CI), with oxlint instead of ESLint until typescript-eslint supports TypeScript 7 (#143). It
+  found nothing to fix; the build is unchanged.
+- Dev tooling only (issues #129 and #131, from the tech-debt roadmap #103): TypeScript `^7.0.2` (was `^5.9.3`), with
+  `bundler` module resolution and `rootDir: "src"`, the options TypeScript 7 requires. The build is byte-for-byte the
+  same except `dist/types/logger.d.ts`, which writes the `LOG_TYPES` tuple type with single quotes: the same type.
 - README: the Nest section says Nest has to run on its Express adapter (Nest 11 or later, for the Express 5 peer
   dependency).
 - Dev tooling only (issue #108): `vitest.config.mts`, which silences Vite's warning about ESM syntax in a file loaded as

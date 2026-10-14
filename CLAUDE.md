@@ -58,8 +58,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - `lambda/shared/`: code every Lambda bundles, the workspace package `@lambda/shared`: `src/` (`env.ts`,
   `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`, `user-agent.ts` (the
   `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players' `vitest.config.mts`),
-  `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs` (the packages re-export it too). A change there touches
-  all six Lambdas.
+  `build/esbuild.js`, `build/invoke.js` and `.oxlintrc.json` (every Lambda's and package's `lint` passes it with `-c`;
+  oxlint until typescript-eslint supports TypeScript 7, #143). A change there touches all six Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
   tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root
   `LICENSE` and `NOTICE`. `models`, `hiscores`, `express-metrics` and `logger` ship `dist/cjs`, `dist/esm` and

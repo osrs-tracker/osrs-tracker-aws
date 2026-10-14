@@ -10,7 +10,7 @@
     "deploy": "aws lambda update-function-code --function-name osrs-tracker_queue-players --zip-file fileb://dist.zip --publish",
     "postdeploy": "rm ./dist.zip",
     "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_queue-players --runtime nodejs24.x",
-    "lint": "eslint .",
+    "lint": "oxlint -c ../shared/.oxlintrc.json",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
     "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js",

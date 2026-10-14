@@ -47,9 +47,9 @@ done
 # The Lambdas are one npm workspace: one install in lambda/ for all of them
 [ -n "$lambda_checked" ] && folders+=(lambda)
 
-# Every package's ESLint config re-exports the Lambdas' one, as in CI
+# Every package lints with the Lambdas' oxlint config, as in CI
 packages=$(grep -oE '^@osrs-tracker/[^/]+/' <<<"$changed")
-if grep -qx 'lambda/shared/eslint\.config\.mjs' <<<"$changed"; then
+if grep -qx 'lambda/shared/\.oxlintrc\.json' <<<"$changed"; then
   packages+=$'\n'$(printf '%s\n' @osrs-tracker/*/)
 fi
 

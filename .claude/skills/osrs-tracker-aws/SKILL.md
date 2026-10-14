@@ -48,8 +48,8 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
   that must not throw; `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called
   at module scope in every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts`
   (`USER_AGENT`, sent with every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds
-  `esbuild.js` and the `invoke.js` runner; `eslint.config.mjs` is every Lambda's and package's ESLint config. Keep
-  Lambda-specific logic in the Lambda.
+  `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json` is every Lambda's and package's oxlint config (ESLint
+  returns when typescript-eslint supports TypeScript 7: #143). Keep Lambda-specific logic in the Lambda.
 - Dependencies: devDependencies go in `lambda/package.json`, a runtime dependency in the Lambda that imports it
   (`npm install <pkg> -w <lambda folder>`, from `lambda/`). Shared code's imports resolve from `lambda/node_modules`:
   each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version
@@ -75,7 +75,7 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
 - `@osrs-tracker/hiscores`, `@osrs-tracker/models`:
   `npm run lint && npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (Vitest doesn't type-check; models'
   `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)
-- A change to `lambda/shared/eslint.config.mjs` also touches every package (each re-exports it).
+- A change to `lambda/shared/.oxlintrc.json` also touches every package (each one's `lint` uses it).
 - Repo root: `npm run prettier:ci`
 
 Packages' `dist/` isn't committed: `prepublishOnly` builds it, and CI builds each changed package and loads it from the

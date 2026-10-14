@@ -73,8 +73,8 @@ jobs:
             if grep -qE '^lambda/(shared/|tsconfig\.lambda\.json$|package(-lock)?\.json$)' <<< "$changed"; then
               selected=$(printf '%s\n%s\n' "$selected" "$(grep '^lambda/' <<< "$folders")" | sed '/^$/d' | sort -u)
             fi
-            # Every package's ESLint config re-exports the Lambdas' one: a change there checks them all
-            if grep -qx 'lambda/shared/eslint\.config\.mjs' <<< "$changed"; then
+            # Every package lints with the Lambdas' oxlint config: a change there checks them all
+            if grep -qx 'lambda/shared/\.oxlintrc\.json' <<< "$changed"; then
               selected=$(printf '%s\n%s\n' "$selected" "$(grep '^@osrs-tracker/' <<< "$folders")" | sed '/^$/d' | sort -u)
             fi
           fi
@@ -137,7 +137,7 @@ jobs:
         with:
           working-directory: '@osrs-tracker/${{ matrix.package }}'
 
-      - name: ESlint
+      - name: oxlint
         run: npm run lint
         working-directory: '@osrs-tracker/${{ matrix.package }}'
 
@@ -184,7 +184,7 @@ jobs:
         with:
           working-directory: lambda
 
-      - name: ESlint
+      - name: oxlint
         run: npm run lint
         working-directory: lambda/${{ matrix.lambda_function }}
 
