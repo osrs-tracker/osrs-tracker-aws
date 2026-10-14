@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, vi } from 'vitest';
 import { fetchWorldList, parseWorldList, WORLD_LIST_URL, WorldListFetch } from './world-list-client';
 
 /** The world list response on 2026-10-13 12:55 UTC: 30,000 bytes, of which 14,617 payload. */
@@ -100,7 +100,7 @@ describe('parseWorldList', () => {
 
 describe('fetchWorldList', () => {
   function respond(status: number, body = captured) {
-    return jest.fn<WorldListFetch>(async () => ({
+    return vi.fn<WorldListFetch>(async () => ({
       status,
       ok: status >= 200 && status < 300,
       arrayBuffer: async () => body.slice().buffer,

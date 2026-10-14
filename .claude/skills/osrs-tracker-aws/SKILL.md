@@ -62,10 +62,9 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
   with a `vitest.config.ts` (all five; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in
   `lambda/shared/` touches all five. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run`
   runs `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
-- `@osrs-tracker/hiscores`: `npx jest && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npx vitest run && npm run build` (`npm test` is watch mode)
-- `@osrs-tracker/models`: `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (Vitest doesn't type-check;
-  the `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)
+- `@osrs-tracker/hiscores`, `@osrs-tracker/models`: `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build`
+  (Vitest doesn't type-check; models' `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)
 - Repo root: `npm run prettier:ci`
 
 Packages' `dist/` isn't committed: `prepublishOnly` builds it, and CI builds each changed package and loads it from the

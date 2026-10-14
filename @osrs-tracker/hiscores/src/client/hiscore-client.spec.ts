@@ -1,4 +1,4 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, vi } from 'vitest';
 import { JagexHiscoreJson } from '../mapper/from-jagex';
 import { getHiscore, HiscoreFetch } from './hiscore-client';
 
@@ -11,7 +11,7 @@ const hiscore: JagexHiscoreJson = {
 };
 
 function respond(status: number, body: unknown = hiscore) {
-  return jest.fn<HiscoreFetch>(async () => ({
+  return vi.fn<HiscoreFetch>(async () => ({
     status,
     ok: status >= 200 && status < 300,
     json: async () => body,
@@ -75,7 +75,7 @@ describe('getHiscore', () => {
   });
 
   it('returns failed when the body is not JSON', async () => {
-    const fetch = jest.fn<HiscoreFetch>(async () => ({
+    const fetch = vi.fn<HiscoreFetch>(async () => ({
       status: 200,
       ok: true,
       json: async () => {
@@ -87,7 +87,7 @@ describe('getHiscore', () => {
   });
 
   it('returns failed on a timeout', async () => {
-    const fetch = jest.fn<HiscoreFetch>(
+    const fetch = vi.fn<HiscoreFetch>(
       (_, { signal }) =>
         new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true })),
     );
@@ -96,7 +96,7 @@ describe('getHiscore', () => {
   });
 
   it('returns failed on a network error', async () => {
-    const fetch = jest.fn<HiscoreFetch>(async () => {
+    const fetch = vi.fn<HiscoreFetch>(async () => {
       throw new TypeError('fetch failed');
     });
     const result = await getHiscore({ baseUrl, username: 'zezima', fetch });

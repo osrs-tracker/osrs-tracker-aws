@@ -1,9 +1,12 @@
 {
   "extends": "./tsconfig.json",
+  "files": [],
+  "include": ["src/**/*.ts"],
   "compilerOptions": {
-    "outDir": "./out-tsc/spec",
-    "module": "CommonJS",
-    "esModuleInterop": true
-  },
-  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "skipLibCheck": true
+  }
 }

@@ -35,10 +35,9 @@ change), never stopping at a failure:
    5. `npx vitest run`, for a Lambda with a `vitest.config.ts` (all five; process-players' also runs `lambda/shared`'s
       specs)
 3. Each touched package, from its folder, as one check in this order (its `npm run build` is `tsc`, so it type-checks):
-   - `hiscores`: `npm run build`, then `npx jest`
    - `express-metrics`, `logger`: `npm run build`, then `npx vitest run`
-   - `models`: `npm run build`, `npx tsc -p tsconfig.spec.json`, then `npx vitest run` (its integration tests start an
-     in-memory MongoDB 8.0)
+   - `hiscores`, `models`: `npm run build`, `npx tsc -p tsconfig.spec.json`, then `npx vitest run` (models' integration
+     tests start an in-memory MongoDB 8.0)
 
 Never run `npm test`: it's watch mode in every package and Lambda that has it.
 

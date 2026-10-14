@@ -46,8 +46,7 @@ done
 for package in $(grep -oE '^@osrs-tracker/[^/]+/' <<<"$changed" | sort -u); do
   dir=${package%/}
   case $dir in
-    */hiscores) command='npm run build && npx jest' ;;
-    */models) command='npm run build && npx tsc -p tsconfig.spec.json && npx vitest run' ;;
+    */hiscores | */models) command='npm run build && npx tsc -p tsconfig.spec.json && npx vitest run' ;;
     *) command='npm run build && npx vitest run' ;;
   esac
   folders+=("$dir")

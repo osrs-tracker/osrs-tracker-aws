@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it } from 'vitest';
 import { ActivityEnum, HiscoreEntry, SkillEnum } from '@osrs-tracker/models';
 import { getOverallXpDiff, hiscoreDiff } from './parser';
 
