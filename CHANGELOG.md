@@ -30,6 +30,8 @@ doc-only changes are not.
 
 ### Behind the scenes
 
+- CI drops its Jest step: `@osrs-tracker/hiscores` tests run on Vitest (issue #107), so its package job runs the same
+  Vitest and `tsc -p tsconfig.spec.json` steps as models', and `verify.sh` does the same.
 - process-players' handler is split (issue #115, from the tech-debt roadmap #103): `scrapeMessage` in
   `src/utils/scrape-message.ts` scrapes one message's players and stores their layouts, and `afterWrites` in
   `src/utils/after-writes.ts` waits for the bulk writes, requeues the failed players and sends the alerts. The handler

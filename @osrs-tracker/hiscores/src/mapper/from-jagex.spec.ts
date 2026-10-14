@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { fromJagex, JagexHiscoreActivity, JagexHiscoreJson, JagexHiscoreSkill } from './from-jagex';

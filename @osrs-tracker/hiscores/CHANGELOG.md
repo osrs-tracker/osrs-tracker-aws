@@ -1,3 +1,9 @@
+## Unreleased
+
+- Tests run on Vitest instead of Jest and ts-jest, like the other packages (issue #107, from the tech-debt roadmap
+  #103): ts-jest's TypeScript peer range ends before 7, and the specs imported the undeclared `@jest/globals`.
+  `tsconfig.spec.json` type-checks the specs, which Vitest doesn't. Tests only: the build and the API are unchanged.
+
 ## 4.2.0 - 2026-10-13
 
 - `fetchWorldList` and `parseWorldList` count the players online from Jagex's world list (`WORLD_LIST_URL`, the binary
