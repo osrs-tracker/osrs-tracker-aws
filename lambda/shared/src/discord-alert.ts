@@ -21,19 +21,34 @@ interface DiscordAlertMessage {
   }[];
 }
 
+/** What changes for an alert that isn't about the invocation sending it. */
+export interface DiscordAlertOptions {
+  /**
+   * The function the alert is about, when it isn't the sender (an alarm forwarded by alarm-to-discord): the title then
+   * links to its log group instead of this invocation's log stream, and the author to its monitoring tab.
+   */
+  functionName?: string;
+  /** The title's link, instead of the logs (an alarm on something other than a Lambda). */
+  url?: string;
+  /** The embed's colour, red by default. */
+  color?: number;
+}
+
 /**
- * Sends a red Discord alert to `webhookUrl`, linking to this invocation's logs and the function's monitoring tab. A
- * non-2xx response (e.g. a revoked webhook) is logged, not thrown; a failed or timed-out (5 s) request rejects. A
- * description over Discord's limit is truncated. Code that must not throw, such as process-players after its bulk
- * writes, uses `discordAlertNeverRejects` instead.
+ * Sends a red Discord alert to `webhookUrl`, linking to this invocation's logs and the function's monitoring tab (see
+ * `options` for an alert about another function). A non-2xx response (e.g. a revoked webhook) is logged, not thrown; a
+ * failed or timed-out (5 s) request rejects. A description over Discord's limit is truncated. Code that must not throw,
+ * such as process-players after its bulk writes, uses `discordAlertNeverRejects` instead.
  */
 export async function discordAlert(
   webhookUrl: string,
   title: string,
   description: string,
   context: Context,
+  options: DiscordAlertOptions = {},
 ): Promise<void> {
   const region = context.invokedFunctionArn.split(':')[3];
+  const functionName = options.functionName ?? context.functionName;
 
   // Discord rejects a longer embed description with HTTP 400, which would lose the whole alert
   if (description.length > DISCORD_DESCRIPTION_MAX_LENGTH)
@@ -44,12 +59,17 @@ export async function discordAlert(
       {
         title,
         description,
-        url: `https://console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=/aws/lambda/${context.functionName};stream=${context.logStreamName}`,
+        url:
+          options.url ??
+          (options.functionName
+            ? // the log group, its streams newest first (the console's encoding: `/` as `$252F`)
+              `https://console.aws.amazon.com/cloudwatch/home?region=${region}#logsV2:log-groups/log-group/$252Faws$252Flambda$252F${functionName}`
+            : `https://console.aws.amazon.com/cloudwatch/home?region=${region}#logEventViewer:group=/aws/lambda/${functionName};stream=${context.logStreamName}`),
         author: {
-          name: context.functionName,
-          url: `https://console.aws.amazon.com/lambda/home?region=${region}#/functions/${context.functionName}?tab=monitoring`,
+          name: functionName,
+          url: `https://console.aws.amazon.com/lambda/home?region=${region}#/functions/${functionName}?tab=monitoring`,
         },
-        color: 0xff0000,
+        color: options.color ?? 0xff0000,
         timestamp: new Date().toISOString(),
       },
     ],

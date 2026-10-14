@@ -15,6 +15,7 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
 | [process‑players](lambda/osrs-tracker_process-players)         | From queue       | Fetches the player's current hiscores and saves them as a new daily snapshot. Failures are retried, and persistent ones are reported on Discord. Players off the hiscores for 7 days stop being queued until someone looks them up again. |
 | [record‑player‑count](lambda/osrs-tracker_record-player-count) | Every 10 minutes | Records how many players are online, from Jagex's world list, to chart the player count over time, and keeps each day's averages. Reports on Discord when the list can't be read.                                                         |
 | [clean‑hiscores](lambda/osrs-tracker_clean-hiscores)           | Nightly          | At midnight (UTC), drops scraping offsets nobody looked up for 180 days, removes snapshots older than 90 days, deletes players with no snapshots left, and alerts when scraping has stopped.                                              |
+| [alarm‑to‑discord](lambda/osrs-tracker_alarm-to-discord)       | On an alarm      | Posts the CloudWatch alarm on any job's errors (a failed run, a timeout, a bad configuration) to Discord, and again when it recovers. The alarms also go out by email.                                                                    |
 
 ## Shared packages
 
@@ -64,7 +65,7 @@ What goes in `.env` (each job's `.env.example` lists the ones it needs):
 
 ## Built with
 
-TypeScript, AWS Lambda on Node 24, Amazon SQS, Amazon EventBridge and MongoDB Atlas.
+TypeScript, AWS Lambda on Node 24, Amazon SQS, Amazon EventBridge, Amazon CloudWatch and SNS, and MongoDB Atlas.
 
 ## Development
 

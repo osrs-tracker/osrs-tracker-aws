@@ -45,6 +45,28 @@ describe('discordAlert', () => {
     expect(sentEmbed().url).toContain('stream=log-stream');
   });
 
+  it('links to the log group and monitoring tab of the function an alert is about, in its colour', async () => {
+    await discordAlert(WEBHOOK_URL, 'Title', 'Description', context, {
+      functionName: 'osrs-tracker_other',
+      color: 0x00ff00,
+    });
+
+    expect(sentEmbed()).toMatchObject({
+      author: {
+        name: 'osrs-tracker_other',
+        url: 'https://console.aws.amazon.com/lambda/home?region=eu-central-1#/functions/osrs-tracker_other?tab=monitoring',
+      },
+      url: 'https://console.aws.amazon.com/cloudwatch/home?region=eu-central-1#logsV2:log-groups/log-group/$252Faws$252Flambda$252Fosrs-tracker_other',
+      color: 0x00ff00,
+    });
+  });
+
+  it('links the title to `url` when given', async () => {
+    await discordAlert(WEBHOOK_URL, 'Title', 'Description', context, { url: 'https://console.invalid/alarm' });
+
+    expect(sentEmbed()).toMatchObject({ url: 'https://console.invalid/alarm', author: { name: 'osrs-tracker_test' } });
+  });
+
   it("truncates a description over Discord's 4096 characters", async () => {
     await discordAlert(WEBHOOK_URL, 'Title', 'x'.repeat(5000), context);
 

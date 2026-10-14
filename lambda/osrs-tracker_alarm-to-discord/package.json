@@ -1,0 +1,38 @@
+{
+  "name": "osrs-tracker_alarm-to-discord",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "prebuild": "rm -rf ./dist",
+    "build": "node ../shared/build/esbuild.js",
+    "predeploy": "npm run build && cd dist && bestzip ../dist.zip * && cd ..",
+    "deploy": "aws lambda update-function-code --function-name osrs-tracker_alarm-to-discord --zip-file fileb://dist.zip --publish",
+    "postdeploy": "rm ./dist.zip",
+    "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_alarm-to-discord --runtime nodejs24.x",
+    "lint": "eslint .",
+    "prettier": "prettier --write .",
+    "prettier:ci": "prettier --check .",
+    "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js",
+    "test": "vitest"
+  },
+  "prettier": "../../.prettierrc.json",
+  "dependencies": {
+    "envalid": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^24.19.1",
+    "bestzip": "^4.0.3",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.11.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.4"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
