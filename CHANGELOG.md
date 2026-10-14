@@ -15,7 +15,9 @@ doc-only changes are not.
   boundary after which nothing may throw. Its ESLint complexity drops from 16 to 8. New specs cover the staggered
   requests, the entries' shared scrape time and offset, requeueing per offset in batches of 10 messages, and the "Failed
   to process some players" alert on a redelivered message. Same messages, writes and alerts: `invoke:dry` logs the same
-  lines; not deployed.
+  lines. Deployed as version 51, commit 027d111, which also ships process-players' Node built-ins refactor (2026-10-13),
+  its cold-start commit log (#114) and the `models` 2.4.0 and `hiscores` 4.2.0 bumps (#104). Its zip grows from 372 to
+  427 KB while the bundle grows by 1 KB: bestzip 4 (#104) compresses less than 2.2.7.
 - queue-players' offset for the hour and its batching move to `src/utils/queue.utils.ts` (`scrapingOffsetForHour`,
   `messageBatches`), with Vitest tests (issue #112, from the tech-debt roadmap #103): an off-by-one in either would
   silently skip players for the day. The specs pin hours 0, 11, 12 and 23 UTC to offsets 0, 11, -12 and -1, and 0, 1,
@@ -100,7 +102,7 @@ doc-only changes are not.
 - process-players uses Node built-ins instead of hand-written helpers: `setTimeout` from `node:timers/promises` for the
   staggered hiscore requests and `isDeepStrictEqual` from `node:util` for the layout collision check. A bulk write is
   settled with `.then` instead of `Promise.allSettled` on a single promise, and `mapArrayPush` appends in place instead
-  of copying the array. No change in behaviour; not deployed.
+  of copying the array. No change in behaviour; deployed with process-players 51 on 2026-10-14.
 
 ## 2026-10-12
 
