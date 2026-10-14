@@ -23,7 +23,7 @@ npm install @osrs-tracker/logger
 
 The base pino logger. `context` returns fields for every line, e.g. the page being rendered or the request ID
 (`undefined` ones are left out). `level` defaults to `info`, `destination` to stdout. Log through a child with a `type`,
-so every line has one:
+so every line has one. `LOG_TYPES` lists the built-in types: `incoming`, `outgoing`, `lifecycle` and `uncaught`.
 
 ```ts
 import { createLogger, type LogType } from '@osrs-tracker/logger';

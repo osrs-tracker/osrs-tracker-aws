@@ -55,7 +55,7 @@ export default tseslint.config(
     rules: rules,
   },
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,mts}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

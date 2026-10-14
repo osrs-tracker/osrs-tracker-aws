@@ -81,6 +81,7 @@ describe('requestLogger', () => {
 
     const request = fetch(`${url}/slow`, { signal: controller.signal }).catch(() => undefined);
     await handled;
+    // not a wait for the server (`handled` is that), but time for `responseTime` to measure: asserted below
     await new Promise((resolve) => setTimeout(resolve, 20));
     controller.abort();
     await request;

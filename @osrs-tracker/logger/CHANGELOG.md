@@ -2,6 +2,8 @@
 
 - README: the Nest section says Nest has to run on its Express adapter (Nest 11 or later, for the Express 5 peer
   dependency).
+- Dev tooling only (issue #108): `vitest.config.mts`, which silences Vite's warning about ESM syntax in a file loaded as
+  CommonJS.
 
 ## 0.2.0 - 2026-10-09
 

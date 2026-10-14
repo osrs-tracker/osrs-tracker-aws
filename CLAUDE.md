@@ -11,7 +11,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 ## Commands
 
 - Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`,
-  plus `npx vitest run` where it has a `vitest.config.ts` (`npm test` is watch mode).
+  plus `npx vitest run` where it has a `vitest.config.mts` (`npm test` is watch mode).
 - Verify a package: `express-metrics` and `logger` `npx vitest run && npm run build` (`npm test` is watch mode in all of
   them); `hiscores` and `models` `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (models' integration
   tests start an in-memory MongoDB 8.0). Repo root: `npm run prettier:ci`. The `verify` skill's
@@ -52,7 +52,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   and a `README.md` with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
 - `lambda/shared/`: code every Lambda bundles, no `package.json` (imports resolve from the Lambda's `node_modules`):
   `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`; its
-  `*.spec.ts` run from process-players' `vitest.config.ts`), `build/esbuild.js`, `build/invoke.js` and
+  `*.spec.ts` run from process-players' `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and
   `eslint.config.mjs`. A change there touches all five Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
   tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root

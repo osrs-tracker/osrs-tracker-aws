@@ -1,3 +1,8 @@
+## Unreleased
+
+- Dev tooling only (issue #108, from the tech-debt roadmap #103): TypeScript `^5.9.3` (the build is byte-for-byte the
+  same) and `vitest.config.mts`, which silences Vite's warning about ESM syntax in a file loaded as CommonJS.
+
 ## 0.1.1 - 2026-10-09
 
 - Licensed under Apache-2.0 instead of MIT, with a `NOTICE` file that copies must keep. Earlier versions stay MIT. The

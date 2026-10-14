@@ -32,7 +32,7 @@ change), never stopping at a failure:
    2. `npm run lint`
    3. `npx tsc --noEmit -p .` (the esbuild build doesn't type-check; this also checks the shared files it imports)
    4. `npm run build`
-   5. `npx vitest run`, for a Lambda with a `vitest.config.ts` (all five; process-players' also runs `lambda/shared`'s
+   5. `npx vitest run`, for a Lambda with a `vitest.config.mts` (all five; process-players' also runs `lambda/shared`'s
       specs)
 3. Each touched package, from its folder, as one check in this order (its `npm run build` is `tsc`, so it type-checks):
    - `express-metrics`, `logger`: `npm run build`, then `npx vitest run`

@@ -3,6 +3,8 @@
 - Tests run on Vitest instead of Jest and ts-jest, like the other packages (issue #107, from the tech-debt roadmap
   #103): ts-jest's TypeScript peer range ends before 7, and the specs imported the undeclared `@jest/globals`.
   `tsconfig.spec.json` type-checks the specs, which Vitest doesn't. Tests only: the build and the API are unchanged.
+- TypeScript `^5.9.3` (the build is byte-for-byte the same) and `vitest.config.mts`, which silences Vite's warning about
+  ESM syntax in a file loaded as CommonJS (issue #108).
 
 ## 4.2.0 - 2026-10-13
 
