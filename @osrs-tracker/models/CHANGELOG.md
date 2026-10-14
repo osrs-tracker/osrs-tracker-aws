@@ -1,5 +1,9 @@
-## Unreleased
+## 2.5.0 - 2026-10-14
 
+- `PlayerCountDay`: a `playerCountsDaily` document, one UTC day's averages of the `playerCounts` samples (`total`,
+  `members`, `f2p`, and `byLocation` averaged per code over the samples that have it, all rounded), its `peak` total and
+  how many `samples` it averages. Recomputed by the record-player-count Lambda on every run, read by osrs-tracker-api
+  for its `1y` and `all` history (osrs-tracker/osrs-tracker-api#159).
 - `PlayerCount.byLocation`: the source comment names every location code (8 Brazil, 9 Japan, 10 Singapore, 12 South
   Africa were unknown). Comment only.
 

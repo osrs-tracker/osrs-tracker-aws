@@ -1,7 +1,7 @@
 # Data model
 
-The `players` and `items` collections in MongoDB are written by two repos (`hiscoreLayouts` and `playerCounts` by the
-Lambdas only, and read by both; `news` by the API only): the Lambdas in this repo and
+The `players` and `items` collections in MongoDB are written by two repos (`hiscoreLayouts`, `playerCounts` and
+`playerCountsDaily` by the Lambdas only, and read by both; `news` by the API only): the Lambdas in this repo and
 [osrs-tracker-api](https://github.com/osrs-tracker/osrs-tracker-api). This file says which side writes each field and
 owns each index, so a change on one side doesn't break the other. The TypeScript shapes are in
 [`@osrs-tracker/models`](@osrs-tracker/models/src/models); this file covers who writes what and when.
@@ -110,6 +110,28 @@ One document per sample of the players online (`PlayerCount` in models), every 1
 A run that can't read the world list, or reads 0 worlds or 0 players, inserts nothing, so a gap in `date` is a missed
 sample, not a count of 0.
 
+## `playerCountsDaily`
+
+One document per UTC day that has [`playerCounts`](#playercounts) samples (`PlayerCountDay` in models): that day's
+averages, about 365 a year. record-player-count recomputes them on every run, after inserting its sample, with one
+aggregation over the samples from the newest stored day on (normally only today, also yesterday on the first run after
+midnight, every sample when the collection is empty) ending in `$merge` (`on: 'date'`, `whenMatched: 'replace'`).
+Recomputing instead of adding to running sums keeps it idempotent: the next run repairs a day that a failed or repeated
+run got wrong. The grouping and rounding are the API's daily history
+(`api:src/features/player-counts/player-count-history.ts`), so the API answers the same from either. Nothing else writes
+or deletes them.
+
+| Field                     | Written by                                                                                                                                                  | Read by                                                              |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `date`                    | record-player-count: the UTC day's start (`$dateTrunc`).                                                                                                    | API (osrs-tracker/osrs-tracker-api#159: the `1y` and `all` history). |
+| `total`, `members`, `f2p` | record-player-count: the day's averages of the samples' fields, `$round`ed (half to even), so `members + f2p` can be one off `total`.                       | API.                                                                 |
+| `byLocation`              | record-player-count: the average per location code over the samples that have the code (one that appears mid-day averages only the samples since), rounded. | API.                                                                 |
+| `peak`                    | record-player-count: the highest `total` sampled that day.                                                                                                  | API.                                                                 |
+| `samples`                 | record-player-count: how many samples the day averages. Today's is partial; a whole day has 144, fewer when samples were missed.                            | API.                                                                 |
+
+A day without samples has no document, so a gap stays a gap. When the recompute fails, the sample is still stored and
+the run alerts (`Daily player counts not updated`) without failing.
+
 ## `news`
 
 One document per Jagex news post (`OsrsNewsItem` in models; the API types a stored post as `StoredNewsItem`, with
@@ -148,18 +170,19 @@ neither about 200; the collection is about 700 KB.
 
 One owner per index. The owner creates it; everyone else may rely on it (`hint`) but shouldn't create it.
 
-| Collection     | Index                                           | Owner (creates it)                                                                             | Relied on by                                                                                                                          |
-| -------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `players`      | `{ username: 1 }`, unique                       | API, at startup (`api:src/common/mongo/mongo.provider.ts`)                                     | API `hint` in `getPlayer`, `recordLookup`, `refreshPlayerInfo`; process-players `hint` in its bulk write and `recordHiscoreNotFound`. |
-| `players`      | `{ lastHiscoreFetch: -1 }`, partial (`$exists`) | API, at startup                                                                                | API `getLastFetchedPlayers` (`hint`).                                                                                                 |
-| `players`      | `{ scrapingOffsets: 1 }`, sparse                | queue-players, on every run (`aws:lambda/osrs-tracker_queue-players/src/index.ts`)             | queue-players `getAllUsernamesForOffset` (`hint`).                                                                                    |
-| `items`        | `{ id: 1 }`, unique                             | API, at startup                                                                                | API `getItem`, `recordLookup` (`hint`); refresh-items upsert and delete (`hint`).                                                     |
-| `items`        | `name_autocomplete`, Atlas Search               | API, at startup when missing                                                                   | API `searchItems` (`$search`).                                                                                                        |
-| `items`        | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).                     |
-| `items`        | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                                | API `getLastFetchedItems` (`hint`).                                                                                                   |
-| `playerCounts` | `{ date: 1 }`                                   | record-player-count, on every run (`aws:lambda/osrs-tracker_record-player-count/src/index.ts`) | API latest count and history ranges.                                                                                                  |
-| `news`         | `{ link: 1 }`, unique                           | API, at startup                                                                                | API `storeNews` upsert, the backfill scripts' writes (no `hint`).                                                                     |
-| `news`         | `{ pubDate: -1 }`                               | API, at startup                                                                                | API `getNewsSince` (no `hint`).                                                                                                       |
+| Collection          | Index                                           | Owner (creates it)                                                                             | Relied on by                                                                                                                          |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `players`           | `{ username: 1 }`, unique                       | API, at startup (`api:src/common/mongo/mongo.provider.ts`)                                     | API `hint` in `getPlayer`, `recordLookup`, `refreshPlayerInfo`; process-players `hint` in its bulk write and `recordHiscoreNotFound`. |
+| `players`           | `{ lastHiscoreFetch: -1 }`, partial (`$exists`) | API, at startup                                                                                | API `getLastFetchedPlayers` (`hint`).                                                                                                 |
+| `players`           | `{ scrapingOffsets: 1 }`, sparse                | queue-players, on every run (`aws:lambda/osrs-tracker_queue-players/src/index.ts`)             | queue-players `getAllUsernamesForOffset` (`hint`).                                                                                    |
+| `items`             | `{ id: 1 }`, unique                             | API, at startup                                                                                | API `getItem`, `recordLookup` (`hint`); refresh-items upsert and delete (`hint`).                                                     |
+| `items`             | `name_autocomplete`, Atlas Search               | API, at startup when missing                                                                   | API `searchItems` (`$search`).                                                                                                        |
+| `items`             | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).                     |
+| `items`             | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                                | API `getLastFetchedItems` (`hint`).                                                                                                   |
+| `playerCounts`      | `{ date: 1 }`                                   | record-player-count, on every run (`aws:lambda/osrs-tracker_record-player-count/src/index.ts`) | API latest count and history ranges.                                                                                                  |
+| `playerCountsDaily` | `{ date: 1 }`, unique                           | record-player-count, on every run                                                              | record-player-count `$merge` (its `on` needs a unique index) and newest-day lookup; API `1y` and `all` history.                       |
+| `news`              | `{ link: 1 }`, unique                           | API, at startup                                                                                | API `storeNews` upsert, the backfill scripts' writes (no `hint`).                                                                     |
+| `news`              | `{ pubDate: -1 }`                               | API, at startup                                                                                | API `getNewsSince` (no `hint`).                                                                                                       |
 
 `name_autocomplete` is an Atlas Search index (`listSearchIndexes`, not `indexes()`): `name` as `autocomplete`
 (`edgeGram`, `minGrams` 2, `maxGrams` 15, `foldDiacritics`) and `string`, `dynamic: false`. The API creates it only when

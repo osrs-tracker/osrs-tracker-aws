@@ -15,6 +15,7 @@ export default defineConfig({
       MONGODB_URI: 'mongodb://127.0.0.1:1',
       MONGODB_DATABASE: 'test',
       MONGODB_COLLECTION: 'playerCounts',
+      MONGODB_DAILY_COLLECTION: 'playerCountsDaily',
       DRY_RUN: 'false',
       WEBHOOK_URL: 'https://discord.invalid/webhook',
     },

@@ -6,6 +6,18 @@ doc-only changes are not.
 
 ## 2026-10-14
 
+### Player counts
+
+- record-player-count stores each UTC day's averages in a new `playerCountsDaily` collection (issue #125, for
+  osrs-tracker/osrs-tracker-api#159), so the API's `1y` and `all` history can read one small document per day instead of
+  averaging every sample on each request: measured on 10 years of samples, `all` took 6.5 s, past the web's 3 s SSR
+  timeout. After inserting its sample, each run recomputes the days from the newest stored day on (normally only today;
+  every sample on the first run, which is the backfill) with one aggregation ending in `$merge`, so a failed or repeated
+  run is repaired by the next one instead of skewing a running sum for good. The grouping and rounding are the API's, so
+  its answers don't change. A failed recompute alerts on Discord (`Daily player counts not updated`) but doesn't fail
+  the run: the sample is stored. New env var `MONGODB_DAILY_COLLECTION`; the documents are `PlayerCountDay` from
+  `@osrs-tracker/models` 2.5.0.
+
 ### Infra
 
 - clean-hiscores gets 60 s and 256 MB (was 10 s and 128 MB), and clean-hiscores and queue-players no longer retry a
