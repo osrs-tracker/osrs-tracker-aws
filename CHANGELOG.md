@@ -22,6 +22,11 @@ doc-only changes are not.
   stamps it from `git rev-parse --short HEAD`, with `-dirty` when `lambda/` has uncommitted changes and `unknown`
   without git; `logCommit()` in `lambda/shared/src/commit.ts` logs it. Deploy notes now record the commit next to the
   version (DEPLOY.md). Each Lambda picks it up at its next deploy.
+- clean-hiscores has tests (issue #111), since it deletes data every night: its four clean-ups and their `DRY_RUN`
+  branches run against MongoDB 8.0.12 in memory on fixture players (the 180-day offset drop first deletes real data in
+  April 2027), and the handler spec pins their order and the alert before the throw when nothing was scraped in 2 days.
+  `lambda/tsconfig.lambda.json` sets `skipLibCheck`: Vitest's declarations don't type-check under the Lambdas'
+  `moduleResolution: node`. No behaviour change; not deployed.
 
 ## 2026-10-13
 

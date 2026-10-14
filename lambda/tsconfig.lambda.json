@@ -9,6 +9,8 @@
     "noUnusedLocals": true,
     "removeComments": true,
     "strict": true,
+    // specs: Vitest's declarations need `moduleResolution: bundler`, mongodb-memory-server's lack semver's types
+    "skipLibCheck": true,
     // Lambdas import shared code as `@lambda/shared/<module>`. lambda/shared/ has no node_modules: its imports resolve
     // from the Lambda being checked. build/esbuild.js in shared/ does the same for the bundle (alias and nodePaths)
     "paths": {
