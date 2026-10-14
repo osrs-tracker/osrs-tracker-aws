@@ -32,6 +32,11 @@ doc-only changes are not.
 - clean-hiscores has tests (issue #111), since it deletes data every night: its four clean-ups and their `DRY_RUN`
   branches run against MongoDB 8.0.12 in memory on fixture players (the 180-day offset drop first deletes real data in
   April 2027), and the handler spec pins their order and the alert before the throw when nothing was scraped in 2 days.
+  refresh-items and record-player-count have handler tests too (issue #113), against MongoDB in memory with the Wiki,
+  the world list and Discord stubbed. refresh-items: an empty item list or a non-2xx response fails the run and deletes
+  nothing, and 50 items missing from the Wiki's list are removed while 51 skip the delete. record-player-count: a failed
+  request, a list that doesn't parse, or 0 worlds or players sends the alert, stores nothing and fails with the world
+  list's error even when the alert fails; otherwise it stores one document with the counts and the run's date.
   `lambda/tsconfig.lambda.json` sets `skipLibCheck`: Vitest's declarations don't type-check under the Lambdas'
   `moduleResolution: node`. No behaviour change; not deployed.
 - process-players gets its first tests (issue #110, from #103): Vitest, plus an in-memory MongoDB 8.0
