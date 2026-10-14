@@ -32,36 +32,10 @@ const resolvePlugin = (name) => {
 };
 const load = async (name) => (await import(pathToFileURL(resolvePlugin(name)).href)).default;
 
-const [stylistic, globals, tseslint] = await Promise.all(
-  ['@stylistic/eslint-plugin', 'globals', 'typescript-eslint'].map(load),
-);
+const [globals, tseslint] = await Promise.all(['globals', 'typescript-eslint'].map(load));
 
+// Formatting is Prettier's (the root .prettierrc.json): no rule here may overlap it
 const rules = {
-  '@stylistic/indent': ['error', 2],
-  '@stylistic/member-delimiter-style': [
-    'error',
-    {
-      multiline: {
-        delimiter: 'semi',
-        requireLast: true,
-      },
-      singleline: {
-        delimiter: 'semi',
-        requireLast: false,
-      },
-    },
-  ],
-  '@stylistic/quotes': [
-    'error',
-    'single',
-    {
-      avoidEscape: true,
-    },
-  ],
-  '@stylistic/semi': ['error', 'always'],
-  'comma-dangle': ['error', 'always-multiline'],
-  'max-classes-per-file': 'off',
-  'no-multiple-empty-lines': ['error', { max: 1 }],
   'no-redeclare': 'error',
   'no-return-await': 'error',
   'prefer-const': 'error',
@@ -69,7 +43,7 @@ const rules = {
 
 export default tseslint.config(
   {
-    ignores: ['node_modules', '.vscode', 'dist/'],
+    ignores: ['node_modules', 'dist/'],
   },
   {
     files: ['**/*.{js,cjs,mjs}'],
@@ -78,7 +52,6 @@ export default tseslint.config(
       sourceType: 'module',
       globals: globals.node,
     },
-    plugins: { '@stylistic': stylistic },
     rules: rules,
   },
   {
@@ -89,7 +62,6 @@ export default tseslint.config(
       globals: globals.node,
       parser: tseslint.parser,
     },
-    plugins: { '@stylistic': stylistic },
     rules: rules,
   },
 );
