@@ -13,25 +13,21 @@
     "lint": "eslint .",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
-    "start": "node ../shared/build/esbuild.js --dev --watch --run",
     "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
   },
-  "prettier": "./.prettierrc.json",
+  "prettier": "../../.prettierrc.json",
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.1145.0",
-    "@osrs-tracker/models": "^2.0.0",
+    "@osrs-tracker/models": "^2.4.0",
     "envalid": "^8.2.0",
     "mongodb": "^7.7.0"
   },
   "devDependencies": {
-    "@es-exec/esbuild-plugin-start": "^0.0.5",
-    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/aws-lambda": "^8.10.164",
     "@types/node": "^24.19.1",
-    "bestzip": "^2.2.7",
+    "bestzip": "^4.0.3",
     "esbuild": "^0.28.2",
     "eslint": "^10.11.0",
-    "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "prettier": "^3.9.9",
     "typescript": "^5.9.3",

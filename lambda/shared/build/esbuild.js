@@ -1,7 +1,6 @@
 /**
- * Bundles a Lambda (run from its folder, via its `npm run build`, `start` or `invoke:dry`): `src/index.ts` with
- * everything it imports, including lambda/shared/, into `dist/index.js`. Flags: `--dev` (source map, no minify),
- * `--watch`, `--run` (start the bundle after each build).
+ * Bundles a Lambda (run from its folder, via its `npm run build` or `invoke:dry`): `src/index.ts` with everything it
+ * imports, including lambda/shared/, into `dist/index.js`. Flag: `--dev` (source map, no minify).
  *
  * Lambdas import shared code as `@lambda/shared/<module>` (`alias`). lambda/shared/ has no node_modules, so its imports
  * resolve from the Lambda's (`nodePaths`), like the `paths` in tsconfig.lambda.json do for TypeScript.
@@ -11,12 +10,11 @@ const path = require('path');
 const { parseArgs } = require('util');
 
 const { values: argv } = parseArgs({
-  options: { dev: { type: 'boolean' }, watch: { type: 'boolean' }, run: { type: 'boolean' } },
+  options: { dev: { type: 'boolean' } },
 });
 
-// esbuild and its plugins are the Lambda's devDependencies
-const lambdaRequire = createRequire(path.resolve('package.json'));
-const esbuild = lambdaRequire('esbuild');
+// esbuild is the Lambda's devDependency
+const esbuild = createRequire(path.resolve('package.json'))('esbuild');
 
 /** @type import('esbuild').BuildOptions */
 const devConfig = {
@@ -44,17 +42,7 @@ const config = {
   tsconfigRaw: {},
   banner: { js: '"use strict";' },
 
-  plugins: [],
-
   ...(argv.dev ? devConfig : prodConfig),
 };
 
-if (argv.run)
-  config.plugins.push(lambdaRequire('@es-exec/esbuild-plugin-start').default({ script: 'node dist/index.js' }));
-
-if (argv.watch) {
-  (async () => {
-    const ctx = await esbuild.context(config);
-    await ctx.watch();
-  })();
-} else esbuild.build(config);
+esbuild.build(config);

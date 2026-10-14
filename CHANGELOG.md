@@ -4,6 +4,20 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 `CHANGELOG.md`. Housekeeping (tooling, CI) is logged on purpose, because sessions read this as the repo's history;
 doc-only changes are not.
 
+## 2026-10-14
+
+### Behind the scenes
+
+- Lambda tooling cleanup (issue #104, from the tech-debt roadmap #103). All five `tsconfig.json` now `include`
+  `src/**/*.ts`, so `npx tsc --noEmit -p .` also type-checks spec files, which Vitest doesn't. The unused `npm start`
+  script goes, with the `--watch` and `--run` options of `lambda/shared/build/esbuild.js` and
+  `@es-exec/esbuild-plugin-start`. ESLint no longer has formatting rules that fight Prettier (`@stylistic/*`,
+  `comma-dangle`, `no-multiple-empty-lines`), so `@stylistic/eslint-plugin` and the unused `eslint-config-prettier` are
+  dropped. Each Lambda points at the root `.prettierrc.json` instead of a copy, and its `.vscode/settings.json` goes, so
+  the root's editor formatter applies. `@osrs-tracker/models` goes to 2.4.0 (four Lambdas) and `@osrs-tracker/hiscores`
+  to 4.2.0 (process-players), and `bestzip` to 4. The bundles are unchanged, except process-players' minified
+  identifiers; not deployed.
+
 ## 2026-10-13
 
 ### Lambdas
