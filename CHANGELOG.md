@@ -38,9 +38,9 @@ doc-only changes are not.
   their redrive, the alarms, the alert topic's subscription counts and the hiscore proxy's routes, CORS and domain. The
   console is the only source of truth (no IaC), so no PR could show a setting, and the five functions had drifted apart
   unnoticed. Rerun after each infra change, `git diff` shows what changed. It makes read-only calls and leaves out
-  anything that could identify the account (ARNs, IDs, queue URLs, env values, subscription endpoints), and refuses to
-  write output that looks like one. The first snapshot matches INFRA.md, which now also mentions the proxy's
-  `X-Robots-Tag: noindex`.
+  anything that could identify the account or hold a secret (ARNs, IDs, queue URLs, subscription endpoints, the values
+  of env vars and of the proxy's request parameters), and refuses to write output that looks like an ARN or ID. The
+  first snapshot matches INFRA.md, which now also mentions the proxy's `X-Robots-Tag: noindex`.
 
 ### Licence
 

@@ -4,8 +4,9 @@
 # `claude` profile unless AWS_PROFILE is set.
 #
 # The repo is public: the file holds names and settings only. Never ARNs, account or resource IDs, queue URLs, API IDs,
-# env var values (only their names, taken with JMESPath inside the CLI) or subscription endpoints. It is written only
-# when no `arn:`, 12-digit number or AWS endpoint host made it into the output.
+# subscription endpoints, or the values of env vars, stage variables and an integration's request parameters (where a
+# header for the upstream, such as a credential, would live): only their names, taken with JMESPath inside the CLI. It
+# is written only when no `arn:`, 12-digit number or AWS endpoint host made it into the output.
 set -euo pipefail
 
 export AWS_PROFILE=${AWS_PROFILE:-claude} AWS_REGION=eu-central-1 AWS_DEFAULT_REGION=eu-central-1 AWS_PAGER=''
@@ -129,7 +130,7 @@ for api in $(aws apigatewayv2 get-apis --query 'Items[].ApiId' | jq -r '.[]'); d
     apiKeyRequired: ApiKeyRequired, target: Target}' >"$tmp/routes.json"
   aws apigatewayv2 get-integrations --api-id "$api" --query 'Items[].{id: IntegrationId, type: IntegrationType,
     method: IntegrationMethod, uri: IntegrationUri, connectionType: ConnectionType,
-    payloadFormatVersion: PayloadFormatVersion, timeoutMs: TimeoutInMillis, requestParameters: RequestParameters,
+    payloadFormatVersion: PayloadFormatVersion, timeoutMs: TimeoutInMillis, requestParameterNames: keys(RequestParameters || `{}`),
     responseParameters: ResponseParameters}' >"$tmp/integrations.json"
   aws apigatewayv2 get-stages --api-id "$api" --query 'Items[].{stage: StageName, autoDeploy: AutoDeploy,
     defaultRouteSettings: DefaultRouteSettings, routeSettings: RouteSettings,

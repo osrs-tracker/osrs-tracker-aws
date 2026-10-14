@@ -146,7 +146,7 @@
             "connectionType": "INTERNET",
             "method": "ANY",
             "payloadFormatVersion": "1.0",
-            "requestParameters": null,
+            "requestParameterNames": [],
             "responseParameters": {
               "200": {
                 "overwrite:header.X-Robots-Tag": "noindex"
