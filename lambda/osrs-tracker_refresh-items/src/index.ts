@@ -1,8 +1,11 @@
 import { Context, ScheduledEvent } from 'aws-lambda';
+import { logCommit } from '@lambda/shared/commit';
 import { fetchItems } from './utils/item.utils';
 import { MU } from './utils/mongo.utils';
 // validates the environment at cold start (only the shared variables)
 import './env';
+
+logCommit();
 
 const client = MU.client();
 

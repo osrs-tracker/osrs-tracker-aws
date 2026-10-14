@@ -1,8 +1,11 @@
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { startOfDay, subDays } from 'date-fns';
 import { discordAlert } from '@lambda/shared/discord-alert';
+import { logCommit } from '@lambda/shared/commit';
 import { MU } from './utils/mongo.utils';
 import { env } from './env';
+
+logCommit();
 
 const client = MU.client();
 

@@ -43,9 +43,10 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
   shared code reads; `cleanLambdaEnv` adds the Lambda's own schema from its `src/env.ts`), `dry-run.utils.ts`,
   `mongo.utils.ts` (each Lambda's `MU` extends `mongoUtils<Schema>()` with its own queries; `ensureIndex`),
   `sqs.utils.ts` and `discord-alert.ts` (the Lambda passes its queue or webhook URL; `discordAlertNeverRejects` for code
-  that must not throw); `build/` holds `esbuild.js` and the `invoke.js` runner; `eslint.config.mjs` is every Lambda's
-  ESLint config. Its imports resolve from the Lambda being built or checked (esbuild `alias` and `nodePaths`, `paths` in
-  `lambda/tsconfig.lambda.json`). Keep Lambda-specific logic in the Lambda.
+  that must not throw), `commit.ts` (`logCommit()`, called at module scope in every `src/index.ts`: logs the commit
+  `esbuild.js` stamps into the bundle); `build/` holds `esbuild.js` and the `invoke.js` runner; `eslint.config.mjs` is
+  every Lambda's ESLint config. Its imports resolve from the Lambda being built or checked (esbuild `alias` and
+  `nodePaths`, `paths` in `lambda/tsconfig.lambda.json`). Keep Lambda-specific logic in the Lambda.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
 - Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures. process-players must not throw

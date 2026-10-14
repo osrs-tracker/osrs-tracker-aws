@@ -4,8 +4,11 @@ import { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlertNeverRejects } from '@lambda/shared/discord-alert';
 import { ensureIndex } from '@lambda/shared/mongo.utils';
 import { USER_AGENT } from '@lambda/shared/user-agent';
+import { logCommit } from '@lambda/shared/commit';
 import { MU } from './utils/mongo.utils';
 import { env } from './env';
+
+logCommit();
 
 const client = MU.client();
 
