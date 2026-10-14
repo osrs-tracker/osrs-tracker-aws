@@ -24,9 +24,18 @@ header or CORS change from the web and API sides too**.
 ## Schedules and queue
 
 - EventBridge `Hourly` triggers queue-players and refresh-items; `daily` (00:00 UTC) triggers clean-hiscores;
-  `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers record-player-count, with async retries off
-  (`put-function-event-invoke-config --maximum-retry-attempts 0`): a missed sample stays missed, and a retry would send
-  the same alert again.
+  `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers record-player-count.
+- Each function's limits and async retries (all arm64, nodejs24.x). Retries are turned off with
+  `put-function-event-invoke-config --maximum-retry-attempts 0`; without that config Lambda retries twice.
+
+  | Function            | Timeout | Memory | Async retries                                                                                                      |
+  | ------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+  | clean-hiscores      | 60 s    | 256 MB | 0: a retry would send the "No hiscores scraped" alert again, and the next night's run catches up a missed clean-up |
+  | process-players     | 60 s    | 256 MB | n/a: SQS redelivers the message                                                                                    |
+  | queue-players       | 30 s    | 256 MB | 0: a retry after its first SQS send would queue the hour's players again (a second snapshot that day)              |
+  | record-player-count | 30 s    | 256 MB | 0: a missed sample stays missed, and a retry would send the same alert again                                       |
+  | refresh-items       | 30 s    | 256 MB | default (2): its upserts are idempotent                                                                            |
+
 - queue-players feeds SQS `osrs-tracker_players-to-scrape` → process-players (batch 1, max concurrency 5); redrive to
   `osrs-tracker_players-to-scrape-dead` after 3 receives.
 - **Keep the queue's visibility timeout above process-players' timeout** (currently 2×), or messages reappear mid-run.

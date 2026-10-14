@@ -6,6 +6,15 @@ doc-only changes are not.
 
 ## 2026-10-14
 
+### Infra
+
+- clean-hiscores gets 60 s and 256 MB (was 10 s and 128 MB), and clean-hiscores and queue-players no longer retry a
+  failed run (issue #105, from the tech-debt roadmap #103). clean-hiscores peaked at 5 s and 106 MB over the last week,
+  and its work grows about 1.5× as entries reach the 90-day steady state (`DATA-MODEL.md`); a timeout part-way would
+  skip the later clean-ups and the "No hiscores scraped" check. Lambda's default two retries sent that alert up to three
+  times a night, and a queue-players retry after its first SQS send would queue the hour's players again. refresh-items
+  keeps its retries (idempotent upserts). INFRA.md now lists every function's timeout, memory and retries.
+
 ### Behind the scenes
 
 - process-players' handler is split (issue #115, from the tech-debt roadmap #103): `scrapeMessage` in
