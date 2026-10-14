@@ -8,6 +8,14 @@ doc-only changes are not.
 
 ### Behind the scenes
 
+- process-players' handler is split (issue #115, from the tech-debt roadmap #103): `scrapeMessage` in
+  `src/utils/scrape-message.ts` scrapes one message's players and stores their layouts, and `afterWrites` in
+  `src/utils/after-writes.ts` waits for the bulk writes, requeues the failed players and sends the alerts. The handler
+  keeps the loop that starts each message's write and its one throw, which now sits right before `afterWrites`, the
+  boundary after which nothing may throw. Its ESLint complexity drops from 16 to 8. New specs cover the staggered
+  requests, the entries' shared scrape time and offset, requeueing per offset in batches of 10 messages, and the "Failed
+  to process some players" alert on a redelivered message. Same messages, writes and alerts: `invoke:dry` logs the same
+  lines; not deployed.
 - queue-players' offset for the hour and its batching move to `src/utils/queue.utils.ts` (`scrapingOffsetForHour`,
   `messageBatches`), with Vitest tests (issue #112, from the tech-debt roadmap #103): an off-by-one in either would
   silently skip players for the day. The specs pin hours 0, 11, 12 and 23 UTC to offsets 0, 11, -12 and -1, and 0, 1,
