@@ -37,7 +37,7 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 
   | Function            | Timeout | Memory | Async retries                                                                                                      |
   | ------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
-  | alarm-to-discord    | 10 s    | 128 MB | default (2): it throws only when Discord can't be reached; a duplicate alert beats a lost one                      |
+  | alarm-to-discord    | 10 s    | 256 MB | default (2): it throws only when Discord can't be reached; a duplicate alert beats a lost one                      |
   | clean-hiscores      | 60 s    | 256 MB | 0: a retry would send the "No hiscores scraped" alert again, and the next night's run catches up a missed clean-up |
   | process-players     | 60 s    | 256 MB | n/a: SQS redelivers the message                                                                                    |
   | queue-players       | 30 s    | 256 MB | 0: a retry after its first SQS send would queue the hour's players again (a second snapshot that day)              |
@@ -95,9 +95,11 @@ The topic has two subscriptions:
   (`Recovered: <alarm>`). A Lambda's alarm links to that function's log group and monitoring tab (from its
   `FunctionName` dimension), any other alarm to the alarm itself in the CloudWatch console. It skips other changes, such
   as a new alarm's first `OK`.
-- The maintainer's email, kept as the backstop: it gets every notification, so a broken alarm-to-discord (its own alarm
-  is on the same topic) still reaches someone.
+- The maintainer's email, filtered to alarm-to-discord's own alarm (filter policy on `AlarmName`, scope `MessageBody`):
+  every other alarm arrives once, in Discord, and a broken alarm-to-discord still reaches someone. A Discord error
+  response (a revoked webhook, rate limiting) is only logged, so it raises no alarm.
 
 An error alarm means: read that function's latest log stream (a Discord alert for the same run may say more). Test one
 with `aws cloudwatch set-alarm-state --alarm-name <alarm> --state-value ALARM --state-reason test`: a red Discord alert
-and an email arrive, and on its next evaluation the alarm returns to `OK` with a green alert and another email.
+arrives, and on its next evaluation the alarm returns to `OK` with a green one. A real alarm returns to `OK` after a
+full period without errors: for the scheduled functions, when their next run passes.

@@ -37,11 +37,15 @@ doc-only changes are not.
   alarm-to-discord, is subscribed to `osrs-tracker-alerts` and posts an alarm going into `ALARM` as a red alert and its
   return to `OK` as a green "Recovered" one, linking to the alarmed function's log group and monitoring tab (from the
   alarm's `FunctionName` dimension), or for the hiscore proxy's alarm to the alarm itself. AWS Chatbot doesn't support
-  Discord and an SNS HTTPS subscription can't post to a webhook, hence the Lambda. The email stays as the backstop, and
-  alarm-to-discord's own alarm is on the same topic. To let a Lambda without a database load the shared code,
-  `lambda/shared/src/env.ts` validates only `DRY_RUN` when it loads; the MongoDB variables are now validated when
-  `mongo.utils.ts` loads (`cleanMongoEnv`), which every other Lambda does at cold start as before. `discordAlert` takes
-  an optional function name, link and colour for an alert about something else.
+  Discord and an SNS HTTPS subscription can't post to a webhook, hence the Lambda. alarm-to-discord's own alarm is on
+  the same topic. To let a Lambda without a database load the shared code, `lambda/shared/src/env.ts` validates only
+  `DRY_RUN` when it loads; the MongoDB variables are now validated when `mongo.utils.ts` loads (`cleanMongoEnv`), which
+  every other Lambda does at cold start as before. `discordAlert` takes an optional function name, link and colour for
+  an alert about something else. Live the same day: deployed as version 1, commit c738910, with 256 MB (at 128 MB it
+  reached 111 MB by its third run); every `osrs-tracker` alarm notifies on `OK` too; the email subscription is filtered
+  to alarm-to-discord's own alarm, so every other alarm arrives once, in Discord. Tested with `set-alarm-state` on
+  refresh-items' alarm: the red and the green alert both arrived. `infra/snapshot.sh` now also records each
+  subscription's filter policy.
 - `infra/snapshot.sh` writes the live AWS settings to `infra/aws-settings.json` (issue #133, from the tech-debt roadmap
   #103): each Lambda's runtime, limits, async retries, env var names and log retention, the schedules, the queues and
   their redrive, the alarms, the alert topic's subscription counts and the hiscore proxy's routes, CORS and domain. The

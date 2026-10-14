@@ -109,14 +109,23 @@ aws cloudwatch describe-alarms --alarm-name-prefix osrs-tracker --query MetricAl
     treatMissingData: .TreatMissingData
   }}) | add // {}' >"$tmp/alarms.json"
 
-# SNS topics: subscriptions counted per protocol, never their endpoints (an email address)
+# SNS topics: subscriptions counted per protocol, never their endpoints (an email address), with their filter policies
+# (the email gets only alarm-to-discord's own alarm)
 for topic in $(aws sns list-topics --query 'Topics[].TopicArn' |
   jq -r '.[] | select(split(":") | last | startswith("osrs-tracker"))'); do
-  aws sns list-subscriptions-by-topic --topic-arn "$topic" \
-    --query 'Subscriptions[].{protocol: Protocol, confirmed: SubscriptionArn != `PendingConfirmation`}' |
-    jq --arg t "$topic" "$defs"'{($t | name): {subscriptions: (group_by(.protocol) | map({(.[0].protocol): {
-      confirmed: (map(select(.confirmed)) | length), pending: (map(select(.confirmed | not)) | length)}}) | add // {})}}' \
-      >"$tmp/topic-${topic##*:}.json"
+  aws sns list-subscriptions-by-topic --topic-arn "$topic" --query 'Subscriptions[].{protocol: Protocol, arn: SubscriptionArn}' |
+    jq -c '.[]' | while read -r sub; do
+      arn=$(jq -r .arn <<<"$sub")
+      filter=null
+      [ "$arn" = PendingConfirmation ] || filter=$(aws sns get-subscription-attributes --subscription-arn "$arn" \
+        --query 'Attributes.{policy: FilterPolicy, scope: FilterPolicyScope}')
+      jq -c --argjson f "$filter" '{protocol, confirmed: (.arn != "PendingConfirmation"),
+        filter: (if $f.policy then {scope: ($f.scope // "MessageAttributes"), policy: ($f.policy | fromjson)} else null end)}' \
+        <<<"$sub"
+    done |
+    jq -s --arg t "$topic" "$defs"'{($t | name): {subscriptions: (group_by(.protocol) | map({(.[0].protocol): {
+      confirmed: (map(select(.confirmed)) | length), pending: (map(select(.confirmed | not)) | length),
+      filters: [.[].filter | select(.)]}}) | add // {})}}' >"$tmp/topic-${topic##*:}.json"
 done
 
 # API Gateway HTTP APIs, OSRS Tracker's only (the hiscore proxy). Each route shows its integration, and each API the

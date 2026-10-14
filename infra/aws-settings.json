@@ -1,5 +1,28 @@
 {
   "alarms": {
+    "osrs-tracker_alarm-to-discord-errors": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "osrs-tracker_alarm-to-discord failed (error, timeout or out of memory): read its latest log stream",
+      "dimensions": {
+        "FunctionName": "osrs-tracker_alarm-to-discord"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "Errors",
+      "namespace": "AWS/Lambda",
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
+      "periodSeconds": 3600,
+      "statistic": "Sum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
+    },
     "osrs-tracker_clean-hiscores-errors": {
       "actionsEnabled": true,
       "alarmActions": [
@@ -15,7 +38,9 @@
       "insufficientDataActions": [],
       "metric": "Errors",
       "namespace": "AWS/Lambda",
-      "okActions": [],
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
       "periodSeconds": 86400,
       "statistic": "Sum",
       "threshold": 1.0,
@@ -37,7 +62,9 @@
       "insufficientDataActions": [],
       "metric": "Count",
       "namespace": "AWS/ApiGateway",
-      "okActions": [],
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
       "periodSeconds": 300,
       "statistic": "Sum",
       "threshold": 1500.0,
@@ -58,7 +85,9 @@
       "insufficientDataActions": [],
       "metric": "Errors",
       "namespace": "AWS/Lambda",
-      "okActions": [],
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
       "periodSeconds": 3600,
       "statistic": "Sum",
       "threshold": 1.0,
@@ -79,7 +108,9 @@
       "insufficientDataActions": [],
       "metric": "Errors",
       "namespace": "AWS/Lambda",
-      "okActions": [],
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
       "periodSeconds": 3600,
       "statistic": "Sum",
       "threshold": 1.0,
@@ -100,7 +131,9 @@
       "insufficientDataActions": [],
       "metric": "Errors",
       "namespace": "AWS/Lambda",
-      "okActions": [],
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
       "periodSeconds": 600,
       "statistic": "Sum",
       "threshold": 1.0,
@@ -121,7 +154,9 @@
       "insufficientDataActions": [],
       "metric": "Errors",
       "namespace": "AWS/Lambda",
-      "okActions": [],
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
       "periodSeconds": 3600,
       "statistic": "Sum",
       "threshold": 1.0,
@@ -195,6 +230,29 @@
     }
   },
   "lambdas": {
+    "osrs-tracker_alarm-to-discord": {
+      "architectures": [
+        "arm64"
+      ],
+      "asyncMaxEventAgeSeconds": "default (21600)",
+      "asyncOnFailure": null,
+      "asyncOnSuccess": null,
+      "asyncRetries": "default (2)",
+      "envVarNames": [
+        "WEBHOOK_URL"
+      ],
+      "ephemeralStorageMB": 512,
+      "eventSourceMappings": [],
+      "handler": "index.handler",
+      "logFormat": "Text",
+      "logRetentionDays": 7,
+      "memoryMB": 256,
+      "packageType": "Zip",
+      "reservedConcurrency": null,
+      "runtime": "nodejs24.x",
+      "timeoutSeconds": 10,
+      "tracing": "PassThrough"
+    },
     "osrs-tracker_clean-hiscores": {
       "architectures": [
         "arm64"
@@ -397,6 +455,21 @@
       "subscriptions": {
         "email": {
           "confirmed": 1,
+          "filters": [
+            {
+              "policy": {
+                "AlarmName": [
+                  "osrs-tracker_alarm-to-discord-errors"
+                ]
+              },
+              "scope": "MessageBody"
+            }
+          ],
+          "pending": 0
+        },
+        "lambda": {
+          "confirmed": 1,
+          "filters": [],
           "pending": 0
         }
       }
