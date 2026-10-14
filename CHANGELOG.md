@@ -116,6 +116,9 @@ doc-only changes are not.
   MongoDB. `lambda/shared/` gets specs for `sendMessageBatch`, the Discord alert (truncation, non-2xx, 5 s timeout) and
   the env validators; they run, and are type-checked, from process-players, which already lints it. The bundle is
   unchanged; not deployed.
+- `conventions-reviewer`'s read-only hook (`.claude/hooks/read-only-bash.sh`) now allows `gh issue view`, so the
+  reviewer can read the issue a change is for; other `gh issue` subcommands stay blocked. The file is byte-identical to
+  osrs-tracker-web's again (osrs-tracker/osrs-tracker-web@a1688c3), its ShellCheck comment included (#136).
 
 ## 2026-10-13
 
