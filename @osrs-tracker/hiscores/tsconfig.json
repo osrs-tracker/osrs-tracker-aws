@@ -3,9 +3,10 @@
   "compilerOptions": {
     "declaration": false,
     "outDir": "dist",
+    "rootDir": "src",
     "target": "es2022",
     "module": "es2022",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "lib": ["dom", "es2022"],
     "noUnusedLocals": true,
     "removeComments": true,
