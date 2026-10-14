@@ -1,0 +1,383 @@
+{
+  "alarms": {
+    "osrs-tracker_clean-hiscores-errors": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "osrs-tracker_clean-hiscores failed (error, timeout or out of memory): read its latest log stream",
+      "dimensions": {
+        "FunctionName": "osrs-tracker_clean-hiscores"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "Errors",
+      "namespace": "AWS/Lambda",
+      "okActions": [],
+      "periodSeconds": 86400,
+      "statistic": "Sum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
+    },
+    "osrs-tracker_process-players-errors": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "osrs-tracker_process-players failed (error, timeout or out of memory): read its latest log stream",
+      "dimensions": {
+        "FunctionName": "osrs-tracker_process-players"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "Errors",
+      "namespace": "AWS/Lambda",
+      "okActions": [],
+      "periodSeconds": 3600,
+      "statistic": "Sum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
+    },
+    "osrs-tracker_queue-players-errors": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "osrs-tracker_queue-players failed (error, timeout or out of memory): read its latest log stream",
+      "dimensions": {
+        "FunctionName": "osrs-tracker_queue-players"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "Errors",
+      "namespace": "AWS/Lambda",
+      "okActions": [],
+      "periodSeconds": 3600,
+      "statistic": "Sum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
+    },
+    "osrs-tracker_record-player-count-errors": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "osrs-tracker_record-player-count failed (error, timeout or out of memory): read its latest log stream",
+      "dimensions": {
+        "FunctionName": "osrs-tracker_record-player-count"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "Errors",
+      "namespace": "AWS/Lambda",
+      "okActions": [],
+      "periodSeconds": 600,
+      "statistic": "Sum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
+    },
+    "osrs-tracker_refresh-items-errors": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "osrs-tracker_refresh-items failed (error, timeout or out of memory): read its latest log stream",
+      "dimensions": {
+        "FunctionName": "osrs-tracker_refresh-items"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "Errors",
+      "namespace": "AWS/Lambda",
+      "okActions": [],
+      "periodSeconds": 3600,
+      "statistic": "Sum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
+    }
+  },
+  "httpApis": {
+    "OSRS Tracker API": {
+      "cors": {
+        "AllowCredentials": false,
+        "AllowHeaders": [
+          "*"
+        ],
+        "AllowMethods": [
+          "*"
+        ],
+        "AllowOrigins": [
+          "http://localhost:4200",
+          "https://osrs-tracker.freekmencke.com"
+        ],
+        "ExposeHeaders": [
+          "*"
+        ],
+        "MaxAge": 86400
+      },
+      "description": "RuneScape reverse proxy + OSRS Tracker calls.",
+      "disableExecuteApiEndpoint": false,
+      "domains": [
+        {
+          "domain": "runescape-api.freekmencke.com",
+          "endpointType": "REGIONAL",
+          "mappingKey": "",
+          "securityPolicy": "TLS_1_2",
+          "stage": "$default"
+        }
+      ],
+      "name": "OSRS Tracker API",
+      "protocol": "HTTP",
+      "routes": [
+        {
+          "apiKeyRequired": false,
+          "authorization": "NONE",
+          "integration": {
+            "connectionType": "INTERNET",
+            "method": "ANY",
+            "payloadFormatVersion": "1.0",
+            "requestParameters": null,
+            "responseParameters": {
+              "200": {
+                "overwrite:header.X-Robots-Tag": "noindex"
+              }
+            },
+            "timeoutMs": 30000,
+            "type": "HTTP_PROXY",
+            "uri": "https://secure.runescape.com/{proxy}"
+          },
+          "routeKey": "ANY /rs/{proxy+}"
+        }
+      ],
+      "stages": [
+        {
+          "autoDeploy": true,
+          "defaultRouteSettings": {
+            "DetailedMetricsEnabled": false
+          },
+          "routeSettings": {},
+          "stage": "$default",
+          "stageVariableNames": []
+        }
+      ]
+    }
+  },
+  "lambdas": {
+    "osrs-tracker_clean-hiscores": {
+      "architectures": [
+        "arm64"
+      ],
+      "asyncMaxEventAgeSeconds": "default (21600)",
+      "asyncOnFailure": null,
+      "asyncOnSuccess": null,
+      "asyncRetries": 0,
+      "envVarNames": [
+        "MAX_AGE_IN_DAYS",
+        "MONGODB_COLLECTION",
+        "MONGODB_DATABASE",
+        "MONGODB_URI",
+        "WEBHOOK_URL"
+      ],
+      "ephemeralStorageMB": 512,
+      "eventSourceMappings": [],
+      "handler": "index.handler",
+      "logFormat": "Text",
+      "logRetentionDays": 7,
+      "memoryMB": 256,
+      "packageType": "Zip",
+      "reservedConcurrency": null,
+      "runtime": "nodejs24.x",
+      "timeoutSeconds": 60,
+      "tracing": "PassThrough"
+    },
+    "osrs-tracker_process-players": {
+      "architectures": [
+        "arm64"
+      ],
+      "asyncMaxEventAgeSeconds": "default (21600)",
+      "asyncOnFailure": null,
+      "asyncOnSuccess": null,
+      "asyncRetries": "default (2)",
+      "envVarNames": [
+        "MONGODB_COLLECTION",
+        "MONGODB_DATABASE",
+        "MONGODB_URI",
+        "OSRS_API_BASE_URL",
+        "PLAYERS_PER_SQS_MESSAGE",
+        "SQS_QUEUE_URL",
+        "WEBHOOK_URL"
+      ],
+      "ephemeralStorageMB": 512,
+      "eventSourceMappings": [
+        {
+          "batchSize": 1,
+          "functionResponseTypes": [],
+          "maxBatchingWindowSeconds": 1,
+          "maxConcurrency": 5,
+          "source": "osrs-tracker_players-to-scrape",
+          "state": "Enabled"
+        }
+      ],
+      "handler": "index.handler",
+      "logFormat": "Text",
+      "logRetentionDays": 7,
+      "memoryMB": 256,
+      "packageType": "Zip",
+      "reservedConcurrency": null,
+      "runtime": "nodejs24.x",
+      "timeoutSeconds": 60,
+      "tracing": "PassThrough"
+    },
+    "osrs-tracker_queue-players": {
+      "architectures": [
+        "arm64"
+      ],
+      "asyncMaxEventAgeSeconds": "default (21600)",
+      "asyncOnFailure": null,
+      "asyncOnSuccess": null,
+      "asyncRetries": 0,
+      "envVarNames": [
+        "MONGODB_COLLECTION",
+        "MONGODB_DATABASE",
+        "MONGODB_URI",
+        "PLAYERS_PER_SQS_MESSAGE",
+        "SQS_QUEUE_URL",
+        "WEBHOOK_URL"
+      ],
+      "ephemeralStorageMB": 512,
+      "eventSourceMappings": [],
+      "handler": "index.handler",
+      "logFormat": "Text",
+      "logRetentionDays": 7,
+      "memoryMB": 256,
+      "packageType": "Zip",
+      "reservedConcurrency": null,
+      "runtime": "nodejs24.x",
+      "timeoutSeconds": 30,
+      "tracing": "PassThrough"
+    },
+    "osrs-tracker_record-player-count": {
+      "architectures": [
+        "arm64"
+      ],
+      "asyncMaxEventAgeSeconds": "default (21600)",
+      "asyncOnFailure": null,
+      "asyncOnSuccess": null,
+      "asyncRetries": 0,
+      "envVarNames": [
+        "MONGODB_COLLECTION",
+        "MONGODB_DAILY_COLLECTION",
+        "MONGODB_DATABASE",
+        "MONGODB_URI",
+        "WEBHOOK_URL"
+      ],
+      "ephemeralStorageMB": 512,
+      "eventSourceMappings": [],
+      "handler": "index.handler",
+      "logFormat": "Text",
+      "logRetentionDays": 7,
+      "memoryMB": 256,
+      "packageType": "Zip",
+      "reservedConcurrency": null,
+      "runtime": "nodejs24.x",
+      "timeoutSeconds": 30,
+      "tracing": "PassThrough"
+    },
+    "osrs-tracker_refresh-items": {
+      "architectures": [
+        "arm64"
+      ],
+      "asyncMaxEventAgeSeconds": "default (21600)",
+      "asyncOnFailure": null,
+      "asyncOnSuccess": null,
+      "asyncRetries": "default (2)",
+      "envVarNames": [
+        "MONGODB_COLLECTION",
+        "MONGODB_DATABASE",
+        "MONGODB_URI"
+      ],
+      "ephemeralStorageMB": 512,
+      "eventSourceMappings": [],
+      "handler": "index.handler",
+      "logFormat": "Text",
+      "logRetentionDays": 7,
+      "memoryMB": 256,
+      "packageType": "Zip",
+      "reservedConcurrency": null,
+      "runtime": "nodejs24.x",
+      "timeoutSeconds": 30,
+      "tracing": "PassThrough"
+    }
+  },
+  "queues": {
+    "osrs-tracker_players-to-scrape": {
+      "delaySeconds": 0,
+      "maxMessageBytes": 262144,
+      "receiveWaitSeconds": 0,
+      "redrive": {
+        "deadLetterQueue": "osrs-tracker_players-to-scrape-dead",
+        "maxReceiveCount": 3
+      },
+      "retentionSeconds": 86400,
+      "sseManaged": true,
+      "visibilityTimeoutSeconds": 120
+    },
+    "osrs-tracker_players-to-scrape-dead": {
+      "delaySeconds": 0,
+      "maxMessageBytes": 262144,
+      "receiveWaitSeconds": 20,
+      "redrive": null,
+      "retentionSeconds": 604800,
+      "sseManaged": true,
+      "visibilityTimeoutSeconds": 30
+    }
+  },
+  "region": "eu-central-1",
+  "schedules": {
+    "Hourly": {
+      "eventBus": "default",
+      "schedule": "cron(0 * * * ? *)",
+      "state": "ENABLED",
+      "targets": [
+        "osrs-tracker_queue-players",
+        "osrs-tracker_refresh-items"
+      ]
+    },
+    "daily": {
+      "eventBus": "default",
+      "schedule": "cron(0 0 * * ? *)",
+      "state": "ENABLED",
+      "targets": [
+        "osrs-tracker_clean-hiscores"
+      ]
+    },
+    "osrs-tracker_record-player-count": {
+      "eventBus": "default",
+      "schedule": "rate(10 minutes)",
+      "state": "ENABLED",
+      "targets": [
+        "osrs-tracker_record-player-count"
+      ]
+    }
+  },
+  "snsTopics": {
+    "osrs-tracker-alerts": {
+      "subscriptions": {
+        "email": {
+          "confirmed": 1,
+          "pending": 0
+        }
+      }
+    }
+  }
+}

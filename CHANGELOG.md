@@ -33,6 +33,14 @@ doc-only changes are not.
   out-of-memory in any Lambda reached no one: the Discord alerts only come from inside the handlers. Each alarm's period
   matches its function's schedule, so a failure sends one email, also when SQS redelivers the message. INFRA.md says
   what an alarm email means.
+- `infra/snapshot.sh` writes the live AWS settings to `infra/aws-settings.json` (issue #133, from the tech-debt roadmap
+  #103): each Lambda's runtime, limits, async retries, env var names and log retention, the schedules, the queues and
+  their redrive, the alarms, the alert topic's subscription counts and the hiscore proxy's routes, CORS and domain. The
+  console is the only source of truth (no IaC), so no PR could show a setting, and the five functions had drifted apart
+  unnoticed. Rerun after each infra change, `git diff` shows what changed. It makes read-only calls and leaves out
+  anything that could identify the account (ARNs, IDs, queue URLs, env values, subscription endpoints), and refuses to
+  write output that looks like one. The first snapshot matches INFRA.md, which now also mentions the proxy's
+  `X-Robots-Tag: noindex`.
 
 ### Licence
 

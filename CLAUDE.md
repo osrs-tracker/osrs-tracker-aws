@@ -69,4 +69,6 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   file Claude edits, and `.claude/hooks/pre-push-check.sh` blocks `git push` (also `git -C <path> push`) when Prettier
   or a Lambda's lint fails in the checkout being pushed.
 - AWS (eu-central-1, console-managed, no IaC): Lambda logs are kept 7 days, so a longer Logs Insights range silently
-  returns only 7.
+  returns only 7. `infra/snapshot.sh` writes the live settings (names and values, no IDs) to `infra/aws-settings.json`
+  with read-only calls (AWS CLI and jq); rerun it after every infra change and commit the diff. Prettier ignores the
+  JSON: the script writes it.

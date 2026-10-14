@@ -1,3 +1,4 @@
 dist
 .claude/settings.local.json
 .claude/worktrees
+infra/aws-settings.json
