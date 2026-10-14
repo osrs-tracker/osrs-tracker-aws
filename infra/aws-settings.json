@@ -21,6 +21,28 @@
       "threshold": 1.0,
       "treatMissingData": "notBreaching"
     },
+    "osrs-tracker_hiscore-proxy-requests": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "The hiscore proxy got 1,500+ requests in 5 minutes (normal peak: about 500, around 00:00 UTC): someone may be using it as a relay. See INFRA.md, CloudWatch alarms",
+      "dimensions": {
+        "Api": "OSRS Tracker API",
+        "Stage": "$default"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "Count",
+      "namespace": "AWS/ApiGateway",
+      "okActions": [],
+      "periodSeconds": 300,
+      "statistic": "Sum",
+      "threshold": 1500.0,
+      "treatMissingData": "notBreaching"
+    },
     "osrs-tracker_process-players-errors": {
       "actionsEnabled": true,
       "alarmActions": [

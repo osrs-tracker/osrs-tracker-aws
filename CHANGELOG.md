@@ -41,6 +41,14 @@ doc-only changes are not.
   anything that could identify the account or hold a secret (ARNs, IDs, queue URLs, subscription endpoints, the values
   of env vars and of the proxy's request parameters), and refuses to write output that looks like an ARN or ID. The
   first snapshot matches INFRA.md, which now also mentions the proxy's `X-Robots-Tag: noindex`.
+- A CloudWatch alarm, `osrs-tracker_hiscore-proxy-requests`, emails the maintainer when the hiscore proxy gets 1,500 or
+  more requests in 5 minutes (issue #138), 3× its busiest 5 minutes over the last 63 days. The proxy forwards anything
+  under `/rs/` to secure.runescape.com with no limit of its own, so anyone could use it as a relay at our cost and get
+  the addresses process-players, osrs-tracker-api and the website fetch hiscores through rate-limited by Jagex. No limit
+  for now: one is shared by every caller, so a flood would get process-players' requests refused too, and XP tracking
+  must not be disturbed. #138 has the plan for when the alarm fires (a secret route for the two servers, then a limit on
+  `/rs` only). The snapshot writes an alarm's API dimension as the API's name, and refuses output that contains any API
+  or integration ID it read.
 
 ### Licence
 
