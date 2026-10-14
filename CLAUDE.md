@@ -13,11 +13,12 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 
 - Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`,
   plus `npx vitest run` where it has a `vitest.config.mts` (`npm test` is watch mode).
-- Verify a package: `express-metrics` and `logger` `npx vitest run && npm run build` (`npm test` is watch mode in all of
-  them); `hiscores` and `models` `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (models' integration
-  tests start an in-memory MongoDB 8.0). Repo root: `npm run prettier:ci`. The `verify` skill's
-  `.claude/skills/verify/verify.sh` picks the folders a staged change touches (`--all-changes` adds unstaged ones) and
-  runs all of these checks at once, in one call; Claude Code runs it before each commit.
+- Verify a package: `express-metrics` and `logger` `npm run lint && npx vitest run && npm run build` (`npm test` is
+  watch mode in all of them); `hiscores` and `models`
+  `npm run lint && npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (models' integration tests start an
+  in-memory MongoDB 8.0). Repo root: `npm run prettier:ci`. The `verify` skill's `.claude/skills/verify/verify.sh` picks
+  the folders a staged change touches (`--all-changes` adds unstaged ones) and runs all of these checks at once, in one
+  call; Claude Code runs it before each commit.
 - Run a Lambda locally: `npm run invoke:dry` (needs `.env` from `.env.example`). Reads and fetches are real; writes are
   only logged. There is no staging database.
 - Size per dependency in a bundle:
@@ -54,8 +55,8 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - `lambda/shared/`: code every Lambda bundles, no `package.json` (imports resolve from the Lambda's `node_modules`):
   `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`,
   `user-agent.ts` (the `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players'
-  `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs`. A change there touches all six
-  Lambdas.
+  `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs` (the packages re-export it too). A
+  change there touches all six Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
   tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root
   `LICENSE` and `NOTICE`. `models`, `hiscores`, `express-metrics` and `logger` ship `dist/cjs`, `dist/esm` and
