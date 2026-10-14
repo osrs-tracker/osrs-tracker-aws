@@ -24,7 +24,8 @@ it and wait for approval like any other.
 
 `runescape-api.freekmencke.com`: `ANY /rs/{proxy+}` → `https://secure.runescape.com/{proxy}`, CORS for the web app's
 origin and `localhost:4200`, and `X-Robots-Tag: noindex` on its 200 responses. Used by the web app (browser),
-osrs-tracker-api and process-players, so **check any route, header or CORS change from the web and API sides too**.
+osrs-tracker-api and process-players, so **check any route, header or CORS change from the web and API sides too**. No
+throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch alarms").
 
 ## Schedules and queue
 
@@ -78,7 +79,14 @@ start), and a timeout or out-of-memory. The period matches the function's schedu
 clean-hiscores a day, the others an hour), so the alarm stays in `ALARM` until a period passes without errors and sends
 one email per failure, also when SQS redelivers a failing process-players message.
 
-An alarm email means: read that function's latest log stream (a Discord alert for the same run may say more). Alarms
-aren't sent to Discord (that needs a forwarding Lambda or AWS Chatbot, parked in #116). Test one with
+`osrs-tracker_hiscore-proxy-requests` watches the hiscore proxy instead (#138): its `AWS/ApiGateway` `Count` on the
+`$default` stage, 1,500 or more in 5 minutes (sum, missing data not breaching). Its busiest 5 minutes are about 500,
+every night around 00:00 UTC, and process-players alone can't pass about 750 (5 at a time, 2 s apart). The proxy has no
+limit of its own on purpose: a limit is shared by every caller, so a flood would get process-players' requests refused
+too. This email means someone may be using the proxy as a relay. Check the API's `Count`; if it's abuse, follow #138's
+plan (a secret route for process-players and osrs-tracker-api, then a limit on `/rs` only).
+
+An error alarm email means: read that function's latest log stream (a Discord alert for the same run may say more).
+Alarms aren't sent to Discord (that needs a forwarding Lambda or AWS Chatbot, parked in #116). Test one with
 `aws cloudwatch set-alarm-state --alarm-name <alarm> --state-value ALARM --state-reason test`; it returns to `OK` on its
 next evaluation.

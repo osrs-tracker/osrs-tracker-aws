@@ -6,7 +6,8 @@
 # The repo is public: the file holds names and settings only. Never ARNs, account or resource IDs, queue URLs, API IDs,
 # subscription endpoints, or the values of env vars, stage variables and an integration's request parameters (where a
 # header for the upstream, such as a credential, would live): only their names, taken with JMESPath inside the CLI. It
-# is written only when no `arn:`, 12-digit number or AWS endpoint host made it into the output.
+# is written only when no `arn:`, 12-digit number, AWS endpoint host, or API or integration ID it read made it into the
+# output.
 set -euo pipefail
 
 export AWS_PROFILE=${AWS_PROFILE:-claude} AWS_REGION=eu-central-1 AWS_DEFAULT_REGION=eu-central-1 AWS_PAGER=''
@@ -88,13 +89,21 @@ for url in $(aws sqs list-queues --queue-name-prefix osrs-tracker --query 'Queue
   }}' "$tmp/attributes.json" >"$tmp/queue-$queue.json"
 done
 
-# CloudWatch alarms
+# Every HTTP API's ID and name. The IDs are what an alarm's `ApiId` dimension holds; they and the integrations' IDs
+# (added below) go into ids.txt, which the final check refuses to find in the output
+aws apigatewayv2 get-apis --query 'Items[].{id: ApiId, name: Name}' >"$tmp/apis.json"
+jq -r '.[].id' "$tmp/apis.json" >"$tmp/ids.txt"
+
+# CloudWatch alarms. An `ApiId` dimension is written as `Api` with the API's name
 aws cloudwatch describe-alarms --alarm-name-prefix osrs-tracker --query MetricAlarms |
-  jq "$defs"'map({(.AlarmName): {
+  jq --slurpfile apis "$tmp/apis.json" "$defs"'map({(.AlarmName): {
     description: .AlarmDescription, actionsEnabled: .ActionsEnabled,
     alarmActions: [.AlarmActions[] | name], okActions: [.OKActions[] | name],
     insufficientDataActions: [.InsufficientDataActions[] | name],
-    namespace: .Namespace, metric: .MetricName, dimensions: (.Dimensions | map({(.Name): .Value}) | add),
+    namespace: .Namespace, metric: .MetricName,
+    dimensions: (.Dimensions | map(if .Name == "ApiId" then .Value as $id
+      | {Api: ([$apis[0][] | select(.id == $id) | .name] | first // "an API not in get-apis")}
+      else {(.Name): .Value} end) | add),
     statistic: .Statistic, periodSeconds: .Period, evaluationPeriods: .EvaluationPeriods,
     datapointsToAlarm: .DatapointsToAlarm, threshold: .Threshold, comparison: .ComparisonOperator,
     treatMissingData: .TreatMissingData
@@ -122,7 +131,7 @@ for domain in $(jq -r '.[].domain' "$tmp/domains.json"); do
   jq -s 'add' "$tmp/mappings.json" "$tmp/mapping.json" >"$tmp/mappings.next.json"
   mv "$tmp/mappings.next.json" "$tmp/mappings.json"
 done
-for api in $(aws apigatewayv2 get-apis --query 'Items[].ApiId' | jq -r '.[]'); do
+for api in $(jq -r '.[].id' "$tmp/apis.json"); do
   aws apigatewayv2 get-api --api-id "$api" --query '{name: Name, description: Description, protocol: ProtocolType,
     disableExecuteApiEndpoint: DisableExecuteApiEndpoint, cors: CorsConfiguration}' >"$tmp/api.json"
   jq -e '.name | test("osrs.?tracker"; "i")' "$tmp/api.json" >/dev/null || continue
@@ -132,6 +141,7 @@ for api in $(aws apigatewayv2 get-apis --query 'Items[].ApiId' | jq -r '.[]'); d
     method: IntegrationMethod, uri: IntegrationUri, connectionType: ConnectionType,
     payloadFormatVersion: PayloadFormatVersion, timeoutMs: TimeoutInMillis, requestParameterNames: keys(RequestParameters || `{}`),
     responseParameters: ResponseParameters}' >"$tmp/integrations.json"
+  jq -r '.[].id' "$tmp/integrations.json" >>"$tmp/ids.txt"
   aws apigatewayv2 get-stages --api-id "$api" --query 'Items[].{stage: StageName, autoDeploy: AutoDeploy,
     defaultRouteSettings: DefaultRouteSettings, routeSettings: RouteSettings,
     stageVariableNames: keys(StageVariables || `{}`)}' >"$tmp/stages.json"
@@ -153,7 +163,8 @@ jq -n -S --argjson lambdas "$(section lambda)" --argjson schedules "$(section sc
   --argjson apis "$(section api)" '{region: env.AWS_REGION, lambdas: $lambdas, schedules: $schedules, queues: $queues,
     alarms: $alarms[0], snsTopics: $topics, httpApis: $apis}' >"$tmp/out.json"
 
-if grep -nE 'arn:|[0-9]{12}|amazonaws\.com|execute-api' "$tmp/out.json" >&2; then
+if grep -nE 'arn:|[0-9]{12}|amazonaws\.com|execute-api' "$tmp/out.json" >&2 ||
+  { [ -s "$tmp/ids.txt" ] && grep -nF -f "$tmp/ids.txt" "$tmp/out.json" >&2; }; then
   echo "Not written: the lines above look like an ARN or ID, and this file is public" >&2
   exit 1
 fi
