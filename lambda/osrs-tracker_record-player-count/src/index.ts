@@ -37,5 +37,24 @@ export const handler = async (_event: ScheduledEvent, context: Context) => {
     `Recorded ${playerCount.total} players (${playerCount.members} members, ${playerCount.f2p} F2P) on ${playerCount.worlds} worlds.`,
   );
 
+  await updatePlayerCountDays(context);
+
   return context.logStreamName;
 };
+
+/**
+ * Recomputes the daily averages from the newest stored day on: normally today, also yesterday on the first run after
+ * midnight, and every sample when there are none yet. Never rejects: the sample is stored, and the next run recomputes
+ * whatever this one missed.
+ */
+async function updatePlayerCountDays(context: Context): Promise<void> {
+  try {
+    await ensureIndex(MU.days(client), { date: 1 }, { unique: true });
+    const from = await MU.newestPlayerCountDay(client);
+    await MU.mergePlayerCountDays(client, from);
+    console.info(`Updated the daily player counts from ${from?.toISOString().slice(0, 10) ?? 'the first sample'} on.`);
+  } catch (e) {
+    console.error('Failed to update the daily player counts', e);
+    await discordAlertNeverRejects(env.WEBHOOK_URL, 'Daily player counts not updated', String(e), context);
+  }
+}
