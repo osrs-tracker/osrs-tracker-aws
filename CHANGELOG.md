@@ -28,6 +28,13 @@ doc-only changes are not.
   times a night, and a queue-players retry after its first SQS send would queue the hour's players again. refresh-items
   keeps its retries (idempotent upserts). INFRA.md now lists every function's timeout, memory and retries.
 
+### Licence
+
+- The five Lambda folders no longer have their own `LICENSE` (issue #109, from the tech-debt roadmap #103): they still
+  held the MIT licence from before the repo moved to Apache-2.0 on 2026-10-09, so the Lambda code read as MIT-licensed
+  in five places. The root `LICENSE` and `NOTICE` now cover `lambda/`, as each Lambda's `package.json` already said. The
+  Lambdas aren't published and their deploy zips hold only `dist/`; the packages keep their own copies.
+
 ### Behind the scenes
 
 - Every Lambda's and package's Vitest config is `vitest.config.mts` (issue #108, from the tech-debt roadmap #103): Vite
