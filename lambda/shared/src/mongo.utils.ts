@@ -10,13 +10,15 @@ import {
 } from 'mongodb';
 import { HiscoreLayout } from '@osrs-tracker/models';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
-import { sharedEnv as env } from './env';
+import { cleanMongoEnv } from './env';
+
+const env = cleanMongoEnv();
 
 /** The collection of hiscore layouts (`HiscoreLayout`), in the same database as `MONGODB_COLLECTION`. */
 export const HISCORE_LAYOUTS_COLLECTION = 'hiscoreLayouts';
 
 /**
- * The MongoDB client and collection every Lambda shares, typed with the Lambda's collection schema. A Lambda extends the returned class
+ * The MongoDB client and collection the Lambdas with a database share, typed with the Lambda's collection schema. A Lambda extends the returned class
  * with its own queries and writes: `export class MU extends mongoUtils<Player>() { … }`.
  */
 export function mongoUtils<TSchema extends Document = Document>() {

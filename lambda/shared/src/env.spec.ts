@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanLambdaEnv, nonEmptyStr, positiveInt } from './env';
+import { cleanLambdaEnv, cleanMongoEnv, nonEmptyStr, positiveInt } from './env';
 
-// cleanLambdaEnv reads process.env; the shared variables are set in vitest.config.mts
+// cleanLambdaEnv and cleanMongoEnv read process.env; the shared and MongoDB variables are set in vitest.config.mts
 afterEach(() => {
   vi.unstubAllEnvs();
 });
@@ -45,5 +45,26 @@ describe('cleanLambdaEnv', () => {
     expect(() => cleanLambdaEnv({ TEST_INVALID: positiveInt(), TEST_MISSING: nonEmptyStr() })).toThrow(
       new Error('Invalid environment variables: TEST_INVALID (invalid), TEST_MISSING (missing)'),
     );
+  });
+
+  it("doesn't need the MongoDB variables", () => {
+    vi.stubEnv('MONGODB_URI', undefined);
+
+    expect(() => cleanLambdaEnv({})).not.toThrow();
+  });
+});
+
+describe('cleanMongoEnv', () => {
+  it('names a missing MongoDB variable', () => {
+    vi.stubEnv('MONGODB_URI', undefined);
+
+    expect(() => cleanMongoEnv()).toThrow(new Error('Invalid environment variables: MONGODB_URI (missing)'));
+  });
+
+  it('rejects a username without a password', () => {
+    vi.stubEnv('MONGODB_USERNAME', 'user');
+    vi.stubEnv('MONGODB_PASSWORD', undefined);
+
+    expect(() => cleanMongoEnv()).toThrow('MONGODB_PASSWORD (missing, required with MONGODB_USERNAME)');
   });
 });

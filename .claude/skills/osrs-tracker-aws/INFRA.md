@@ -30,12 +30,14 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 ## Schedules and queue
 
 - EventBridge `Hourly` triggers queue-players and refresh-items; `daily` (00:00 UTC) triggers clean-hiscores;
-  `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers record-player-count.
+  `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers record-player-count. The SNS topic
+  `osrs-tracker-alerts` triggers alarm-to-discord (see "CloudWatch alarms").
 - Each function's limits and async retries (all arm64, nodejs24.x). Retries are turned off with
   `put-function-event-invoke-config --maximum-retry-attempts 0`; without that config Lambda retries twice.
 
   | Function            | Timeout | Memory | Async retries                                                                                                      |
   | ------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+  | alarm-to-discord    | 10 s    | 128 MB | default (2): it throws only when Discord can't be reached; a duplicate alert beats a lost one                      |
   | clean-hiscores      | 60 s    | 256 MB | 0: a retry would send the "No hiscores scraped" alert again, and the next night's run catches up a missed clean-up |
   | process-players     | 60 s    | 256 MB | n/a: SQS redelivers the message                                                                                    |
   | queue-players       | 30 s    | 256 MB | 0: a retry after its first SQS send would queue the hour's players again (a second snapshot that day)              |
@@ -73,20 +75,29 @@ first (logs are kept 7 days).
 ### CloudWatch alarms
 
 Each function has an alarm `osrs-tracker_<function>-errors` on its `AWS/Lambda` `Errors` (sum ≥ 1, missing data not
-breaching) that emails the maintainer through the SNS topic `osrs-tracker-alerts`. It catches what the Discord alerts
-can't: any refresh-items failure (it has no Discord alert), an error before a handler runs (the env check at cold
-start), and a timeout or out-of-memory. The period matches the function's schedule (record-player-count 10 minutes,
-clean-hiscores a day, the others an hour), so the alarm stays in `ALARM` until a period passes without errors and sends
-one email per failure, also when SQS redelivers a failing process-players message.
+breaching) that notifies the SNS topic `osrs-tracker-alerts` on going into `ALARM` and back to `OK`. It catches what the
+Discord alerts can't: any refresh-items failure (it has no Discord alert), an error before a handler runs (the env check
+at cold start), and a timeout or out-of-memory. The period matches the function's schedule (record-player-count 10
+minutes, clean-hiscores a day, the others an hour), so the alarm stays in `ALARM` until a period passes without errors
+and notifies once per failure, also when SQS redelivers a failing process-players message.
 
 `osrs-tracker_hiscore-proxy-requests` watches the hiscore proxy instead (#138): its `AWS/ApiGateway` `Count` on the
-`$default` stage, 1,500 or more in 5 minutes (sum, missing data not breaching). Its busiest 5 minutes are about 500,
-every night around 00:00 UTC, and process-players alone can't pass about 750 (5 at a time, 2 s apart). The proxy has no
-limit of its own on purpose: a limit is shared by every caller, so a flood would get process-players' requests refused
-too. This email means someone may be using the proxy as a relay. Check the API's `Count`; if it's abuse, follow #138's
-plan (a secret route for process-players and osrs-tracker-api, then a limit on `/rs` only).
+`$default` stage, 1,500 or more in 5 minutes (sum, missing data not breaching), also on the topic, going into `ALARM`
+and back to `OK`. Its busiest 5 minutes are about 500, every night around 00:00 UTC, and process-players alone can't
+pass about 750 (5 at a time, 2 s apart). The proxy has no limit of its own on purpose: a limit is shared by every
+caller, so a flood would get process-players' requests refused too. This alarm means someone may be using the proxy as a
+relay. Check the API's `Count`; if it's abuse, follow #138's plan (a secret route for process-players and
+osrs-tracker-api, then a limit on `/rs` only).
 
-An error alarm email means: read that function's latest log stream (a Discord alert for the same run may say more).
-Alarms aren't sent to Discord (that needs a forwarding Lambda or AWS Chatbot, parked in #116). Test one with
-`aws cloudwatch set-alarm-state --alarm-name <alarm> --state-value ALARM --state-reason test`; it returns to `OK` on its
-next evaluation.
+The topic has two subscriptions:
+
+- alarm-to-discord posts `ALARM` as a red Discord alert (`Alarm: <alarm>`) and `ALARM` → `OK` as a green one
+  (`Recovered: <alarm>`). A Lambda's alarm links to that function's log group and monitoring tab (from its
+  `FunctionName` dimension), any other alarm to the alarm itself in the CloudWatch console. It skips other changes, such
+  as a new alarm's first `OK`.
+- The maintainer's email, kept as the backstop: it gets every notification, so a broken alarm-to-discord (its own alarm
+  is on the same topic) still reaches someone.
+
+An error alarm means: read that function's latest log stream (a Discord alert for the same run may say more). Test one
+with `aws cloudwatch set-alarm-state --alarm-name <alarm> --state-value ALARM --state-reason test`: a red Discord alert
+and an email arrive, and on its next evaluation the alarm returns to `OK` with a green alert and another email.

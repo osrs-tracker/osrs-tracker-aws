@@ -33,21 +33,24 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
 - **Run handlers locally only via `npm run invoke:dry`** (from `lambda/<function>/`, `.env` filled in). There is no
   staging database. Reads and fetches are real; writes log `[DRY_RUN] Would …`. queue-players takes an optional event
   time (`-- 2026-10-02T18:00:00Z`; the other scheduled Lambdas accept it but ignore it), process-players takes usernames
-  (`-- Zezima "Lynx Titan"`). It overwrites `dist/` with a dev build, so `npm run build` before comparing bundles.
+  (`-- Zezima "Lynx Titan"`), alarm-to-discord `-- OK` (a recovery instead of an alarm). It overwrites `dist/` with a
+  dev build, so `npm run build` before comparing bundles.
 
 ## Lambda notes
 
 - Create clients at module scope so warm invocations reuse them.
 - Code every Lambda needs lives once in `lambda/shared/` (no `package.json`, bundled into each Lambda), imported as
-  `@lambda/shared/<module>`: `src/` holds `env.ts` (`sharedEnv`: the MongoDB variables and `DRY_RUN`, the only ones
-  shared code reads; `cleanLambdaEnv` adds the Lambda's own schema from its `src/env.ts`), `dry-run.utils.ts`,
-  `mongo.utils.ts` (each Lambda's `MU` extends `mongoUtils<Schema>()` with its own queries; `ensureIndex`),
-  `sqs.utils.ts` and `discord-alert.ts` (the Lambda passes its queue or webhook URL; `discordAlertNeverRejects` for code
-  that must not throw), `commit.ts` (`logCommit()`, called at module scope in every `src/index.ts`: logs the commit
-  `esbuild.js` stamps into the bundle), `user-agent.ts` (`USER_AGENT`, sent with every outgoing request: the OSRS Wiki
-  asks for one; use it for any new fetch); `build/` holds `esbuild.js` and the `invoke.js` runner; `eslint.config.mjs`
-  is every Lambda's ESLint config. Its imports resolve from the Lambda being built or checked (esbuild `alias` and
-  `nodePaths`, `paths` in `lambda/tsconfig.lambda.json`). Keep Lambda-specific logic in the Lambda.
+  `@lambda/shared/<module>`: `src/` holds `env.ts` (`sharedEnv`: `DRY_RUN`, validated at load; `cleanLambdaEnv` adds the
+  Lambda's own schema from its `src/env.ts`; `cleanMongoEnv`: the MongoDB variables, validated when `mongo.utils.ts`
+  loads, so alarm-to-discord, which has no database, needs none), `dry-run.utils.ts`, `mongo.utils.ts` (each Lambda's
+  `MU` extends `mongoUtils<Schema>()` with its own queries; `ensureIndex`), `sqs.utils.ts` and `discord-alert.ts` (the
+  Lambda passes its queue or webhook URL; `discordAlertNeverRejects` for code that must not throw;
+  `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called at module scope in
+  every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts` (`USER_AGENT`, sent with
+  every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds `esbuild.js` and the
+  `invoke.js` runner; `eslint.config.mjs` is every Lambda's ESLint config. Its imports resolve from the Lambda being
+  built or checked (esbuild `alias` and `nodePaths`, `paths` in `lambda/tsconfig.lambda.json`). Keep Lambda-specific
+  logic in the Lambda.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
 - Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures. process-players must not throw
@@ -60,9 +63,9 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
 
 - Each touched Lambda: `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build` (esbuild doesn't
   type-check; `tsc` also checks the shared files that Lambda imports, and CI runs it), plus `npx vitest run` in a Lambda
-  with a `vitest.config.mts` (all five; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in
-  `lambda/shared/` touches all five. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run`
-  runs `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
+  with a `vitest.config.mts` (all six; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in
+  `lambda/shared/` touches all six. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run` runs
+  `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
 - `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npx vitest run && npm run build` (`npm test` is watch mode)
 - `@osrs-tracker/hiscores`, `@osrs-tracker/models`: `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build`
   (Vitest doesn't type-check; models' `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)

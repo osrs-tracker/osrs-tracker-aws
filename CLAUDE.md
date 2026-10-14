@@ -1,8 +1,9 @@
 # osrs-tracker-aws
 
-Five AWS Lambdas (`lambda/<function>/`, Node 24, one npm project each) that keep OSRS Tracker's MongoDB Atlas data
-fresh, plus the npm packages in `@osrs-tracker/` (`models`, `hiscores`, `express-metrics`, `logger`). Sibling repos:
-`../osrs-tracker-api` (writes the same collections) and `../osrs-tracker-web`. **This repo is public.**
+Six AWS Lambdas (`lambda/<function>/`, Node 24, one npm project each): five keep OSRS Tracker's MongoDB Atlas data
+fresh, alarm-to-discord posts the CloudWatch alarms to Discord. Plus the npm packages in `@osrs-tracker/` (`models`,
+`hiscores`, `express-metrics`, `logger`). Sibling repos: `../osrs-tracker-api` (writes the same collections) and
+`../osrs-tracker-web`. **This repo is public.**
 
 **Load the `osrs-tracker-aws` skill before writing, reviewing, running, deploying, publishing or committing anything
 here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra, deploy and package steps in its
@@ -23,7 +24,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   `npx esbuild src/index.ts --bundle --platform=node --minify --metafile=<tmp>/meta.json --outfile=<tmp>/out.js`, then
   group `outputs[*].inputs` by `node_modules/<pkg>`.
 - Worktrees in `.claude/worktrees/` find only the root `node_modules` in the main checkout. Run `npm ci` in each Lambda
-  or package folder you build, lint or test. The pre-push hook lints every Lambda, so all five need it before a push.
+  or package folder you build, lint or test. The pre-push hook lints every Lambda, so all six need it before a push.
   `.worktreeinclude` copies each Lambda's `.env` into a new worktree, so `invoke:dry` works there.
 
 ## Hard rules
@@ -53,7 +54,7 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
 - `lambda/shared/`: code every Lambda bundles, no `package.json` (imports resolve from the Lambda's `node_modules`):
   `src/` (`env.ts`, `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`,
   `user-agent.ts` (the `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players'
-  `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs`. A change there touches all five
+  `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and `eslint.config.mjs`. A change there touches all six
   Lambdas.
 - `@osrs-tracker/<package>/`: `dist/` is built on publish (`prepublishOnly`) and not committed; `files` limits the
   tarball to `dist/`, `CHANGELOG.md` and `NOTICE`. The repo is Apache-2.0: each package keeps a copy of the root
