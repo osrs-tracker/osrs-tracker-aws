@@ -29,7 +29,8 @@ add prettier . 'npm run prettier:ci'
 folders=(.)
 
 for lambda in "${lambdas[@]}"; do
-  if grep -qE "^lambda/($lambda|shared)/" <<<"$changed"; then
+  # every Lambda bundles lambda/shared and extends lambda/tsconfig.lambda.json, as in CI
+  if grep -qE "^lambda/(($lambda|shared)/|tsconfig\.lambda\.json$)" <<<"$changed"; then
     dir=lambda/$lambda
     folders+=("$dir")
     add "$lambda prettier" "$dir" 'npm run prettier:ci'
