@@ -13,7 +13,8 @@
     "lint": "eslint . ../shared",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
-    "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js"
+    "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js",
+    "test": "vitest"
   },
   "prettier": "../../.prettierrc.json",
   "dependencies": {
