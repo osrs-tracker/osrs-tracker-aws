@@ -17,6 +17,11 @@ doc-only changes are not.
   the root's editor formatter applies. `@osrs-tracker/models` goes to 2.4.0 (four Lambdas) and `@osrs-tracker/hiscores`
   to 4.2.0 (process-players), and `bestzip` to 4. The bundles are unchanged, except process-players' minified
   identifiers; not deployed.
+- Every Lambda logs the commit its bundle was built from at each cold start (`Built from commit 1a2b3c4`, issue #114),
+  so a deployed version can be tied to its code instead of only to a changelog line. `lambda/shared/build/esbuild.js`
+  stamps it from `git rev-parse --short HEAD`, with `-dirty` when `lambda/` has uncommitted changes and `unknown`
+  without git; `logCommit()` in `lambda/shared/src/commit.ts` logs it. Deploy notes now record the commit next to the
+  version (DEPLOY.md). Each Lambda picks it up at its next deploy.
 
 ## 2026-10-13
 

@@ -4,7 +4,10 @@
  *
  * Lambdas import shared code as `@lambda/shared/<module>` (`alias`). lambda/shared/ has no node_modules, so its imports
  * resolve from the Lambda's (`nodePaths`), like the `paths` in tsconfig.lambda.json do for TypeScript.
+ *
+ * The bundle carries the commit it's built from (`__COMMIT__`), which src/commit.ts logs at cold start.
  */
+const { execFileSync } = require('child_process');
 const { createRequire } = require('module');
 const path = require('path');
 const { parseArgs } = require('util');
@@ -15,6 +18,21 @@ const { values: argv } = parseArgs({
 
 // esbuild is the Lambda's devDependency
 const esbuild = createRequire(path.resolve('package.json'))('esbuild');
+
+/** `git rev-parse --short HEAD`, plus `-dirty` when lambda/ has uncommitted changes, or `unknown` without git. */
+function commit() {
+  const git = (...args) =>
+    execFileSync('git', args, {
+      cwd: path.resolve(__dirname, '../..'),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  try {
+    return git('rev-parse', '--short', 'HEAD') + (git('status', '--porcelain', '--', '.') ? '-dirty' : '');
+  } catch {
+    return 'unknown';
+  }
+}
 
 /** @type import('esbuild').BuildOptions */
 const devConfig = {
@@ -41,6 +59,7 @@ const config = {
   // would also apply to node_modules, adding a "use strict" to every module
   tsconfigRaw: {},
   banner: { js: '"use strict";' },
+  define: { __COMMIT__: JSON.stringify(commit()) },
 
   ...(argv.dev ? devConfig : prodConfig),
 };

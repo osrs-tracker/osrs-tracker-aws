@@ -9,6 +9,7 @@ import {
 import { Context, SQSEvent } from 'aws-lambda';
 import { AnyBulkWriteOperation, ServerApiVersion } from 'mongodb';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { logCommit } from '@lambda/shared/commit';
 import { chunk } from './utils/array.utils';
 import { discordAlert } from './utils/discord-alert';
 import { mapArrayPush } from './utils/map.utils';
@@ -16,6 +17,8 @@ import { MU } from './utils/mongo.utils';
 import { fetchHiscore } from './utils/player.utils';
 import { createMessage, sendMessageBatch, SQS_MESSAGE_BATCH_SIZE } from '@lambda/shared/sqs.utils';
 import { env } from './env';
+
+logCommit();
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 

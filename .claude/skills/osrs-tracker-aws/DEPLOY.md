@@ -4,8 +4,10 @@
 call the unqualified function (`$LATEST`), so it's live immediately. Every `aws` call here, including the one inside
 `npm run deploy`, runs as the `claude` profile; it sets `eu-central-1`.
 
-1. Pass verification, then `npm run build` and compare the bundle size with the last deploy's (the esbuild metafile
-   recipe in `CLAUDE.md` shows what grew). A jump you can't explain is a dependency that came along by accident.
+1. Pass verification and commit, then `npm run build` and compare the bundle size with the last deploy's (the esbuild
+   metafile recipe in `CLAUDE.md` shows what grew). A jump you can't explain is a dependency that came along by
+   accident. The bundle logs the commit it was built from at every cold start, with `-dirty` when `lambda/` had
+   uncommitted changes, which then don't match any commit.
 2. Record the before state:
 
    ```bash
@@ -15,10 +17,12 @@ call the unqualified function (`$LATEST`), so it's live immediately. Every `aws`
 3. `AWS_PROFILE=claude npm run deploy`
 4. Re-run step 2; confirm `CodeSha256` changed and note the new version (`aws lambda list-versions-by-function`, the
    highest number).
-5. Watch the next run finish cleanly: `aws logs tail /aws/lambda/<fn> --profile claude --since 10m --follow`.
+5. Watch the next run finish cleanly: `aws logs tail /aws/lambda/<fn> --profile claude --since 10m --follow`. Its first
+   line (the new code always starts cold) is `Built from commit <sha>`: check it's the commit you deployed.
    queue-players and refresh-items run on the hour, process-players right after queue-players, clean-hiscores at 00:00
    UTC, record-player-count every 10 minutes. Don't invoke a live Lambda by hand to check sooner: it does real writes.
-6. Add a changelog entry with the new version number of each deployed Lambda.
+6. Add a changelog entry with the new version number and that commit for each deployed Lambda ("deployed as version 3,
+   commit 1a2b3c4").
 
 ## Rollback
 
@@ -30,6 +34,7 @@ Either redeploy an earlier version's code:
 
 Or rebuild an earlier commit: `git checkout <prev> -- lambda/<fn> lambda/shared lambda/tsconfig.lambda.json`, `npm ci`
 in `lambda/<fn>/`, `AWS_PROFILE=claude npm run deploy`, then `git checkout HEAD -- <same paths>` and `npm ci` again.
-Checking out only `lambda/<fn>/src` keeps a bad change in `lambda/shared/` or the lockfile.
+Checking out only `lambda/<fn>/src` keeps a bad change in `lambda/shared/` or the lockfile. This build logs the current
+`HEAD` with `-dirty`; record `<prev>` in the changelog.
 
 Record the rollback in the changelog like a deploy.

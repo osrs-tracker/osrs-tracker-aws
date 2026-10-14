@@ -2,9 +2,12 @@ import { BatchResultErrorEntry, SendMessageBatchRequestEntry, SQSClient } from '
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { ensureIndex } from '@lambda/shared/mongo.utils';
+import { logCommit } from '@lambda/shared/commit';
 import { MU } from './utils/mongo.utils';
 import { createMessage, sendMessageBatch, SQS_MESSAGE_BATCH_SIZE } from '@lambda/shared/sqs.utils';
 import { env } from './env';
+
+logCommit();
 
 const sqsClient = new SQSClient({ region: 'eu-central-1' });
 
