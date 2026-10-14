@@ -8,6 +8,13 @@ doc-only changes are not.
 
 ### Behind the scenes
 
+- queue-players' offset for the hour and its batching move to `src/utils/queue.utils.ts` (`scrapingOffsetForHour`,
+  `messageBatches`), with Vitest tests (issue #112, from the tech-debt roadmap #103): an off-by-one in either would
+  silently skip players for the day. The specs pin hours 0, 11, 12 and 23 UTC to offsets 0, 11, -12 and -1, and 0, 1,
+  one message's worth and ten messages' worth plus one usernames to the right messages and `SendMessageBatch` calls. Its
+  `vitest.config.ts` resolves `@lambda/shared` imports as the build does and sets the MongoDB variables the shared
+  `env.ts` validates. What gets queued is unchanged (`invoke:dry` at 00:00, 12:00 and 18:00 UTC sends the same
+  messages); not deployed.
 - Lambda tooling cleanup (issue #104, from the tech-debt roadmap #103). All five `tsconfig.json` now `include`
   `src/**/*.ts`, so `npx tsc --noEmit -p .` also type-checks spec files, which Vitest doesn't. The unused `npm start`
   script goes, with the `--watch` and `--run` options of `lambda/shared/build/esbuild.js` and

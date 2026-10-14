@@ -1,10 +1,11 @@
-import { BatchResultErrorEntry, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
+import { BatchResultErrorEntry, SQSClient } from '@aws-sdk/client-sqs';
 import { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { ensureIndex } from '@lambda/shared/mongo.utils';
 import { logCommit } from '@lambda/shared/commit';
 import { MU } from './utils/mongo.utils';
-import { createMessage, sendMessageBatch, SQS_MESSAGE_BATCH_SIZE } from '@lambda/shared/sqs.utils';
+import { messageBatches, scrapingOffsetForHour } from './utils/queue.utils';
+import { createMessage, sendMessageBatch } from '@lambda/shared/sqs.utils';
 import { env } from './env';
 
 logCommit();
@@ -14,8 +15,7 @@ const sqsClient = new SQSClient({ region: 'eu-central-1' });
 const client = MU.client();
 
 export const handler = async (event: ScheduledEvent, context: Context) => {
-  // current scrapeOffset, -12 to 11
-  const scrapingOffset = ((12 + new Date(event.time).getUTCHours()) % 24) - 12;
+  const scrapingOffset = scrapingOffsetForHour(new Date(event.time));
 
   // ensure index on scrapingOffsets
   await ensureIndex(MU.col(client), { scrapingOffsets: 1 }, { sparse: true });
@@ -30,44 +30,18 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
   // entries SQS rejected or that failed to send, each logged by `sendMessageBatch`
   const errors: BatchResultErrorEntry[] = [];
 
-  // temporary arrays
-  const usernames: string[] = [];
-  const messageBatch: SendMessageBatchRequestEntry[] = [];
-
   try {
-    for await (const username of usernameCursor) {
-      // add username to usernames array
-      usernames.push(username);
-      usernamesProcessed++;
+    for await (const batch of messageBatches(usernameCursor, env.PLAYERS_PER_SQS_MESSAGE)) {
+      usernamesProcessed += batch.flat().length;
+      messagesCreated += batch.length;
 
-      // if usernames array is smaller then PLAYERS_PER_SQS_MESSAGE,
-      if (usernames.length < env.PLAYERS_PER_SQS_MESSAGE) continue;
-
-      // if usernames array is full, add message to batch
-      messageBatch.push(createMessage(usernames, scrapingOffset));
-      messagesCreated++;
-      usernames.length = 0;
-
-      // if batch is full, send batch
-      if (messageBatch.length === SQS_MESSAGE_BATCH_SIZE) {
-        errors.push(...(await sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch)));
-        commandsExecuted++;
-        messageBatch.length = 0;
-      }
+      const messageBatch = batch.map((usernames) => createMessage(usernames, scrapingOffset));
+      errors.push(...(await sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch)));
+      commandsExecuted++;
     }
   } finally {
     // close the cursor
     await usernameCursor.close();
-  }
-
-  // send last batch
-  if (usernames.length) {
-    messageBatch.push(createMessage(usernames, scrapingOffset));
-    messagesCreated++;
-  }
-  if (messageBatch.length) {
-    errors.push(...(await sendMessageBatch(sqsClient, env.SQS_QUEUE_URL, messageBatch)));
-    commandsExecuted++;
   }
 
   console.log('RESULT: ', {
