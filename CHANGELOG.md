@@ -76,6 +76,11 @@ doc-only changes are not.
 
 ### Behind the scenes
 
+- The four `@osrs-tracker/*` packages are linted with the Lambdas' ESLint config (issue #130, from the tech-debt roadmap
+  #103): each package's `eslint.config.mjs` re-exports `lambda/shared/eslint.config.mjs`, which loads its plugins from
+  the folder ESLint runs in, and `npm run lint` runs in CI's package job and in `verify.sh`. A change to that config now
+  checks every package in CI and `verify.sh`, as it already checked every Lambda. The pre-push hook still lints only the
+  Lambdas, so a worktree needs no `npm ci` in the packages before a push. The rules found nothing to fix.
 - Every Lambda and package moves to TypeScript `~6.0.3` (issue #129, from the tech-debt roadmap #103), with the options
   TypeScript 7 requires: `bundler` module resolution instead of `node`, which 7 removes, `rootDir: "src"` in the
   packages, and `types: ["node"]` in `lambda/tsconfig.lambda.json`, because 6 no longer includes every `@types` package.

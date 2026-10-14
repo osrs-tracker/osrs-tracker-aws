@@ -48,9 +48,9 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
   `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called at module scope in
   every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts` (`USER_AGENT`, sent with
   every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds `esbuild.js` and the
-  `invoke.js` runner; `eslint.config.mjs` is every Lambda's ESLint config. Its imports resolve from the Lambda being
-  built or checked (esbuild `alias` and `nodePaths`, `paths` in `lambda/tsconfig.lambda.json`). Keep Lambda-specific
-  logic in the Lambda.
+  `invoke.js` runner; `eslint.config.mjs` is every Lambda's and package's ESLint config. Its imports resolve from the
+  Lambda being built or checked (esbuild `alias` and `nodePaths`, `paths` in `lambda/tsconfig.lambda.json`). Keep
+  Lambda-specific logic in the Lambda.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
 - Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures. process-players must not throw
@@ -66,9 +66,12 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
   with a `vitest.config.mts` (all six; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in
   `lambda/shared/` touches all six. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run` runs
   `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
-- `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npx vitest run && npm run build` (`npm test` is watch mode)
-- `@osrs-tracker/hiscores`, `@osrs-tracker/models`: `npx vitest run && npx tsc -p tsconfig.spec.json && npm run build`
-  (Vitest doesn't type-check; models' `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)
+- `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npm run lint && npx vitest run && npm run build` (`npm test`
+  is watch mode)
+- `@osrs-tracker/hiscores`, `@osrs-tracker/models`:
+  `npm run lint && npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (Vitest doesn't type-check; models'
+  `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)
+- A change to `lambda/shared/eslint.config.mjs` also touches every package (each re-exports it).
 - Repo root: `npm run prettier:ci`
 
 Packages' `dist/` isn't committed: `prepublishOnly` builds it, and CI builds each changed package and loads it from the

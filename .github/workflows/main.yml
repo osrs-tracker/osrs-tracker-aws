@@ -72,6 +72,10 @@ jobs:
             if grep -qE '^lambda/(shared/|tsconfig\.lambda\.json$)' <<< "$changed"; then
               selected=$(printf '%s\n%s\n' "$selected" "$(grep '^lambda/' <<< "$folders")" | sed '/^$/d' | sort -u)
             fi
+            # Every package's ESLint config re-exports the Lambdas' one: a change there checks them all
+            if grep -qx 'lambda/shared/eslint\.config\.mjs' <<< "$changed"; then
+              selected=$(printf '%s\n%s\n' "$selected" "$(grep '^@osrs-tracker/' <<< "$folders")" | sed '/^$/d' | sort -u)
+            fi
           fi
 
           to_json() { { grep "^$1/" <<< "$selected" || true; } | cut -d/ -f2 | jq -Rnc '[inputs]'; }
@@ -131,6 +135,10 @@ jobs:
         uses: ./.github/actions/setup-deps
         with:
           working-directory: '@osrs-tracker/${{ matrix.package }}'
+
+      - name: ESlint
+        run: npm run lint
+        working-directory: '@osrs-tracker/${{ matrix.package }}'
 
       - name: Test (Vitest)
         if: hashFiles(format('@osrs-tracker/{0}/vitest.config.*', matrix.package)) != ''

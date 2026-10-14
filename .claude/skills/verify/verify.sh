@@ -42,14 +42,21 @@ for lambda in "${lambdas[@]}"; do
   fi
 done
 
-# One job per package: the tests use what the build checks first. Never `npm test`: it's watch mode.
-for package in $(grep -oE '^@osrs-tracker/[^/]+/' <<<"$changed" | sort -u); do
+# Every package's ESLint config re-exports the Lambdas' one, as in CI
+packages=$(grep -oE '^@osrs-tracker/[^/]+/' <<<"$changed")
+if grep -qx 'lambda/shared/eslint\.config\.mjs' <<<"$changed"; then
+  packages+=$'\n'$(printf '%s\n' @osrs-tracker/*/)
+fi
+
+# One build+test job per package: the tests use what the build checks first. Never `npm test`: it's watch mode.
+for package in $(sort -u <<<"$packages"); do
   dir=${package%/}
   case $dir in
     */hiscores | */models) command='npm run build && npx tsc -p tsconfig.spec.json && npx vitest run' ;;
     *) command='npm run build && npx vitest run' ;;
   esac
   folders+=("$dir")
+  add "${dir#@osrs-tracker/} lint" "$dir" 'npm run lint'
   add "${dir#@osrs-tracker/} build+test" "$dir" "$command"
 done
 

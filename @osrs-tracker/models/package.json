@@ -32,13 +32,17 @@
     "build:esm": "tsc --module ESNext --outDir dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
     "build:types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir dist/types",
     "prepublishOnly": "npm run build",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@types/node": "^24.13.6",
+    "eslint": "^10.11.0",
+    "globals": "^17.13.0",
     "mongodb": "^7.7.0",
     "mongodb-memory-server": "^11.3.0",
     "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
     "vitest": "^5.0.3"
   }
 }
