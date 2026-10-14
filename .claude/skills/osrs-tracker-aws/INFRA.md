@@ -64,4 +64,16 @@ first (logs are kept 7 days).
 | record-player-count `Player count not recorded`       | Jagex's world list failed, didn't parse (a format change) or had no worlds or players: no sample for those 10 minutes. Repeats every run until it's fixed.             | Read the error in the alert. A format change needs `parseWorldList` updated against a fresh response.                                                |
 | record-player-count `Daily player counts not updated` | The sample was stored, but recomputing the daily averages (`playerCountsDaily`) failed. The next run recomputes every day it missed. Repeats every run while it lasts. | Nothing for a one-off. When it repeats, read the error: Atlas connectivity or limits, or the Lambda's database user can't write `playerCountsDaily`. |
 
-refresh-items has no alert: a failed run only shows as a Lambda error in its logs.
+### CloudWatch alarms
+
+Each function has an alarm `osrs-tracker_<function>-errors` on its `AWS/Lambda` `Errors` (sum ≥ 1, missing data not
+breaching) that emails the maintainer through the SNS topic `osrs-tracker-alerts`. It catches what the Discord alerts
+can't: any refresh-items failure (it has no Discord alert), an error before a handler runs (the env check at cold
+start), and a timeout or out-of-memory. The period matches the function's schedule (record-player-count 10 minutes,
+clean-hiscores a day, the others an hour), so the alarm stays in `ALARM` until a period passes without errors and sends
+one email per failure, also when SQS redelivers a failing process-players message.
+
+An alarm email means: read that function's latest log stream (a Discord alert for the same run may say more). Alarms
+aren't sent to Discord (that needs a forwarding Lambda or AWS Chatbot, parked in #116). Test one with
+`aws cloudwatch set-alarm-state --alarm-name <alarm> --state-value ALARM --state-reason test`; it returns to `OK` on its
+next evaluation.

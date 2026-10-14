@@ -27,6 +27,12 @@ doc-only changes are not.
   skip the later clean-ups and the "No hiscores scraped" check. Lambda's default two retries sent that alert up to three
   times a night, and a queue-players retry after its first SQS send would queue the hour's players again. refresh-items
   keeps its retries (idempotent upserts). INFRA.md now lists every function's timeout, memory and retries.
+- Every Lambda has a CloudWatch alarm, `osrs-tracker_<function>-errors`, that emails the maintainer through the SNS
+  topic `osrs-tracker-alerts` when the function records an error (issue #106, from the tech-debt roadmap #103). Until
+  now a refresh-items failure, an error before a handler runs (the env check at cold start) and a timeout or
+  out-of-memory in any Lambda reached no one: the Discord alerts only come from inside the handlers. Each alarm's period
+  matches its function's schedule, so a failure sends one email, also when SQS redelivers the message. INFRA.md says
+  what an alarm email means.
 
 ### Licence
 
