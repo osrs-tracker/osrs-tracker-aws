@@ -10,6 +10,7 @@ const recovered = process.argv[2] === 'OK';
 const message = {
   AlarmName: 'osrs-tracker_refresh-items-errors',
   AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
+  AlarmDescription: 'osrs-tracker_refresh-items failed (error, timeout or out of memory): read its latest log stream',
   NewStateValue: recovered ? 'OK' : 'ALARM',
   OldStateValue: recovered ? 'ALARM' : 'OK',
   NewStateReason: `Threshold Crossed: 1 out of the last 1 datapoints [${recovered ? '0.0' : '1.0'} (14/10/26 10:00:00)] was ${recovered ? 'not ' : ''}greater than or equal to the threshold (1.0).`,
@@ -18,6 +19,8 @@ const message = {
     MetricName: 'Errors',
     Namespace: 'AWS/Lambda',
     Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }],
+    Period: 3600,
+    EvaluationPeriods: 1,
   },
 };
 

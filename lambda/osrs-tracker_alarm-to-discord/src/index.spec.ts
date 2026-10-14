@@ -24,8 +24,9 @@ const alarm: AlarmNotification = {
   AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
   NewStateValue: 'ALARM',
   OldStateValue: 'OK',
+  AlarmDescription: 'osrs-tracker_refresh-items failed (error, timeout or out of memory): read its latest log stream',
   NewStateReason: 'Threshold Crossed: 1 out of the last 1 datapoints [1.0 (14/10/26 10:00:00)]',
-  Trigger: { Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }] },
+  Trigger: { Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }], Period: 3600 },
 };
 
 /** An SNS event with one record per message. */
@@ -56,7 +57,7 @@ describe('handler', () => {
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith('https://discord.invalid/webhook', expect.anything());
     expect(sentEmbed()).toMatchObject({
       title: 'Alarm: osrs-tracker_refresh-items-errors',
-      description: alarm.NewStateReason,
+      description: `${alarm.AlarmDescription}\n\n${alarm.NewStateReason}`,
       color: 0xff0000,
       author: { name: 'osrs-tracker_refresh-items' },
     });
@@ -71,7 +72,11 @@ describe('handler', () => {
     await handler(snsEvent(JSON.stringify(created), JSON.stringify(recovered)), context);
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(sentEmbed()).toMatchObject({ title: 'Recovered: osrs-tracker_refresh-items-errors', color: 0x00ff00 });
+    expect(sentEmbed()).toMatchObject({
+      title: 'Recovered: osrs-tracker_refresh-items-errors',
+      description: 'Back to normal: no threshold crossed for 1 hour.',
+      color: 0x00ff00,
+    });
     expect(console.info).toHaveBeenCalledWith('Skipped osrs-tracker_refresh-items-errors: INSUFFICIENT_DATA -> OK');
   });
 

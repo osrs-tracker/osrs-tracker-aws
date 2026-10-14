@@ -45,7 +45,9 @@ doc-only changes are not.
   reached 111 MB by its third run); every `osrs-tracker` alarm notifies on `OK` too; the email subscription is filtered
   to alarm-to-discord's own alarm, so every other alarm arrives once, in Discord. Tested with `set-alarm-state` on
   refresh-items' alarm: the red and the green alert both arrived. `infra/snapshot.sh` now also records each
-  subscription's filter policy.
+  subscription's filter policy. Later that day the alerts became readable: the red one starts with the alarm's own
+  description (what it means, what to do) before AWS's reason, and the green one says
+  `Back to normal: no threshold crossed for 1 hour.` (from the alarm's period) instead of AWS's datapoint wording.
 - `infra/snapshot.sh` writes the live AWS settings to `infra/aws-settings.json` (issue #133, from the tech-debt roadmap
   #103): each Lambda's runtime, limits, async retries, env var names and log retention, the schedules, the queues and
   their redrive, the alarms, the alert topic's subscription counts and the hiscore proxy's routes, CORS and domain. The

@@ -91,10 +91,11 @@ osrs-tracker-api, then a limit on `/rs` only).
 
 The topic has two subscriptions:
 
-- alarm-to-discord posts `ALARM` as a red Discord alert (`Alarm: <alarm>`) and `ALARM` → `OK` as a green one
-  (`Recovered: <alarm>`). A Lambda's alarm links to that function's log group and monitoring tab (from its
-  `FunctionName` dimension), any other alarm to the alarm itself in the CloudWatch console. It skips other changes, such
-  as a new alarm's first `OK`.
+- alarm-to-discord posts `ALARM` as a red Discord alert (`Alarm: <alarm>`: the alarm's description, then AWS's reason)
+  and `ALARM` → `OK` as a green one (`Recovered: <alarm>`: `Back to normal: no threshold crossed for 1 hour.`, from the
+  alarm's period). Keep each alarm's description saying what it means and what to do: it is the alert's text. A Lambda's
+  alarm links to that function's log group and monitoring tab (from its `FunctionName` dimension), any other alarm to
+  the alarm itself in the CloudWatch console. It skips other changes, such as a new alarm's first `OK`.
 - The maintainer's email, filtered to alarm-to-discord's own alarm (filter policy on `AlarmName`, scope `MessageBody`):
   every other alarm arrives once, in Discord, and a broken alarm-to-discord still reaches someone. A Discord error
   response (a revoked webhook, rate limiting) is only logged, so it raises no alarm.
