@@ -18,7 +18,10 @@ export interface OsrsNewsItem {
 export type StoredNewsItem = Omit<OsrsNewsItem, 'description' | 'enclosure'> &
   Partial<Pick<OsrsNewsItem, 'description' | 'enclosure'>>;
 
-/** A page of osrs-tracker-api's `GET /news/archive`: `next` is the `before` of the following page, `null` on the last one. */
+/**
+ * A page of osrs-tracker-api's `GET /news/archive`: `next` is the `before` of the following page, `null` on the last
+ * one.
+ */
 export interface NewsArchivePage {
   posts: StoredNewsItem[];
   next: string | null;
