@@ -1,3 +1,10 @@
+## Unreleased
+
+- Dev tooling only: a Vitest `globalSetup` downloads the in-memory MongoDB binary once, before the spec files start. The
+  two `*.int.spec.ts` files each downloaded it in their own fork on a fresh CI runner, and mongodb-memory-server's
+  check-then-write download lock let both through: the second rename failed and that spec's `beforeAll` timed out
+  (main's CI on 2026-10-18). `MONGODB_VERSION` now lives in that setup file only. The published code is unchanged.
+
 ## 2.6.0 - 2026-10-18
 
 - `PLAYER_COUNT_RANGES` (`as const`), `PlayerCountRange` and `PlayerCountPoint`: the ranges of osrs-tracker-api's

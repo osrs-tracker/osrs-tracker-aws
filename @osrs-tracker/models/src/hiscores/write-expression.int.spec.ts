@@ -2,10 +2,8 @@ import { Collection, MongoClient } from 'mongodb';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { StoredHiscoreEntry } from '../models/hiscores.js';
+import { MONGODB_VERSION } from '../mongodb.global-setup.js';
 import { hiscoreEntriesWriteExpression, stripUnchangedValues } from './write-expression.js';
-
-/** Production runs MongoDB 8.0 (Atlas). */
-const MONGODB_VERSION = '8.0.12';
 
 interface Doc {
   _id: string;
