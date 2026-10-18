@@ -1,0 +1,14 @@
+# Weekly update PRs for the action refs in .github/workflows/ and the composite actions in .github/actions/ (only the
+# glob covers those). Third-party actions are pinned by SHA, which Dependabot doesn't alert on, so these PRs are how
+# their fixes arrive. npm updates are not set up here.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: [/, /.github/actions/*]
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns: ['*']

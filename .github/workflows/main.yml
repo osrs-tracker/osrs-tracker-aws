@@ -8,6 +8,11 @@ on:
 
   workflow_dispatch:
 
+# Read-only unless a job asks for more: build and test run code from every installed package, so they get a token that
+# can't push or approve pull requests, whatever the repository's default is
+permissions:
+  contents: read
+
 jobs:
   changes:
     name: Detect changes
@@ -111,7 +116,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Lychee
-        uses: lycheeverse/lychee-action@v2.9.0
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           args: --offline --include-fragments --hidden --no-progress './**/*.md'
           fail: true
