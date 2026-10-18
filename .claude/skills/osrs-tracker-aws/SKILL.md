@@ -113,6 +113,10 @@ CI is the gate (builds needed for a deploy still run).
   CodeQL code scanning (default setup, `default` suite) alerts of high severity or higher, or of `error` level: fix the
   alert, or dismiss it with a reason in the Security tab, and never copy an open alert's details into an issue, PR,
   commit or `CHANGELOG.md` (it's a vulnerability report in a public repo).
+- That rule also blocks a PR CodeQL never analysed: default setup skips a PR that changes no JS/TS or workflow file
+  (seen on #134, #137 and #140; GitHub doesn't document it), so the PR stays BLOCKED with no `CodeQL` check. Once `CI`
+  and `zizmor` pass and `gh pr checks <n>` lists no `CodeQL`, merge with `gh pr merge <n> --merge --admin`. `--admin`
+  skips every rule, so never use it while a check fails or is pending (osrs-tracker/osrs-tracker-packages#11).
 - Deploying from a PR branch ships unmerged code: tell the user, and don't deploy from `main` until it's merged. Commit
   and push in the same session as any deploy.
 - Conventional commits. Scopes: `lambda` or `osrs-tracker_<function>`, `ci(actions)`, `docs(skill)`.
