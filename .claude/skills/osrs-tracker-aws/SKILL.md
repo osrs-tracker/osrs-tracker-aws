@@ -119,6 +119,10 @@ after that CI is the gate (builds needed for a deploy or publish still run).
 - Doc-only changes (skills, docs) go straight to `main`. Otherwise, outside a release, **ask every time**: `main` or a
   PR. The admin account bypasses `main`'s PR rule; after a direct push, `gh run watch --exit-status`. After a PR merges,
   do release step 5's cleanup.
+- PRs need the `CI` check, up to date with `main` (the `main` ruleset). The same ruleset blocks a merge on CodeQL code
+  scanning (default setup, `default` suite) alerts of high severity or higher, or of `error` level: fix the alert, or
+  dismiss it with a reason in the Security tab, and never copy an open alert's details into an issue, PR, commit or
+  `CHANGELOG.md` (it's a vulnerability report in a public repo).
 - Deploying or publishing from a PR branch ships unmerged code: tell the user, and don't deploy from `main` until it's
   merged. Commit and push in the same session as any deploy or publish.
 - Conventional commits. Scopes: `hiscores`/`models`/…, `lambda` or `osrs-tracker_<function>`, `ci(actions)`,
