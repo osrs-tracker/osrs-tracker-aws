@@ -220,7 +220,8 @@ jobs:
         run: npx vitest run
         working-directory: lambda/${{ matrix.lambda_function }}
 
-  # CI's required check (zizmor.yml's zizmor is the other): skipped jobs pass, failed or cancelled ones (including change detection) don't
+  # CI's required check (zizmor.yml's zizmor is the other): skipped jobs pass, failed or cancelled ones (including
+  # change detection) don't
   ci:
     name: CI
     if: always()
