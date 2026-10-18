@@ -1,33 +1,34 @@
 ---
 name: osrs-tracker-aws
 description:
-  Rules and workflow for osrs-tracker-aws (AWS Lambdas and the `@osrs-tracker/*` npm packages). Use when writing or
-  reviewing Lambda or package code, running a Lambda locally, adding a new hiscores skill or activity, publishing a
-  package, deploying a Lambda, inspecting or changing AWS resources (API Gateway proxy, EventBridge, SQS, Lambda
+  Rules and workflow for osrs-tracker-aws (the AWS Lambdas). Use when writing or reviewing Lambda code, running a Lambda
+  locally, deploying a Lambda, inspecting or changing AWS resources (API Gateway proxy, EventBridge, SQS, Lambda
   config), or committing, pushing, releasing or shipping this repo.
 ---
 
 # osrs-tracker-aws
 
 Scheduled and SQS-driven Lambdas (`lambda/<function>/`, one npm workspace in `lambda/`) that keep OSRS Tracker's MongoDB
-data fresh, plus the packages in `@osrs-tracker/`. Consumers `../osrs-tracker-web` and `../osrs-tracker-api` have their
-own skills.
+data fresh. The `@osrs-tracker/*` npm packages they install live in `../osrs-tracker-packages`
+([osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages)): a package change (a new hiscores skill
+or activity, a model field) is a PR and a publish there, then a version bump here. That repo, `../osrs-tracker-web` and
+`../osrs-tracker-api` have their own skills.
 
 **This repo is public.** Never write secret values, account IDs or resource IDs into code, docs or commits, and never
 print `.env` values.
 
 Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `players`/`items`/`hiscoreLayouts` field and
 owns which index, the stored hiscore format; update it with any field or index change), [INFRA.md](INFRA.md) (AWS
-resources, infra changes), [PACKAGES.md](PACKAGES.md) (new hiscores skills and activities, versioning, publishing),
-[DEPLOY.md](DEPLOY.md) (deploy and rollback). The `conventions-reviewer` agent reviews diffs against these files at
-runtime, so keep rules here, not in the agent; repo-specific review rules go in `## Review rules`.
+resources, infra changes), [DEPLOY.md](DEPLOY.md) (deploy and rollback). The `conventions-reviewer` agent reviews diffs
+against these files at runtime, so keep rules here, not in the agent; repo-specific review rules go in
+`## Review rules`.
 
 ## Rules
 
 - **Mutating `aws` commands** hit production (no IaC): follow [INFRA.md](INFRA.md). Read-only calls are fine. Run every
   `aws` call, including the ones inside `npm run deploy` and `update:runtime`, as the `claude` profile
   (`--profile claude` or `AWS_PROFILE=claude`), never the default profile.
-- **Lambda deploys** go live immediately and **npm publishes** are public and irreversible: get explicit go-ahead.
+- **Lambda deploys** go live immediately: get explicit go-ahead.
 - **Every write goes through a `DRY_RUN`-aware helper** (`lambda/shared/src/dry-run.utils.ts`): Mongo writes in `MU`,
   `sendMessageBatch`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
 - **Run handlers locally only via `npm run invoke:dry`** (from `lambda/<function>/`, `.env` filled in). There is no
@@ -48,8 +49,8 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
   that must not throw; `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called
   at module scope in every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts`
   (`USER_AGENT`, sent with every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds
-  `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json` is every Lambda's and package's oxlint config (ESLint
-  returns when typescript-eslint supports TypeScript 7: #143). Keep Lambda-specific logic in the Lambda.
+  `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json` is every Lambda's oxlint config (ESLint returns when
+  typescript-eslint supports TypeScript 7: #143). Keep Lambda-specific logic in the Lambda.
 - Dependencies: devDependencies go in `lambda/package.json`, a runtime dependency in the Lambda that imports it
   (`npm install <pkg> -w <lambda folder>`, from `lambda/`). Shared code's imports resolve from `lambda/node_modules`:
   each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version
@@ -70,48 +71,37 @@ runtime, so keep rules here, not in the agent; repo-specific review rules go in 
   with a `vitest.config.mts` (all six; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in
   `lambda/shared/` touches all six. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run` runs
   `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
-- `@osrs-tracker/express-metrics`, `@osrs-tracker/logger`: `npm run lint && npx vitest run && npm run build` (`npm test`
-  is watch mode)
-- `@osrs-tracker/hiscores`, `@osrs-tracker/models`:
-  `npm run lint && npx vitest run && npx tsc -p tsconfig.spec.json && npm run build` (Vitest doesn't type-check; models'
-  `*.int.spec.ts` tests start an in-memory MongoDB 8.0 with `mongodb-memory-server`)
-- A change to `lambda/shared/.oxlintrc.json` also touches every package (each one's `lint` uses it).
 - Repo root: `npm run prettier:ci`
-
-Packages' `dist/` isn't committed: `prepublishOnly` builds it, and CI builds each changed package and loads it from the
-packed tarball.
 
 ## Review rules
 
 What `conventions-reviewer` checks beyond the rules above. It reads this section; keep repo rules here, not in the
 agent.
 
-- Read [PACKAGES.md](PACKAGES.md) when the diff touches `@osrs-tracker/`, [INFRA.md](INFRA.md) when it touches AWS
-  configuration or infra docs, [DEPLOY.md](DEPLOY.md) when it changes how a Lambda is deployed, and
-  [DATA-MODEL.md](../../../DATA-MODEL.md) when it changes a Mongo write, a query's fields or an index (its rows must
-  match the change).
+- Read [INFRA.md](INFRA.md) when it touches AWS configuration or infra docs, [DEPLOY.md](DEPLOY.md) when it changes how
+  a Lambda is deployed, and [DATA-MODEL.md](../../../DATA-MODEL.md) when it changes a Mongo write, a query's fields or
+  an index (its rows must match the change).
 - A missing `DRY_RUN` guard may live in a helper in the Lambda's `src/utils/` or in `lambda/shared/src/`: check there
   before flagging.
-- Rules that span files, checked against the whole diff: a change and its `CHANGELOG.md` entry (root or the package's),
-  except where `CLAUDE.md` exempts it; a package change that breaks a consumer and its `**Breaking:**` entry.
+- Rules that span files, checked against the whole diff: a change and its `CHANGELOG.md` entry, except where `CLAUDE.md`
+  exempts it.
 - **breaks** here also covers: writes to production in a dry run, leaks a secret, account ID or resource ID. A typical
   **check**: a Lambda's live configuration (name the function and the setting; the caller runs the read-only `aws` call
   with `--profile claude`, since the reviewer can't run `aws`).
 
 ## Release ("release it", "ship it")
 
-Run the whole flow without asking between steps; stop only on failure. The request is the go-ahead to deploy and publish
-what the change touches; mutating infra commands still need their own approval. Verify locally once before committing;
-after that CI is the gate (builds needed for a deploy or publish still run).
+Run the whole flow without asking between steps; stop only on failure. The request is the go-ahead to deploy what the
+change touches; mutating infra commands still need their own approval. Verify locally once before committing; after that
+CI is the gate (builds needed for a deploy still run).
 
 1. Commit on a `<type>/<short-name>` branch, push, `gh pr create --base main`.
 2. Review `gh pr diff` for bugs and leftovers while the `conventions-reviewer` agent checks the PR (spawn it without a
    `model`, which would override its Sonnet pin). Its first line is a `VERDICT:`; check each finding against the code
    before fixing it and drop the ones that don't hold. Fix both and push.
-3. Once CI passes, deploy changed Lambdas ([DEPLOY.md](DEPLOY.md)) and publish changed packages
-   ([PACKAGES.md](PACKAGES.md)), and check they work: a Lambda's new `CodeSha256` and a clean next run (DEPLOY.md steps
-   4 and 5), a package's registry 200 (PACKAGES.md, "Publishing").
-4. Commit version or lockfile bumps, push, and record what shipped and the check results in the PR description.
+3. Once CI passes, deploy changed Lambdas ([DEPLOY.md](DEPLOY.md)) and check they work: a Lambda's new `CodeSha256` and
+   a clean next run (DEPLOY.md steps 4 and 5).
+4. Commit lockfile bumps, push, and record what shipped and the check results in the PR description.
 5. Once checks pass: `gh pr merge <n> --merge`, switch to `main`, pull, `git branch -d <branch>`, `git fetch --prune`.
 
 ## Commit and push
@@ -123,15 +113,13 @@ after that CI is the gate (builds needed for a deploy or publish still run).
   CodeQL code scanning (default setup, `default` suite) alerts of high severity or higher, or of `error` level: fix the
   alert, or dismiss it with a reason in the Security tab, and never copy an open alert's details into an issue, PR,
   commit or `CHANGELOG.md` (it's a vulnerability report in a public repo).
-- Deploying or publishing from a PR branch ships unmerged code: tell the user, and don't deploy from `main` until it's
-  merged. Commit and push in the same session as any deploy or publish.
-- Conventional commits. Scopes: `hiscores`/`models`/…, `lambda` or `osrs-tracker_<function>`, `ci(actions)`,
-  `docs(skill)`.
+- Deploying from a PR branch ships unmerged code: tell the user, and don't deploy from `main` until it's merged. Commit
+  and push in the same session as any deploy.
+- Conventional commits. Scopes: `lambda` or `osrs-tracker_<function>`, `ci(actions)`, `docs(skill)`.
 - **Changelog entries**: which changes get one, and where, is in `CLAUDE.md` (deploys count). Root days are
-  `## YYYY-MM-DD`, newest first; package entries follow [PACKAGES.md](PACKAGES.md). Say what changed and why. Busy days
-  get `###` subtitles by area ("Behind the scenes" last), not repeated in their entries. Extend an existing entry rather
-  than add a near-duplicate. When adding an entry, reread the whole day: add subtitles once it's busy, and merge entries
-  about the same feature.
+  `## YYYY-MM-DD`, newest first. Say what changed and why. Busy days get `###` subtitles by area ("Behind the scenes"
+  last), not repeated in their entries. Extend an existing entry rather than add a near-duplicate. When adding an entry,
+  reread the whole day: add subtitles once it's busy, and merge entries about the same feature.
 - GPG "Inappropriate ioctl for device": ask the user to run `echo test | gpg --clearsign > /dev/null` in their terminal.
   Never use `--no-gpg-sign`.
 - `gh pr edit` can fail on a Projects (classic) error; use

@@ -1,8 +1,9 @@
 # Changelog
 
-Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in each `@osrs-tracker/*` package's own
-`CHANGELOG.md`. Housekeeping (tooling, CI) is logged on purpose, because sessions read this as the repo's history;
-doc-only changes are not.
+Changes to the Lambdas, AWS infrastructure and CI. The `@osrs-tracker/*` packages' changes were logged in each package's
+own `CHANGELOG.md`, which moved with them to
+[osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
+is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
 ## 2026-10-18
 
@@ -11,6 +12,15 @@ doc-only changes are not.
 - process-players and record-player-count use `@osrs-tracker/hiscores` 5.0.0, which no longer re-exports the
   `@osrs-tracker/models` names (issue #152). Neither Lambda imported them, so only the dependency changed. Deployed
   process-players as version 52 and record-player-count as version 4, commit 763c1ac.
+
+### Packages
+
+- The `@osrs-tracker/*` packages (`models`, `hiscores`, `logger`, `express-metrics`) moved, with their history, to
+  [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) (issue #155, roadmap #154). Nothing
+  here linked them: the Lambdas, osrs-tracker-api and osrs-tracker-web all install them from npm, and `logger` and
+  `express-metrics` serve only the web's and the API's servers. Removed with them: CI's `Package CI` job and
+  `.github/scripts/check-package-loads.sh`, the package checks in the verify skill, and the oxlint config's package
+  note. The Lambdas keep their npm ranges. This ends the package freeze that began with the import from 94cef1c.
 
 ### Behind the scenes
 

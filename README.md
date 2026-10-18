@@ -1,8 +1,7 @@
 # OSRS Tracker AWS &middot; [![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/main/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/issues) &middot; [![CI](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/main.yml/badge.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/main.yml)
 
-This repository holds the background jobs and shared packages behind
-[OSRS Tracker](https://osrs-tracker.freekmencke.com), a website for tracking item prices and player progress in Old
-School RuneScape.
+This repository holds the background jobs behind [OSRS Tracker](https://osrs-tracker.freekmencke.com), a website for
+tracking item prices and player progress in Old School RuneScape.
 
 ## Background jobs
 
@@ -19,12 +18,9 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
 
 ## Shared packages
 
-| Package                                                                                        | Version                                                                                                                               | Description                                                                                                                                                                                                           |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`@osrs-tracker/models`](https://www.npmjs.com/package/@osrs-tracker/models)                   | [![npm](https://img.shields.io/npm/v/@osrs-tracker/models.svg)](https://www.npmjs.com/package/@osrs-tracker/models)                   | The shared data types (players, items, hiscores, player counts, news) used by the website, the API and these jobs, plus how hiscore snapshots are stored compactly, the skill and activity names and XP calculations. |
-| [`@osrs-tracker/hiscores`](https://www.npmjs.com/package/@osrs-tracker/hiscores)               | [![npm](https://img.shields.io/npm/v/@osrs-tracker/hiscores.svg)](https://www.npmjs.com/package/@osrs-tracker/hiscores)               | Fetches OSRS hiscores, maps them to the shared data types and compares snapshots.                                                                                                                                     |
-| [`@osrs-tracker/express-metrics`](https://www.npmjs.com/package/@osrs-tracker/express-metrics) | [![npm](https://img.shields.io/npm/v/@osrs-tracker/express-metrics.svg)](https://www.npmjs.com/package/@osrs-tracker/express-metrics) | Prometheus HTTP metrics for the website's and the API's servers.                                                                                                                                                      |
-| [`@osrs-tracker/logger`](https://www.npmjs.com/package/@osrs-tracker/logger)                   | [![npm](https://img.shields.io/npm/v/@osrs-tracker/logger.svg)](https://www.npmjs.com/package/@osrs-tracker/logger)                   | Structured JSON logs (request logs, outgoing requests, errors) for the website's and the API's servers, on pino.                                                                                                      |
+The `@osrs-tracker/*` npm packages these jobs, the website and the API use (the shared data types, the hiscores client,
+logging and metrics) live in [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages). The jobs
+install them from npm.
 
 ## How it fits together
 
