@@ -6,6 +6,14 @@ doc-only changes are not.
 
 ## 2026-10-18
 
+### Lambdas
+
+- process-players and record-player-count use `@osrs-tracker/hiscores` 5.0.0, which no longer re-exports the
+  `@osrs-tracker/models` names (issue #152). Neither Lambda imported them, so only the dependency changed. Deployed
+  process-players as version 52 and record-player-count as version 4, commit 763c1ac.
+
+### Behind the scenes
+
 - CI's token is read-only (`permissions: contents: read` for the whole workflow; change detection keeps its
   `checks: read`), lychee-action is pinned to its v2.9.0 commit SHA instead of the movable tag, and a new
   `.github/dependabot.yml` opens weekly `ci:` PRs for the action refs in the workflow and in `.github/actions/` (issue

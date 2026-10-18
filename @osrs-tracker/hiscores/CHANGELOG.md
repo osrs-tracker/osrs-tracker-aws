@@ -1,5 +1,10 @@
-## Unreleased
+## 5.0.0 - 2026-10-18
 
+- **Breaking:** no longer re-exports `ActivityEnum`, `SkillEnum`, `calculateXPForSkillLevel`, `calculateXPToNextLevel`,
+  `levelForXp` and `XP_TABLE`, which moved to `@osrs-tracker/models` in 4.0.0: import them from `@osrs-tracker/models`,
+  already a peer dependency (issue #152). One import path per name, so consumers stop drifting between the two. hiscores
+  now exports only its own API: the clients, `fromJagex`, `hiscoreDiff`, `getOverallXpDiff` and their types. Still takes
+  `@osrs-tracker/models` `^2.4.0`.
 - Dev tooling only (issues #130 and #131, from the tech-debt roadmap #103): linted with the Lambdas' config
   (`npm run lint`, also in CI), with oxlint instead of ESLint until typescript-eslint supports TypeScript 7 (#143). It
   found nothing to fix; the build is unchanged.
