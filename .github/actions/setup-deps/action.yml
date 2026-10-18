@@ -6,7 +6,7 @@ description:
 
 inputs:
   working-directory:
-    description: The npm project to install (the repo root, the lambda/ workspace or a package folder)
+    description: The npm project to install (the repo root or the lambda/ workspace)
     default: .
 
 runs:
@@ -22,7 +22,7 @@ runs:
         path: |
           ${{ inputs.working-directory }}/node_modules
           ${{ inputs.working-directory }}/*/node_modules
-        # The root, the lambda/ workspace and each package are npm projects with their own lock file and cache entry
+        # The root and the lambda/ workspace are npm projects with their own lock file and cache entry
         key:
           node-modules-${{ runner.os }}-${{ runner.arch }}-node24-${{ inputs.working-directory }}-${{
           hashFiles(format('{0}/package-lock.json', inputs.working-directory)) }}

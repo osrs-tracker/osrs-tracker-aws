@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs the verify checks for the Lambdas and packages a change touches, plus the root Prettier check, all at once (none
+# Runs the verify checks for the Lambdas a change touches, plus the root Prettier check, all at once (none
 # waits for or stops at another's failure). Then prints each failed check's log and a summary line per check. Exits 1
 # when any check failed. Run from the checkout's root.
 #
@@ -46,24 +46,6 @@ done
 
 # The Lambdas are one npm workspace: one install in lambda/ for all of them
 [ -n "$lambda_checked" ] && folders+=(lambda)
-
-# Every package lints with the Lambdas' oxlint config, as in CI
-packages=$(grep -oE '^@osrs-tracker/[^/]+/' <<<"$changed")
-if grep -qx 'lambda/shared/\.oxlintrc\.json' <<<"$changed"; then
-  packages+=$'\n'$(printf '%s\n' @osrs-tracker/*/)
-fi
-
-# One build+test job per package: the tests use what the build checks first. Never `npm test`: it's watch mode.
-for package in $(sort -u <<<"$packages"); do
-  dir=${package%/}
-  case $dir in
-    */hiscores | */models) command='npm run build && npx tsc -p tsconfig.spec.json && npx vitest run' ;;
-    *) command='npm run build && npx vitest run' ;;
-  esac
-  folders+=("$dir")
-  add "${dir#@osrs-tracker/} lint" "$dir" 'npm run lint'
-  add "${dir#@osrs-tracker/} build+test" "$dir" "$command"
-done
 
 # A worktree has no node_modules of its own. One at a time: parallel installs compete for the npm cache.
 for dir in "${folders[@]}"; do

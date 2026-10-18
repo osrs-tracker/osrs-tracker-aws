@@ -22,7 +22,6 @@ jobs:
       checks: read
 
     outputs:
-      packages: ${{ steps.changes.outputs.packages }}
       lambdas: ${{ steps.changes.outputs.lambdas }}
 
     steps:
@@ -45,9 +44,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
-          # Every package and lambda folder, new ones are picked up automatically. lambda/shared is code the Lambdas
-          # bundle, not a Lambda
-          folders=$(ls -d @osrs-tracker/*/ lambda/*/ | sed 's:/$::' | grep -vx lambda/shared)
+          # Every Lambda folder, new ones are picked up automatically. lambda/shared is code the Lambdas bundle, not a
+          # Lambda
+          folders=$(ls -d lambda/*/ | sed 's:/$::' | grep -vx lambda/shared)
 
           # The previous push is only a safe base if CI passed on it; otherwise a folder that failed there and isn't
           # touched again would be skipped and turn the required check green. Fall back to the PR's base (everything the
@@ -79,17 +78,11 @@ jobs:
             if grep -qE '^lambda/(shared/|tsconfig\.lambda\.json$|package(-lock)?\.json$)' <<< "$changed"; then
               selected=$(printf '%s\n%s\n' "$selected" "$(grep '^lambda/' <<< "$folders")" | sed '/^$/d' | sort -u)
             fi
-            # Every package lints with the Lambdas' oxlint config: a change there checks them all
-            if grep -qx 'lambda/shared/\.oxlintrc\.json' <<< "$changed"; then
-              selected=$(printf '%s\n%s\n' "$selected" "$(grep '^@osrs-tracker/' <<< "$folders")" | sed '/^$/d' | sort -u)
-            fi
           fi
 
           to_json() { { grep "^$1/" <<< "$selected" || true; } | cut -d/ -f2 | jq -Rnc '[inputs]'; }
           # Assigned first so a failure fails the step, instead of passing an empty output
-          packages=$(to_json @osrs-tracker)
           lambdas=$(to_json lambda)
-          echo "packages=$packages" >> "$GITHUB_OUTPUT"
           echo "lambdas=$lambdas" >> "$GITHUB_OUTPUT"
 
   root:
@@ -126,54 +119,6 @@ jobs:
           args: --offline --include-fragments --hidden --no-progress './**/*.md'
           fail: true
           jobSummary: false
-
-  packages:
-    name: Package CI
-    needs: changes
-    if: needs.changes.outputs.packages != '[]'
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Install
-        uses: ./.github/actions/setup-deps # zizmor: ignore[self-repository]
-        with:
-          working-directory: '@osrs-tracker/${{ matrix.package }}'
-
-      - name: oxlint
-        run: npm run lint
-        working-directory: '@osrs-tracker/${{ matrix.package }}'
-
-      - name: Test (Vitest)
-        if: hashFiles(format('@osrs-tracker/{0}/vitest.config.*', matrix.package)) != ''
-        run: npx vitest run
-        working-directory: '@osrs-tracker/${{ matrix.package }}'
-
-      # Vitest doesn't type-check, and the build's tsconfig covers only src/index.ts
-      - name: Type-check tests
-        if: >-
-          hashFiles(format('@osrs-tracker/{0}/vitest.config.*', matrix.package)) != '' &&
-          hashFiles(format('@osrs-tracker/{0}/tsconfig.spec.json', matrix.package)) != ''
-        run: npx tsc -p tsconfig.spec.json
-        working-directory: '@osrs-tracker/${{ matrix.package }}'
-
-      - name: Build
-        run: npm run build
-        working-directory: '@osrs-tracker/${{ matrix.package }}'
-
-      # Loads the build with require and import, also by package name from the packed tarball
-      - name: Build loads with require and import
-        run: ../../.github/scripts/check-package-loads.sh
-        working-directory: '@osrs-tracker/${{ matrix.package }}'
 
   lambda:
     name: Lambda CI
@@ -225,7 +170,7 @@ jobs:
   ci:
     name: CI
     if: always()
-    needs: [changes, root, links, packages, lambda]
+    needs: [changes, root, links, lambda]
     runs-on: ubuntu-latest
 
     steps:

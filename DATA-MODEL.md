@@ -4,7 +4,8 @@ The `players` and `items` collections in MongoDB are written by two repos (`hisc
 `playerCountsDaily` by the Lambdas only, and read by both; `news` by the API only): the Lambdas in this repo and
 [osrs-tracker-api](https://github.com/osrs-tracker/osrs-tracker-api). This file says which side writes each field and
 owns each index, so a change on one side doesn't break the other. The TypeScript shapes are in
-[`@osrs-tracker/models`](@osrs-tracker/models/src/models); this file covers who writes what and when.
+[`@osrs-tracker/models`](https://github.com/osrs-tracker/osrs-tracker-packages/tree/main/packages/models/src/models);
+this file covers who writes what and when.
 
 When you add, rename or stop writing a field, or add, change or drop an index, update this file in the same change, and
 open an issue in the other repo when it has to follow.
@@ -36,6 +37,10 @@ osrs-tracker/osrs-tracker-aws#52). Both writers prepend with `hiscoreEntriesWrit
 newer entries, so readers must decode from the newest entry, and the order matters: the API takes the first matching
 entry as the latest and the last as `trackedSince`, and its player sitemap (`GET /sitemap/players`,
 `api:src/features/players/player-sitemap.ts`) lists players whose first entry is at most 30 days old.
+
+A change to this format that existing entries can't be decoded with (in `encodeHiscoreEntry`, `decodeHiscoreEntries`,
+`hiscoreEntriesWriteExpression` or `layoutId`) isn't a normal release: it needs a migration and every writer and reader
+switched together, like roadmap osrs-tracker/osrs-tracker-aws#52.
 
 Each entry:
 

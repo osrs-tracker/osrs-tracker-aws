@@ -1,7 +1,6 @@
-// The oxlint config of every Lambda and every @osrs-tracker package (each one's `lint` script passes it with -c) and of
-// lambda/shared/ itself. process-players' `npm run lint` also lints lambda/shared/ (from lambda/: oxlint takes no `..`
-// paths), so shared code is linted once; CI and the push hook run every Lambda's lint when shared code changes, and CI
-// every package's when this file does.
+// The oxlint config of every Lambda (each one's `lint` script passes it with -c) and of lambda/shared/ itself.
+// process-players' `npm run lint` also lints lambda/shared/ (from lambda/: oxlint takes no `..` paths), so shared code is
+// linted once; CI and the push hook run every Lambda's lint when shared code changes.
 //
 // oxlint stands in for ESLint with typescript-eslint until typescript-eslint supports TypeScript 7 (#143): it parses
 // TypeScript itself, with no `typescript` dependency. Only the rules the ESLint config had, so the way back changes
