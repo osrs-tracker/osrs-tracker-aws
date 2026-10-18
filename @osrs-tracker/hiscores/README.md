@@ -2,8 +2,8 @@
 
 Helpers for Old School RuneScape hiscores in [OSRS Tracker](https://osrs-tracker.freekmencke.com): a client for Jagex's
 JSON hiscores, the mapping from Jagex's JSON to the domain model (`HiscoreEntry` in `@osrs-tracker/models`), and
-comparing two hiscore snapshots, plus a client for Jagex's world list that counts the players online. The skill and
-activity names and the XP helpers live in `@osrs-tracker/models` and are re-exported here.
+comparing two hiscore snapshots, plus a client for Jagex's world list that counts the players online. Import the skill
+and activity names (`SkillEnum`, `ActivityEnum`) and the XP helpers from `@osrs-tracker/models`.
 
 A `HiscoreEntry` keys `skills` and `activities` by name. A value is `{ rank, level, xp }` / `{ rank, score }` with
 `rank: null` when unranked (below Jagex's ranking cut-off) but with xp or a score, `null` when there's no xp or score,
@@ -19,7 +19,8 @@ npm install @osrs-tracker/hiscores @osrs-tracker/models
 ## Usage
 
 ```ts
-import { calculateXPForSkillLevel, getOverallXpDiff, hiscoreDiff } from '@osrs-tracker/hiscores';
+import { getOverallXpDiff, hiscoreDiff } from '@osrs-tracker/hiscores';
+import { calculateXPForSkillLevel } from '@osrs-tracker/models';
 
 // What changed between two snapshots (a `HiscoreDiff`): keyed over both entries' names, every value a number; `null` or
 // missing counts as 0, except a skill's level, which counts as 1

@@ -1,7 +1,7 @@
 {
   "name": "@osrs-tracker/hiscores",
-  "version": "4.2.0",
-  "description": "Helpers for OSRS hiscores and the world list: a hiscore client, a player count from the world list, skill and activity names, snapshot diffs and XP",
+  "version": "5.0.0",
+  "description": "Helpers for OSRS hiscores and the world list: a hiscore client, a player count from the world list, the mapping from Jagex's JSON and snapshot diffs",
   "license": "Apache-2.0",
   "author": "Freek Mencke",
   "main": "./dist/cjs/index.js",
