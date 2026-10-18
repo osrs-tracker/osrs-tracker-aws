@@ -2,14 +2,13 @@ import { Collection, MongoClient } from 'mongodb';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { HiscoreEntry, HiscoreLayout, StoredHiscoreEntry } from '../models/hiscores.js';
+import { MONGODB_VERSION } from '../mongodb.global-setup.js';
 import { levelForXp } from '../xp/levels.js';
 import { decodeHiscoreEntries, encodeHiscoreEntry } from './codec.js';
 import { codecFixtures, day, nextEntry } from './codec.test-utils.js';
 import { createHiscoreLayout } from './layout.js';
 import { hiscoreEntriesWriteExpression } from './write-expression.js';
 
-/** Production runs MongoDB 8.0 (Atlas). */
-const MONGODB_VERSION = '8.0.12';
 const DAYS = 15;
 /** From this day on, Jagex lists one more activity: a new layout. */
 const LAYOUT_CHANGE_DAY = 10;
