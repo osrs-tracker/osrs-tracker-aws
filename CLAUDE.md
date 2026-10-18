@@ -67,9 +67,9 @@ here.** It holds the `DRY_RUN`, Lambda, changelog and release rules, with infra,
   must keep both loading.
 - `DATA-MODEL.md`: who writes each `players`/`items`/`hiscoreLayouts` field and owns each index, the stored hiscore
   format, and the pause/resume contract.
-- `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is the one required check.
-  `.github/actions/setup-deps` caches each npm project's `node_modules` (the repo root, `lambda/`, each package) by its
-  lockfile.
+- `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is a required check, with
+  `zizmor.yml`'s `zizmor` (audits the workflows; `.github/zizmor.yml` says what it allows). `.github/actions/setup-deps`
+  caches each npm project's `node_modules` (the repo root, `lambda/`, each package) by its lockfile.
 - `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file;
   `.claude/hooks/read-only-bash.sh` keeps it to git, gh and grep reads. `.claude/settings.json` runs Prettier on every
   file Claude edits, and `.claude/hooks/pre-push-check.sh` blocks `git push` (also `git -C <path> push`) when Prettier
