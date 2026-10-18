@@ -15,7 +15,8 @@ doc-only changes are not.
   and fails on findings (issue #149, copied from osrs-tracker-web). `.github/zizmor.yml` keeps `actions/*` on major tags
   (`ref-pin`); other findings are fixed or ignored inline with the reason: every checkout sets
   `persist-credentials: false`, Dependabot waits 7 days after a release (`cooldown`; security updates skip it), and
-  `./.github/actions/setup-deps` stays on `./` since actionlint doesn't accept `$/` yet.
+  `./.github/actions/setup-deps` stays on `./` since actionlint doesn't accept `$/` yet. `zizmor` is a required check on
+  `main`, next to `CI`.
 - `lambda/package.json` approves esbuild's and mongodb-memory-server's install scripts in `allowScripts`, pinned to the
   installed versions (issue #145): npm 12 skips unapproved dependency scripts, and mongodb-memory-server's downloads the
   MongoDB binary the tests need. A version bump re-approves with `npm install-scripts approve <pkg>`.
