@@ -4,6 +4,17 @@ Changes to the Lambdas, AWS infrastructure and CI. Package changes are logged in
 `CHANGELOG.md`. Housekeeping (tooling, CI) is logged on purpose, because sessions read this as the repo's history;
 doc-only changes are not.
 
+## 2026-10-18
+
+- CI's token is read-only (`permissions: contents: read` for the whole workflow; change detection keeps its
+  `checks: read`), lychee-action is pinned to its v2.9.0 commit SHA instead of the movable tag, and a new
+  `.github/dependabot.yml` opens weekly `ci:` PRs for the action refs in the workflow and in `.github/actions/` (issue
+  #146). Tags can be repointed, and Dependabot doesn't alert on SHA-pinned actions, so its update PRs are how their
+  fixes arrive. First-party `actions/*` stay on major tags.
+- `lambda/package.json` approves esbuild's and mongodb-memory-server's install scripts in `allowScripts`, pinned to the
+  installed versions (issue #145): npm 12 skips unapproved dependency scripts, and mongodb-memory-server's downloads the
+  MongoDB binary the tests need. A version bump re-approves with `npm install-scripts approve <pkg>`.
+
 ## 2026-10-14
 
 ### Player counts

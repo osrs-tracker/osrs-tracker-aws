@@ -1,5 +1,9 @@
 ## Unreleased
 
+- Dev tooling only (issue #145): `allowScripts` approves `mongodb-memory-server@11.3.0`'s install script, which
+  downloads the MongoDB binary for the tests. npm 12 skips unapproved dependency scripts; without it the first test run
+  downloads the binary instead and can time out. Pinned to the version, so an update re-approves it
+  (`npm install-scripts approve mongodb-memory-server`). The published code is unchanged.
 - Dev tooling only (issues #130 and #131, from the tech-debt roadmap #103): linted with the Lambdas' config
   (`npm run lint`, also in CI), with oxlint instead of ESLint until typescript-eslint supports TypeScript 7 (#143). It
   found nothing to fix; the build is unchanged.
