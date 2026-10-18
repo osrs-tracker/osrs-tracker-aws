@@ -4,15 +4,17 @@
 call the unqualified function (`$LATEST`), so it's live immediately. Every `aws` call here, including the one inside
 `npm run deploy`, runs as the `claude` profile; it sets `eu-central-1`.
 
-1. Pass verification and commit, then `npm run build` and compare the bundle size with the last deploy's (the esbuild
-   metafile recipe in `CLAUDE.md` shows what grew). A jump you can't explain is a dependency that came along by
-   accident. The bundle logs the commit it was built from at every cold start, with `-dirty` when `lambda/` had
-   uncommitted changes, which then don't match any commit.
+1. Pass verification and commit, then `npm run build`. The bundle logs the commit it was built from at every cold start,
+   with `-dirty` when `lambda/` had uncommitted changes, which then don't match any commit.
 2. Record the before state:
 
    ```bash
-   aws lambda get-function-configuration --profile claude --function-name <fn> --query '{sha:CodeSha256,version:Version,modified:LastModified,runtime:Runtime}'
+   aws lambda get-function-configuration --profile claude --function-name <fn> --query '{sha:CodeSha256,size:CodeSize,version:Version,modified:LastModified,runtime:Runtime}'
    ```
+
+   Compare `size` (the live zip, in bytes) with the new build's `gzip -c dist/index.js | wc -c`, which lands within a
+   few hundred bytes of the zip. A jump you can't explain is a dependency that came along by accident: the esbuild
+   metafile recipe in `CLAUDE.md` shows what grew.
 
 3. `AWS_PROFILE=claude npm run deploy`
 4. Re-run step 2; confirm `CodeSha256` changed and note the new version (`aws lambda list-versions-by-function`, the

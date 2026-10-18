@@ -49,8 +49,9 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
   that must not throw; `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called
   at module scope in every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts`
   (`USER_AGENT`, sent with every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds
-  `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json` is every Lambda's oxlint config (ESLint returns when
-  typescript-eslint supports TypeScript 7: #143). Keep Lambda-specific logic in the Lambda.
+  `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json` is every Lambda's oxlint config (oxlint, not ESLint, while
+  the repo is on TypeScript 7, which typescript-eslint doesn't support as of 2026-10-18). Keep Lambda-specific logic in
+  the Lambda.
 - Dependencies: devDependencies go in the root `package.json`, a runtime dependency in the Lambda that imports it
   (`npm install <pkg> -w lambda/<folder>`, from the root). Shared code's imports resolve from the root `node_modules`:
   each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version

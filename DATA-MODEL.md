@@ -153,20 +153,21 @@ forever: about 200 new posts a year, under 1 MB in all.
 `pubDate: -1`, limit 200, `_id` projected out. `GET /news` still serves the feed from memory, not this collection. A
 failed `storeNews` is logged, not thrown.
 
-**Backfill.** `api:scripts/backfill-news.mjs`, a one-off run in October 2026 (after osrs-tracker/osrs-tracker-api#155),
-inserts about 1,840 posts since 2013 from the OSRS Wiki's `update` bucket with `$setOnInsert`, so it never overwrites a
-feed post. It stores only `link`, `title`, `pubDate` (midnight UTC) and `category` (mapped to Jagex's names): no
-`description` or `enclosure`, because the Wiki's text is CC BY-NC-SA.
+**Backfill.** Two one-off scripts, both run on 2026-10-13 and removed from osrs-tracker-api on 2026-10-14 (its git
+history keeps them). `api:scripts/backfill-news.mjs` (after osrs-tracker/osrs-tracker-api#155) inserts about 1,840 posts
+since 2013 from the OSRS Wiki's `update` bucket with `$setOnInsert`, so it never overwrites a feed post. It stores only
+`link`, `title`, `pubDate` (midnight UTC) and `category` (mapped to Jagex's names): no `description` or `enclosure`,
+because the Wiki's text is CC BY-NC-SA.
 
-`api:scripts/backfill-news-images.mjs`, a one-off run on 2026-10-13 (osrs-tracker/osrs-tracker-api#162), then gave most
-of them Jagex's own teaser and image. It walks Jagex's monthly news archive
-(`secure.runescape.com/m=news/archive?oldschool=true&year&month&page`) and, matched on `link` (or the same slug apart
-from Jagex's `-1` suffix), `$set`s `description` and `enclosure` only where a post lacks them (filtered on
-`$exists: false`), so the feed's version wins. It stores image URLs only, and only `https://cdn.runescape.com/` ones
-(the only origin `GET /news/image` serves). 1,809 posts got a teaser, 1,322 an image. 503 of the 1,840 stored posts have
-no image: posts from 2013 to 2016 pointed at the gone `services.runescape.com/m=rswikiimages` host, and some later ones
-at imgur or a generic fallback. 16 posts that the archive doesn't list have neither. The teaser is Jagex's text, not the
-Wiki's, so the CC BY-NC-SA note above still holds for Wiki text.
+`api:scripts/backfill-news-images.mjs` (osrs-tracker/osrs-tracker-api#162) then gave most of them Jagex's own teaser and
+image. It walks Jagex's monthly news archive (`secure.runescape.com/m=news/archive?oldschool=true&year&month&page`) and,
+matched on `link` (or the same slug apart from Jagex's `-1` suffix), `$set`s `description` and `enclosure` only where a
+post lacks them (filtered on `$exists: false`), so the feed's version wins. It stores image URLs only, and only
+`https://cdn.runescape.com/` ones (the only origin `GET /news/image` serves). 1,809 posts got a teaser, 1,322 an image.
+503 of the 1,840 stored posts have no image: posts from 2013 to 2016 pointed at the gone
+`services.runescape.com/m=rswikiimages` host, and some later ones at imgur or a generic fallback. 16 posts that the
+archive doesn't list have neither. The teaser is Jagex's text, not the Wiki's, so the CC BY-NC-SA note above still holds
+for Wiki text.
 
 Measured on 2026-10-13: a post with teaser and image is about 420 bytes, one with a teaser only about 265, one with
 neither about 200; the collection is about 700 KB.

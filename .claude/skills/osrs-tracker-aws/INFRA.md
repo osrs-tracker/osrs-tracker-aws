@@ -46,7 +46,8 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 
 - queue-players feeds SQS `osrs-tracker_players-to-scrape` → process-players (batch 1, max concurrency 5); redrive to
   `osrs-tracker_players-to-scrape-dead` after 3 receives.
-- **Keep the queue's visibility timeout above process-players' timeout** (currently 2×), or messages reappear mid-run.
+- **Keep the queue's visibility timeout above process-players' timeout** (120 s against 60 s in
+  `infra/aws-settings.json`), or messages reappear mid-run.
 - DLQ messages are real failures (5xx, network, timeouts, or a hiscore layout that couldn't be stored); 404s aren't
   retried. Peek with a non-zero visibility timeout; every receive raises the receive count. The main queue keeps
   messages 1 day, the DLQ 7 days, so act within the week.

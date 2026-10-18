@@ -53,13 +53,14 @@ Keep detail there, not in this file.
 - `lambda/shared/`: code every Lambda bundles, the workspace package `@lambda/shared`: `src/` (`env.ts`,
   `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`, `user-agent.ts` (the
   `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players' `vitest.config.mts`),
-  `build/esbuild.js`, `build/invoke.js` and `.oxlintrc.json` (every Lambda's `lint` passes it with `-c`; oxlint until
-  typescript-eslint supports TypeScript 7, #143). A change there touches all six Lambdas.
+  `build/esbuild.js`, `build/invoke.js` and `.oxlintrc.json` (every Lambda's `lint` passes it with `-c`; oxlint, not
+  ESLint, while the repo is on TypeScript 7, which typescript-eslint doesn't support as of 2026-10-18). A change there
+  touches all six Lambdas.
 - `DATA-MODEL.md`: who writes each `players`/`items`/`hiscoreLayouts` field and owns each index, the stored hiscore
   format, and the pause/resume contract.
 - `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is a required check, with
   `zizmor.yml`'s `zizmor` (audits the workflows; `.github/zizmor.yml` says what it allows). `.github/actions/setup-deps`
-  caches each npm project's `node_modules` (the repo root and `lambda/`) by its lockfile.
+  caches the workspace's `node_modules` (the root's, plus any a Lambda gets of its own) by the root `package-lock.json`.
 - `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file;
   `.claude/hooks/read-only-bash.sh` keeps it to git, gh and grep reads. `.claude/settings.json` runs Prettier on every
   file Claude edits, and `.claude/hooks/pre-push-check.sh` blocks `git push` (also `git -C <path> push`) when Prettier
