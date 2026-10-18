@@ -24,6 +24,11 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
 
 ### Behind the scenes
 
+- The repo is one npm project (issue #156): the root `package.json` is the workspace (`lambda/shared` and the Lambdas)
+  with every devDependency and the one `package-lock.json`, replacing the separate root and `lambda/` projects. The
+  resolved dependency versions and every Lambda's bundle are unchanged. CI, `setup-deps`, the push hook and the verify
+  skill install once at the root. The Lambdas lose their own Prettier scripts, `.prettierignore` files and CI step: the
+  root `npm run prettier:ci` already checks the whole repo. knip found no unused dependencies or files.
 - CI's token is read-only (`permissions: contents: read` for the whole workflow; change detection keeps its
   `checks: read`), lychee-action is pinned to its v2.9.0 commit SHA instead of the movable tag, and a new
   `.github/dependabot.yml` opens weekly `ci:` PRs for the action refs in the workflow and in `.github/actions/` (issue

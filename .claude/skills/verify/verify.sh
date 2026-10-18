@@ -26,16 +26,12 @@ names=() dirs=() commands=()
 add() { names+=("$1") dirs+=("$2") commands+=("$3"); }
 
 add prettier . 'npm run prettier:ci'
-folders=(.)
 
-lambda_checked=
 for lambda in "${lambdas[@]}"; do
-  # every Lambda bundles lambda/shared, extends lambda/tsconfig.lambda.json and installs from the lambda/ workspace, as
-  # in CI
-  if grep -qE "^lambda/(($lambda|shared)/|tsconfig\.lambda\.json$|package(-lock)?\.json$)" <<<"$changed"; then
+  # every Lambda bundles lambda/shared, extends lambda/tsconfig.lambda.json and installs from the root workspace, as in
+  # CI
+  if grep -qE "^(lambda/(($lambda|shared)/|tsconfig\.lambda\.json$)|package(-lock)?\.json$)" <<<"$changed"; then
     dir=lambda/$lambda
-    lambda_checked=1
-    add "$lambda prettier" "$dir" 'npm run prettier:ci'
     add "$lambda lint" "$dir" 'npm run lint'
     # esbuild doesn't type-check; this also checks the shared files the Lambda imports
     add "$lambda types" "$dir" 'npx tsc --noEmit -p .'
@@ -44,16 +40,11 @@ for lambda in "${lambdas[@]}"; do
   fi
 done
 
-# The Lambdas are one npm workspace: one install in lambda/ for all of them
-[ -n "$lambda_checked" ] && folders+=(lambda)
-
-# A worktree has no node_modules of its own. One at a time: parallel installs compete for the npm cache.
-for dir in "${folders[@]}"; do
-  if [ ! -d "$dir/node_modules" ]; then
-    echo "npm ci in $dir"
-    (cd "$dir" && npm ci --no-audit --no-fund >/dev/null 2>&1) || { echo "npm ci failed in $dir"; exit 1; }
-  fi
-done
+# A worktree has no node_modules of its own, and would otherwise resolve the main checkout's (with its workspace links)
+if [ ! -d node_modules ]; then
+  echo "npm ci"
+  npm ci --no-audit --no-fund >/dev/null 2>&1 || { echo "npm ci failed"; exit 1; }
+fi
 
 out=$(mktemp -d)
 for i in "${!names[@]}"; do

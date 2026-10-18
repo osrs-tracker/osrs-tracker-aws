@@ -13,11 +13,30 @@
     "type": "git",
     "url": "github:osrs-tracker/osrs-tracker-aws"
   },
+  "workspaces": [
+    "lambda/shared",
+    "lambda/osrs-tracker_*"
+  ],
   "scripts": {
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check ."
   },
   "devDependencies": {
-    "prettier": "^3.5.3"
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^24.19.1",
+    "bestzip": "^4.0.3",
+    "esbuild": "^0.28.2",
+    "mongodb-memory-server": "^11.3.0",
+    "oxlint": "^1.88.0",
+    "prettier": "^3.9.9",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "mongodb-memory-server@11.3.0": true
   }
 }

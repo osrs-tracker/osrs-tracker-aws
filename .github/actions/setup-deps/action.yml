@@ -1,13 +1,8 @@
 name: Set up Node and dependencies
 description:
-  Installs Node and restores one project's node_modules from the cache, running npm ci only when its package-lock.json
-  (or the Node major) changed. The cache is saved right after npm ci, so it never contains what later steps write into
+  Installs Node and restores the repo's node_modules from the cache, running npm ci only when package-lock.json (or the
+  Node major) changed. The cache is saved right after npm ci, so it never contains what later steps write into
   node_modules.
-
-inputs:
-  working-directory:
-    description: The npm project to install (the repo root or the lambda/ workspace)
-    default: .
 
 runs:
   using: composite
@@ -18,23 +13,20 @@ runs:
     - id: cache
       uses: actions/cache/restore@v6
       with:
-        # A workspace's members get their own node_modules only for a version the hoisted one doesn't satisfy
+        # The repo is one npm workspace; a Lambda gets its own node_modules only for a version the hoisted one doesn't
+        # satisfy
         path: |
-          ${{ inputs.working-directory }}/node_modules
-          ${{ inputs.working-directory }}/*/node_modules
-        # The root and the lambda/ workspace are npm projects with their own lock file and cache entry
-        key:
-          node-modules-${{ runner.os }}-${{ runner.arch }}-node24-${{ inputs.working-directory }}-${{
-          hashFiles(format('{0}/package-lock.json', inputs.working-directory)) }}
+          node_modules
+          lambda/*/node_modules
+        key: node-modules-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json') }}
     - if: steps.cache.outputs.cache-hit != 'true'
       run: npm ci
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
     # Parallel jobs that all missed race to save the same key; the losers only log a warning
     - if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/cache/save@v6
       with:
         path: |
-          ${{ inputs.working-directory }}/node_modules
-          ${{ inputs.working-directory }}/*/node_modules
+          node_modules
+          lambda/*/node_modules
         key: ${{ steps.cache.outputs.cache-primary-key }}

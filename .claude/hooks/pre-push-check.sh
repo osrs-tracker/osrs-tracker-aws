@@ -35,11 +35,8 @@ cd "$root" || exit 0
 
 if ! out=$({
   npm run -s prettier:ci || exit 1
-  # --if-present skips lambda/shared, which process-players' lint covers
-  for d in lambda/*/; do
-    [ -f "$d/package.json" ] || continue
-    (cd "$d" && npm run -s lint --if-present) || exit 1
-  done
+  # Every workspace's lint; --if-present skips lambda/shared, which process-players' lint covers
+  npm run -s lint --workspaces --if-present || exit 1
 } 2>&1); then
   printf 'Push blocked: prettier check or Lambda lint failed in %s.\n%s\n' "$root" "$(tail -40 <<<"$out")" >&2
   exit 2
