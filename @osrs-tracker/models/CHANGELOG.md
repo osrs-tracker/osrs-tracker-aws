@@ -1,5 +1,11 @@
-## Unreleased
+## 2.6.0 - 2026-10-18
 
+- `PLAYER_COUNT_RANGES` (`as const`), `PlayerCountRange` and `PlayerCountPoint`: the ranges of osrs-tracker-api's
+  `GET /player-counts?range=` and one point of the history it returns (a sample, or an hourly or daily average, with
+  `peak` on daily points). Moved here from osrs-tracker-api and osrs-tracker-web, which each defined them by hand (issue
+  #151).
+- `StoredNewsItem` (`OsrsNewsItem` with `description` and `enclosure` optional, for the backfilled posts) and
+  `NewsArchivePage` (`GET /news/archive`'s `{ posts, next }`), moved here from the same two copies (issue #151).
 - Dev tooling only (issue #145): `allowScripts` approves `mongodb-memory-server@11.3.0`'s install script, which
   downloads the MongoDB binary for the tests. npm 12 skips unapproved dependency scripts; without it the first test run
   downloads the binary instead and can time out. Pinned to the version, so an update re-approves it
