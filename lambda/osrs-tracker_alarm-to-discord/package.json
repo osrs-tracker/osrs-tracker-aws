@@ -11,8 +11,6 @@
     "postdeploy": "rm ./dist.zip",
     "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_alarm-to-discord --runtime nodejs24.x",
     "lint": "oxlint -c ../shared/.oxlintrc.json",
-    "prettier": "prettier --write .",
-    "prettier:ci": "prettier --check .",
     "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js",
     "test": "vitest"
   },

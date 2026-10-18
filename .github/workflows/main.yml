@@ -73,9 +73,9 @@ jobs:
             selected=$folders
           else
             selected=$(grep -Fxf <(cut -d/ -f1-2 <<< "$changed" | sort -u) <<< "$folders" || true)
-            # Every Lambda bundles lambda/shared, extends lambda/tsconfig.lambda.json and installs from the lambda/
+            # Every Lambda bundles lambda/shared, extends lambda/tsconfig.lambda.json and installs from the root
             # workspace (package.json, package-lock.json): a change there checks them all
-            if grep -qE '^lambda/(shared/|tsconfig\.lambda\.json$|package(-lock)?\.json$)' <<< "$changed"; then
+            if grep -qE '^(lambda/(shared/|tsconfig\.lambda\.json$)|package(-lock)?\.json$)' <<< "$changed"; then
               selected=$(printf '%s\n%s\n' "$selected" "$(grep '^lambda/' <<< "$folders")" | sed '/^$/d' | sort -u)
             fi
           fi
@@ -137,18 +137,12 @@ jobs:
         with:
           persist-credentials: false
 
-      # The Lambdas are one npm workspace, installed (and cached) once at lambda/
+      # The repo is one npm workspace, installed (and cached) once at the root
       - name: Install
         uses: ./.github/actions/setup-deps # zizmor: ignore[self-repository]
-        with:
-          working-directory: lambda
 
       - name: oxlint
         run: npm run lint
-        working-directory: lambda/${{ matrix.lambda_function }}
-
-      - name: Prettier
-        run: npm run prettier:ci
         working-directory: lambda/${{ matrix.lambda_function }}
 
       # esbuild strips types without checking them; this also checks the lambda/shared code the Lambda imports

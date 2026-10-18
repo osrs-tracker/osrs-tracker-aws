@@ -11,8 +11,6 @@
     "postdeploy": "rm ./dist.zip",
     "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_process-players --runtime nodejs24.x",
     "lint": "cd .. && oxlint -c shared/.oxlintrc.json osrs-tracker_process-players shared",
-    "prettier": "prettier --write .",
-    "prettier:ci": "prettier --check .",
     "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js",
     "test": "vitest"
   },

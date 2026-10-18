@@ -8,8 +8,8 @@ description:
 
 # osrs-tracker-aws
 
-Scheduled and SQS-driven Lambdas (`lambda/<function>/`, one npm workspace in `lambda/`) that keep OSRS Tracker's MongoDB
-data fresh. The `@osrs-tracker/*` npm packages they install live in `../osrs-tracker-packages`
+Scheduled and SQS-driven Lambdas (`lambda/<function>/`, one npm workspace at the repo root) that keep OSRS Tracker's
+MongoDB data fresh. The `@osrs-tracker/*` npm packages they install live in `../osrs-tracker-packages`
 ([osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages)): a package change (a new hiscores skill
 or activity, a model field) is a PR and a publish there, then a version bump here. That repo, `../osrs-tracker-web` and
 `../osrs-tracker-api` have their own skills.
@@ -51,8 +51,8 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
   (`USER_AGENT`, sent with every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds
   `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json` is every Lambda's oxlint config (ESLint returns when
   typescript-eslint supports TypeScript 7: #143). Keep Lambda-specific logic in the Lambda.
-- Dependencies: devDependencies go in `lambda/package.json`, a runtime dependency in the Lambda that imports it
-  (`npm install <pkg> -w <lambda folder>`, from `lambda/`). Shared code's imports resolve from `lambda/node_modules`:
+- Dependencies: devDependencies go in the root `package.json`, a runtime dependency in the Lambda that imports it
+  (`npm install <pkg> -w lambda/<folder>`, from the root). Shared code's imports resolve from the root `node_modules`:
   each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version
   hoisted there (without one, mongodb-memory-server's older mongodb takes that place, and a bundle gets two). Add one
   for a new import, and bump its range with the Lambdas'.
@@ -66,10 +66,10 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
 
 ## Verify
 
-- Each touched Lambda: `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build` (esbuild doesn't
-  type-check; `tsc` also checks the shared files that Lambda imports, and CI runs it), plus `npx vitest run` in a Lambda
-  with a `vitest.config.mts` (all six; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in
-  `lambda/shared/` touches all six. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run` runs
+- Each touched Lambda: `npm run lint && npx tsc --noEmit -p . && npm run build` (esbuild doesn't type-check; `tsc` also
+  checks the shared files that Lambda imports, and CI runs it), plus `npx vitest run` in a Lambda with a
+  `vitest.config.mts` (all six; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in `lambda/shared/`
+  touches all six. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run` runs
   `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
 - Repo root: `npm run prettier:ci`
 

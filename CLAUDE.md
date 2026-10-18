@@ -1,9 +1,9 @@
 # osrs-tracker-aws
 
-Six AWS Lambdas (`lambda/<function>/`, Node 24, one npm workspace in `lambda/`): five keep OSRS Tracker's MongoDB Atlas
-data fresh, alarm-to-discord posts the CloudWatch alarms to Discord. Sibling repos: `../osrs-tracker-api` (writes the
-same collections), `../osrs-tracker-web` and `../osrs-tracker-packages` (the `@osrs-tracker/*` npm packages the Lambdas
-install from npm). **This repo is public.**
+Six AWS Lambdas (`lambda/<function>/`, Node 24, one npm workspace at the repo root): five keep OSRS Tracker's MongoDB
+Atlas data fresh, alarm-to-discord posts the CloudWatch alarms to Discord. Sibling repos: `../osrs-tracker-api` (writes
+the same collections), `../osrs-tracker-web` and `../osrs-tracker-packages` (the `@osrs-tracker/*` npm packages the
+Lambdas install from npm). **This repo is public.**
 
 **Load the `osrs-tracker-aws` skill before writing, reviewing, running, deploying or committing anything here.** It
 holds the `DRY_RUN`, Lambda, changelog and release rules, with infra and deploy steps in its `INFRA.md` and `DEPLOY.md`.
@@ -11,8 +11,8 @@ Keep detail there, not in this file.
 
 ## Commands
 
-- Verify a Lambda (from its folder): `npm run lint && npm run prettier:ci && npx tsc --noEmit -p . && npm run build`,
-  plus `npx vitest run` where it has a `vitest.config.mts` (`npm test` is watch mode).
+- Verify a Lambda (from its folder): `npm run lint && npx tsc --noEmit -p . && npm run build`, plus `npx vitest run`
+  where it has a `vitest.config.mts` (`npm test` is watch mode).
 - Repo root: `npm run prettier:ci`. The `verify` skill's `.claude/skills/verify/verify.sh` picks the folders a staged
   change touches (`--all-changes` adds unstaged ones) and runs all of these checks at once, in one call; Claude Code
   runs it before each commit.
@@ -21,9 +21,9 @@ Keep detail there, not in this file.
 - Size per dependency in a bundle:
   `npx esbuild src/index.ts --bundle --platform=node --minify --metafile=<tmp>/meta.json --outfile=<tmp>/out.js`, then
   group `outputs[*].inputs` by `node_modules/<pkg>`.
-- Worktrees in `.claude/worktrees/` find only the root `node_modules` in the main checkout. Run `npm ci` in `lambda/`
-  (all six Lambdas). The pre-push hook lints every Lambda, so `lambda/` needs it before a push. `.worktreeinclude`
-  copies each Lambda's `.env` into a new worktree, so `invoke:dry` works there.
+- Worktrees in `.claude/worktrees/` have no `node_modules` and would resolve the main checkout's, whose workspace links
+  point at the main checkout's Lambdas: run `npm ci` at the worktree's root first (the pre-push hook lints every
+  Lambda). `.worktreeinclude` copies each Lambda's `.env` into a new worktree, so `invoke:dry` works there.
 
 ## Hard rules
 
@@ -48,8 +48,8 @@ Keep detail there, not in this file.
 - `lambda/<function>/`: `src/index.ts` (handler, clients at module scope), `src/env.ts` (its env schema), `src/utils/`
   (`mongo.utils.ts` = `MU` with its own queries, Lambda-specific helpers), `build/invoke.js` (its `invoke:dry` event),
   and a `README.md` with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
-- `lambda/package.json`: the workspace root (the Lambdas and `shared`) with every Lambda's devDependencies, and the one
-  `lambda/package-lock.json`. Each Lambda's `package.json` holds its runtime dependencies and scripts.
+- `package.json`: the workspace root (the Lambdas and `lambda/shared`) with every devDependency, the root Prettier
+  scripts, and the one `package-lock.json`. Each Lambda's `package.json` holds its runtime dependencies and scripts.
 - `lambda/shared/`: code every Lambda bundles, the workspace package `@lambda/shared`: `src/` (`env.ts`,
   `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`, `user-agent.ts` (the
   `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players' `vitest.config.mts`),

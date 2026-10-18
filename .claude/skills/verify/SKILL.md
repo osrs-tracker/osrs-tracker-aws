@@ -16,22 +16,21 @@ Run the script from the checkout's root (the worktree, not the main checkout), i
 Before a commit it checks what the staged files touch (`git diff --cached --name-only`). To verify without a commit, add
 `--all-changes`, which adds unstaged changes (`git diff --name-only`). It checks:
 
-- every `lambda/<function>/` with a changed file; a change in `lambda/shared/`, `lambda/tsconfig.lambda.json`,
-  `lambda/package.json` or `lambda/package-lock.json` touches every Lambda;
+- every `lambda/<function>/` with a changed file; a change in `lambda/shared/`, `lambda/tsconfig.lambda.json`, the root
+  `package.json` or `package-lock.json` touches every Lambda;
 - always the repo root.
 
-A worktree has no `node_modules` of its own: the script first runs `npm ci`, one folder at a time, in each selected
-folder that lacks one (`lambda/` once for all the Lambdas, which are one workspace).
+A worktree has no `node_modules` of its own: the script first runs `npm ci` at the root (the repo is one npm workspace)
+when it lacks one.
 
 It then runs every check at once, never stopping at a failure:
 
 1. Repo root: `npm run prettier:ci`
 2. Each touched Lambda, from its folder, each as its own check:
-   1. `npm run prettier:ci`
-   2. `npm run lint`
-   3. `npx tsc --noEmit -p .` (the esbuild build doesn't type-check; this also checks the shared files it imports)
-   4. `npm run build`
-   5. `npx vitest run`, for a Lambda with a `vitest.config.mts` (all six; process-players' also runs `lambda/shared`'s
+   1. `npm run lint`
+   2. `npx tsc --noEmit -p .` (the esbuild build doesn't type-check; this also checks the shared files it imports)
+   3. `npm run build`
+   4. `npx vitest run`, for a Lambda with a `vitest.config.mts` (all six; process-players' also runs `lambda/shared`'s
       specs)
 
 Never run `npm test`: it's watch mode in every Lambda.
