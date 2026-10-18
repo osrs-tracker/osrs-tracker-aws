@@ -14,8 +14,8 @@ MongoDB data fresh. The `@osrs-tracker/*` npm packages they install live in `../
 or activity, a model field) is a PR and a publish there, then a version bump here. That repo, `../osrs-tracker-web` and
 `../osrs-tracker-api` have their own skills.
 
-**This repo is public.** Never write secret values, account IDs or resource IDs into code, docs or commits, and never
-print `.env` values.
+**This repo is public.** `CLAUDE.md`'s hard rules say what never goes into code, docs, issues or commits, and what is
+never printed.
 
 Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `players`/`items`/`hiscoreLayouts` field and
 owns which index, the stored hiscore format; update it with any field or index change), [INFRA.md](INFRA.md) (AWS
@@ -107,9 +107,11 @@ CI is the gate (builds needed for a deploy still run).
 
 ## Commit and push
 
-- Doc-only changes (skills, docs) go straight to `main`. Otherwise, outside a release, **ask every time**: `main` or a
-  PR. The admin account bypasses `main`'s PR rule; after a direct push, `gh run watch --exit-status`. After a PR merges,
-  do release step 5's cleanup.
+- Doc-only changes (as `CLAUDE.md` defines them) go straight to `main`, without the verify skill. CI's link check fails
+  `main` on a broken local link or `#anchor`, so run it first on the tracked files (a glob would also check
+  `node_modules`): `lychee --offline --include-fragments $(git ls-files '*.md')`. Otherwise, outside a release, **ask
+  every time**: `main` or a PR. The admin account bypasses `main`'s PR rule; after a direct push,
+  `gh run watch --exit-status`. After a PR merges, do release step 5's cleanup.
 - PRs need the `CI` and `zizmor` checks, up to date with `main` (the `main` ruleset). The same ruleset blocks a merge on
   CodeQL code scanning (default setup, `default` suite) alerts of high severity or higher, or of `error` level: fix the
   alert, or dismiss it with a reason in the Security tab, and never copy an open alert's details into an issue, PR,

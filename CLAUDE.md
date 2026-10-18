@@ -36,10 +36,11 @@ Keep detail there, not in this file.
 - A change to a shared field or index updates `DATA-MODEL.md` in the same change, plus an issue in osrs-tracker-api when
   it has to follow.
 - Every change except a doc-only one gets a changelog entry: Lambdas, infra, CI and tooling (`.claude/hooks/`,
-  `.claude/settings.json`) in the root `CHANGELOG.md` under today's `## YYYY-MM-DD`. Doc-only means `docs/`, `README.md`
-  files (also a Lambda's), `CLAUDE.md`, `.claude/skills/`, `.claude/agents/`, and `DATA-MODEL.md` edits that only
-  document (one that comes with a data change is logged with it). A dependency bump gets an entry only when it changes
-  behaviour (a new feature used, a fix that matters, a breaking change handled).
+  `.claude/settings.json`, scripts such as `.claude/skills/verify/verify.sh`) in the root `CHANGELOG.md` under today's
+  `## YYYY-MM-DD`. Doc-only means `docs/`, `README.md` files (also a Lambda's), `CLAUDE.md`, the Markdown files in
+  `.claude/skills/` and `.claude/agents/`, and `DATA-MODEL.md` edits that only document (one that comes with a data
+  change is logged with it). A dependency bump gets an entry only when it changes behaviour (a new feature used, a fix
+  that matters, a breaking change handled).
 - Doc-only changes go straight to `main`; for anything else, ask: `main` or a PR (unless releasing). Never
   `--no-gpg-sign`.
 
@@ -58,9 +59,10 @@ Keep detail there, not in this file.
   touches all six Lambdas.
 - `DATA-MODEL.md`: who writes each `players`/`items`/`hiscoreLayouts` field and owns each index, the stored hiscore
   format, and the pause/resume contract.
-- `.github/workflows/main.yml`: CI checks only the folders a push changed; its `CI` job is a required check, with
-  `zizmor.yml`'s `zizmor` (audits the workflows; `.github/zizmor.yml` says what it allows). `.github/actions/setup-deps`
-  caches the workspace's `node_modules` (the root's, plus any a Lambda gets of its own) by the root `package-lock.json`.
+- `.github/workflows/main.yml`: on pushes to `main` and on PRs, CI checks only the folders changed (all of them when
+  `.github/` changes); its `CI` job is a required check, with `zizmor.yml`'s `zizmor` (audits the workflows;
+  `.github/zizmor.yml` says what it allows). `.github/actions/setup-deps` caches the workspace's `node_modules` (the
+  root's, plus any a Lambda gets of its own) by the root `package-lock.json`.
 - `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file;
   `.claude/hooks/read-only-bash.sh` keeps it to git, gh and grep reads. `.claude/settings.json` runs Prettier on every
   file Claude edits, and `.claude/hooks/pre-push-check.sh` blocks `git push` (also `git -C <path> push`) when Prettier
