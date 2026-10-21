@@ -1,6 +1,9 @@
 import { LambdaClient } from '@aws-sdk/client-lambda';
+import { SQSClient } from '@aws-sdk/client-sqs';
+import { ScrapedHiscore } from '@osrs-tracker/models';
 import { Context } from 'aws-lambda';
 import { invokeAsync } from '@lambda/shared/lambda.utils';
+import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { env } from '../env';
 import { chunk } from './array.utils';
 import { discordAlert } from './discord-alert';
@@ -8,6 +11,12 @@ import { ScrapeEvent } from './scrape-message';
 
 /** How many times players that keep failing are requeued; after that they're alerted on instead. */
 export const MAX_RETRIES = 3;
+
+/** The AWS clients the handler creates at module scope. */
+export interface AwsClients {
+  lambda: LambdaClient;
+  sqs: SQSClient;
+}
 
 /** A started bulk write, settled at once (see the handler), with the usernames it stores a hiscore entry for. */
 export interface BulkWrite {
@@ -21,6 +30,10 @@ export interface ScrapeRun {
   event: ScrapeEvent;
   /** the found players' entries; none when no player was found */
   bulkWrite?: BulkWrite;
+  /** when the scrape started, the date of its entries */
+  scrapedAt: Date;
+  /** the found players' hiscores, the ones `bulkWrite` stores */
+  found: ScrapedHiscore[];
   /** failed (retryable) usernames */
   failedUsernames: string[];
   notFoundUsernames: string[];
@@ -28,14 +41,16 @@ export interface ScrapeRun {
 }
 
 /**
- * Finishes a run once its bulk write has started: waits for it, requeues the failed players in new events (up to
- * `MAX_RETRIES` times) and sends the alerts. Never rejects, since a Lambda retry would store duplicate hiscore entries:
- * every step it takes settles its own failures (the bulk write is settled when started, `invokeAsync` and
- * `discordAlert` never reject). A failed write's players aren't retried for the same reason; they're alerted on.
+ * Finishes a run once its bulk write has started: waits for it, sends the found players' hiscores to the scrape results
+ * queue, requeues the failed players in new events (up to `MAX_RETRIES` times) and sends the alerts. Never rejects,
+ * since a Lambda retry would store duplicate hiscore entries: every step it takes settles its own failures (the bulk
+ * write is settled when started, `sendScrapeResult`, `invokeAsync` and `discordAlert` never reject). A failed write's
+ * players aren't retried for the same reason; they're alerted on.
  */
-export async function afterWrites(lambdaClient: LambdaClient, run: ScrapeRun, context: Context): Promise<void> {
+export async function afterWrites(clients: AwsClients, run: ScrapeRun, context: Context): Promise<void> {
   const { event, failedUsernames, notFoundUsernames, pausedUsernames } = run;
   const { updatedPlayerCount, unwrittenUsernames } = await settleBulkWrite(run.bulkWrite);
+  const unsentUsernames = await sendHiscores(clients.sqs, run);
   const retry = event.retry ?? 0;
   const givingUp = retry >= MAX_RETRIES;
 
@@ -44,7 +59,7 @@ export async function afterWrites(lambdaClient: LambdaClient, run: ScrapeRun, co
 
   const unqueuedUsernames = givingUp
     ? []
-    : await requeue(lambdaClient, context.functionName, {
+    : await requeue(clients.lambda, context.functionName, {
         usernames: failedUsernames,
         scrapingOffset: event.scrapingOffset,
         retry: retry + 1,
@@ -60,6 +75,9 @@ export async function afterWrites(lambdaClient: LambdaClient, run: ScrapeRun, co
     console.error(`Failed to store hiscore entries for ${unwrittenUsernames.length} players:`, unwrittenUsernames);
     await discordAlert('Failed to store hiscores', unwrittenUsernames, context, 'Failed to store a hiscore entry for');
   }
+
+  if (unsentUsernames.length)
+    await discordAlert('Failed to send scrape results', unsentUsernames, context, 'Failed to send the hiscore of');
 
   if (unqueuedUsernames.length) {
     console.error(`Failed to queue a retry for ${unqueuedUsernames.length} players:`, unqueuedUsernames);
@@ -94,6 +112,27 @@ async function settleBulkWrite(bulkWrite?: BulkWrite) {
 
   console.error('Bulk write failed', result.reason);
   return { updatedPlayerCount: 0, unwrittenUsernames: bulkWrite.usernames };
+}
+
+/**
+ * Sends the found players' hiscores to the scrape results queue, after the bulk write, so the ingester finds their
+ * entries stored already and skips them as stale (osrs-tracker/osrs-tracker-aws#165). Also when the write failed: the
+ * ingester then stores what it missed. Returns the usernames of a message SQS didn't take. The not-found usernames are
+ * left out while this Lambda still records them, or the ingester would count each 404 twice (#166 adds them).
+ */
+async function sendHiscores(sqsClient: SQSClient, { event, scrapedAt, found }: ScrapeRun): Promise<string[]> {
+  if (!found.length) return [];
+
+  const sent = await sendScrapeResult(sqsClient, env.SCRAPE_RESULTS_QUEUE_URL, {
+    v: 1,
+    type: 'hiscores',
+    scrapedAt: scrapedAt.toISOString(),
+    scrapingOffset: event.scrapingOffset,
+    found,
+    notFound: [],
+  });
+  if (sent) console.log(`Sent the hiscores of ${found.length} players to the scrape results queue.`);
+  return sent ? [] : found.map(({ username }) => username);
 }
 
 /**

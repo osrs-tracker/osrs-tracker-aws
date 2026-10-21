@@ -16,10 +16,11 @@
   },
   "prettier": "../../.prettierrc.json",
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.1154.0",
     "@aws-sdk/credential-providers": "^3.1145.0",
     "@lambda/shared": "*",
-    "@osrs-tracker/hiscores": "^5.0.0",
-    "@osrs-tracker/models": "^2.5.0",
+    "@osrs-tracker/hiscores": "^6.0.0",
+    "@osrs-tracker/models": "^3.2.0",
     "envalid": "^8.2.0",
     "mongodb": "^7.7.0"
   },

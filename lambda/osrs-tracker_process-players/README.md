@@ -10,6 +10,13 @@ entry to the player's `hiscoreEntries` in the compact stored format (`encodeHisc
   (Atlas unreachable, or a stored layout with the same id but other names: a hash collision), nothing was written for
   that event's players yet, so they're retried like failed fetches below.
 
+- **Scrape results queue:** once the bulk write settles, it sends the found players' hiscores (as fetched, with the
+  scrape time and offset) as one `hiscores` message to `osrs-tracker_scrape-results.fifo`, in group `offset:<offset>`,
+  for the ingester on fremen-server (`ScrapeResultMessage` from `@osrs-tracker/models`). For now it still writes MongoDB
+  too, so the ingester finds these entries stored and skips them (#165); #166 stops the writes. The not-found usernames
+  stay out of the message while this Lambda records them, or the ingester would count each 404 twice. A message the
+  queue doesn't take is reported on Discord (`Failed to send scrape results`), never thrown.
+
 - **Failed** fetches (5xx, network, timeout), and players whose layout couldn't be stored, are requeued: it invokes
   itself with them in new events, `retry` counted up, at most 3 times; after that they're reported on Discord. When
   every fetch in the run failed (so nothing was written) it throws instead, so Lambda retries the event twice; then it
@@ -22,7 +29,8 @@ entry to the player's `hiscoreEntries` in the compact stored format (`encodeHisc
 
 Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
 variable): `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION`, `OSRS_API_BASE_URL`, `PLAYERS_PER_EVENT`,
-`WEBHOOK_URL`. Optional: `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local SCRAM only) and `DRY_RUN`.
+`SCRAPE_RESULTS_QUEUE_URL`, `WEBHOOK_URL`. Optional: `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local SCRAM only) and
+`DRY_RUN`.
 
 Run it locally without writing anything: copy `.env.example` to `.env`, fill it in, then
 `npm run invoke:dry -- Zezima "Lynx Titan"`. See the [root README](../../README.md) for how it fits with the other jobs.

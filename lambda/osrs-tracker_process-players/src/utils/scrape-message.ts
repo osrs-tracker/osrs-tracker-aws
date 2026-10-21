@@ -3,6 +3,7 @@ import {
   encodeHiscoreEntry,
   HiscoreLayout,
   PlayerScrapeMessageBody,
+  ScrapedHiscore,
   StoredPlayer,
 } from '@osrs-tracker/models';
 import { AnyBulkWriteOperation, MongoClient } from 'mongodb';
@@ -20,10 +21,14 @@ export interface ScrapeEvent extends PlayerScrapeMessageBody {
 
 /** What {@link scrapeMessage} found for one event's players. */
 export interface ScrapedMessage {
+  /** when the scrape started: the date of every entry it builds */
+  scrapedAt: Date;
   /** one op per player found, adding its hiscore entry; the layouts the entries use are stored */
   bulkUpdateOps: AnyBulkWriteOperation<StoredPlayer>[];
   /** the usernames `bulkUpdateOps` store an entry for */
   bulkUpdateUsernames: string[];
+  /** the same players' hiscores as fetched, for the scrape results queue */
+  found: ScrapedHiscore[];
   /** usernames to retry: the request failed, the scrape threw or the layouts failed to store */
   failedUsernames: string[];
   /** usernames that are not on the hiscores (404), these are skipped without retry */
@@ -43,8 +48,10 @@ export async function scrapeMessage(
 ): Promise<ScrapedMessage> {
   const scrapeTime = new Date();
   const scraped: ScrapedMessage = {
+    scrapedAt: scrapeTime,
     bulkUpdateOps: [],
     bulkUpdateUsernames: [],
+    found: [],
     failedUsernames: [],
     notFoundUsernames: [],
     pausedUsernames: [],
@@ -75,6 +82,7 @@ export async function scrapeMessage(
       layouts.push(layout);
       scraped.bulkUpdateUsernames.push(username);
       scraped.bulkUpdateOps.push(MU.hiscoreEntryBulkWriteOp(username, entry));
+      scraped.found.push({ username, hiscore: result.hiscore, layout: result.layout });
     }),
   );
 
@@ -96,7 +104,7 @@ export async function scrapeMessage(
   } catch (error) {
     console.error('Failed to store hiscore layouts', error);
     scraped.failedUsernames.push(...scraped.bulkUpdateUsernames);
-    return { ...scraped, bulkUpdateOps: [], bulkUpdateUsernames: [] };
+    return { ...scraped, bulkUpdateOps: [], bulkUpdateUsernames: [], found: [] };
   }
 
   return scraped;

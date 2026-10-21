@@ -75,12 +75,11 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 
 ## Scrape results and subscriptions
 
-Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. queue-players reads the table since #164; the results
-queue is unused until #165.
+Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. queue-players reads the table since #164.
 
-- `osrs-tracker_scrape-results.fifo` will carry the scrape results from process-players and record-player-count (#165)
-  to the ingester on fremen-server (osrs-tracker/osrs-tracker-api#203), which long-polls it once a minute and applies
-  them to MongoDB.
+- `osrs-tracker_scrape-results.fifo` carries the scrape results from process-players and record-player-count (#165,
+  `SCRAPE_RESULTS_QUEUE_URL`; both still write MongoDB too until #166) to the ingester on fremen-server
+  (osrs-tracker/osrs-tracker-api#203), which long-polls it once a minute and applies them to MongoDB.
   - **Never a standard queue**: FIFO keeps the results in order per message group (one per offset, plus `playerCount`).
   - **Content-based deduplication only.** An explicit deduplication ID such as `slot:offset` would be shared by the ~54
     offset-0 messages at 00:00 UTC, and SQS would drop all but one.
@@ -123,9 +122,11 @@ first (logs are kept 7 days).
 | process-players `No players were updated`             | Every fetch in a requeued event failed (usually a hiscores or proxy outage), or its hiscore layout couldn't be stored (Atlas unreachable). Lambda retries, then the dead queue. | Check the proxy and Jagex's hiscores; then handle the dead queue as above.                                                                           |
 | process-players `Gave up retrying`                    | These players' fetches failed in 4 runs in a row (requeued 3 times): they miss today.                                                                                           | Check the proxy and Jagex's hiscores for them. Nothing unless it repeats.                                                                            |
 | process-players `Failed to store hiscores`            | A bulk write failed after the fetches: those players have no entry for today.                                                                                                   | Check Atlas (limits, connectivity) in the logs. Don't requeue by hand on a day they already have an entry.                                           |
+| process-players `Failed to send scrape results`       | The results queue didn't take the run's `hiscores` message (logged with its error). Their entries are in MongoDB while process-players still writes them (until #166).          | Read the logged error (permissions on `AWS_Lambda`, the queue URL). Nothing to replay before #166.                                                   |
 | process-players `Failed to queue retries`             | Lambda refused the retry events for failed players: they miss today.                                                                                                            | Read the logged errors.                                                                                                                              |
 | process-players `Paused scraping`                     | Players off the hiscores for 7 days were paused (expected for renames and bans).                                                                                                | Nothing; a lookup in the API resumes them ([DATA-MODEL.md](../../../DATA-MODEL.md)).                                                                 |
 | record-player-count `Player count not recorded`       | Jagex's world list failed, didn't parse (a format change) or had no worlds or players: no sample for those 10 minutes. Repeats every run until it's fixed.                      | Read the error in the alert. A format change needs `parseWorldList` updated against a fresh response.                                                |
+| record-player-count `Player count not sent`           | The results queue didn't take the sample's `playerCount` message. The sample is stored in MongoDB (until #166).                                                                 | Read the logged error (permissions, the queue URL). Nothing to replay before #166.                                                                   |
 | record-player-count `Daily player counts not updated` | The sample was stored, but recomputing the daily averages (`playerCountsDaily`) failed. The next run recomputes every day it missed. Repeats every run while it lasts.          | Nothing for a one-off. When it repeats, read the error: Atlas connectivity or limits, or the Lambda's database user can't write `playerCountsDaily`. |
 
 ### CloudWatch alarms

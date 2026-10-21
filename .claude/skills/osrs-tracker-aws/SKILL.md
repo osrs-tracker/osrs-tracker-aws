@@ -30,7 +30,7 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
   (`--profile claude` or `AWS_PROFILE=claude`), never the default profile.
 - **Lambda deploys** go live immediately: get explicit go-ahead.
 - **Every write goes through a `DRY_RUN`-aware helper** (`lambda/shared/src/dry-run.utils.ts`): Mongo writes in `MU`,
-  `invokeAsync`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
+  `invokeAsync`, `sendScrapeResult`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
 - **Run handlers locally only via `npm run invoke:dry`** (from `lambda/<function>/`, `.env` filled in). There is no
   staging database. Reads and fetches are real; writes log `[DRY_RUN] Would …`. queue-players takes an optional event
   time (`-- 2026-10-02T18:00:00Z`; the other scheduled Lambdas accept it but ignore it), process-players takes usernames
@@ -45,13 +45,14 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
   `cleanLambdaEnv` adds the Lambda's own schema from its `src/env.ts`; `cleanMongoEnv`: the MongoDB variables, validated
   when `mongo.utils.ts` loads, so alarm-to-discord, which has no database, needs none), `dry-run.utils.ts`,
   `mongo.utils.ts` (each Lambda's `MU` extends `mongoUtils<Schema>()` with its own queries; `ensureIndex`),
-  `lambda.utils.ts` (`invokeAsync`: an async invoke that never rejects) and `discord-alert.ts` (the Lambda passes its
-  function name or webhook URL; `discordAlertNeverRejects` for code that must not throw; `options.functionName` for an
-  alert about another function), `commit.ts` (`logCommit()`, called at module scope in every `src/index.ts`: logs the
-  commit `esbuild.js` stamps into the bundle), `user-agent.ts` (`USER_AGENT`, sent with every outgoing request: the OSRS
-  Wiki asks for one; use it for any new fetch); `build/` holds `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json`
-  is every Lambda's oxlint config (oxlint, not ESLint, while the repo is on TypeScript 7, which typescript-eslint
-  doesn't support as of 2026-10-18). Keep Lambda-specific logic in the Lambda.
+  `lambda.utils.ts` (`invokeAsync`: an async invoke that never rejects), `sqs.utils.ts` (`sendScrapeResult`: a send to
+  the scrape results queue, in the message's FIFO group, that never rejects) and `discord-alert.ts` (the Lambda passes
+  its function name, queue or webhook URL; `discordAlertNeverRejects` for code that must not throw;
+  `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called at module scope in
+  every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts` (`USER_AGENT`, sent with
+  every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds `esbuild.js` and the
+  `invoke.js` runner; `.oxlintrc.json` is every Lambda's oxlint config (oxlint, not ESLint, while the repo is on
+  TypeScript 7, which typescript-eslint doesn't support as of 2026-10-18). Keep Lambda-specific logic in the Lambda.
 - Dependencies: devDependencies go in the root `package.json`, a runtime dependency in the Lambda that imports it
   (`npm install <pkg> -w lambda/<folder>`, from the root). Shared code's imports resolve from the root `node_modules`:
   each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version

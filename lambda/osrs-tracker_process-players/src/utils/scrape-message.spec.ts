@@ -56,6 +56,28 @@ describe('scrapeMessage', () => {
     expect(scraped.bulkUpdateOps).toHaveLength(2);
   });
 
+  it('keeps the found hiscores as fetched, with the scrape time, for the scrape results queue', async () => {
+    vi.mocked(fetchHiscore).mockImplementation(async (username) =>
+      username === 'bob' ? { status: 'notFound', httpStatus: 404 } : found,
+    );
+
+    const scraped = await scrapeMessage(client, { usernames: ['alice', 'bob'], scrapingOffset: 7 });
+
+    const [[, [layout]]] = vi.mocked(MU.ensureHiscoreLayouts).mock.calls;
+    expect(scraped.scrapedAt).toEqual(layout.since);
+    expect(scraped.found).toEqual([{ username: 'alice', hiscore: found.hiscore, layout: found.layout }]);
+  });
+
+  it('drops the found hiscores with their entries when the layouts failed to store', async () => {
+    vi.mocked(MU.ensureHiscoreLayouts).mockRejectedValue(new Error('Atlas unreachable'));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const scraped = await scrapeMessage(client, { usernames: ['alice'], scrapingOffset: 0 });
+
+    expect(scraped.found).toEqual([]);
+    expect(scraped.failedUsernames).toEqual(['alice']);
+  });
+
   it('stores no layouts when no player was found', async () => {
     vi.mocked(fetchHiscore).mockResolvedValue({ status: 'failed', reason: 'HTTP 503' });
 
