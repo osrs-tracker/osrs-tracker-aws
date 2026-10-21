@@ -5,22 +5,12 @@ import { invokeAsync } from '@lambda/shared/lambda.utils';
 import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { handler } from './index';
 import { discordAlert } from './utils/discord-alert';
-import { MU } from './utils/mongo.utils';
 import { fetchHiscore } from './utils/player.utils';
 import { ScrapeEvent } from './utils/scrape-message';
 
 // the staggered hiscore requests wait 2 s per player
 vi.mock('node:timers/promises', () => ({ setTimeout: vi.fn(async () => {}) }));
 vi.mock('./utils/player.utils', () => ({ fetchHiscore: vi.fn() }));
-vi.mock('./utils/mongo.utils', () => ({
-  MU: {
-    client: vi.fn(),
-    ensureHiscoreLayouts: vi.fn(),
-    hiscoreEntryBulkWriteOp: vi.fn((username: string) => ({ updateOne: { filter: { username }, update: [] } })),
-    recordHiscoreNotFound: vi.fn(),
-    bulkWrite: vi.fn(),
-  },
-}));
 vi.mock('@lambda/shared/lambda.utils', () => ({ invokeAsync: vi.fn() }));
 vi.mock('@lambda/shared/sqs.utils', () => ({ sendScrapeResult: vi.fn() }));
 // spied, not replaced: the real alert runs against the stubbed `fetch`, so a failed webhook request is part of the run
@@ -48,6 +38,9 @@ function hiscores(results: Record<string, HiscoreResult | (() => Promise<Hiscore
   });
 }
 
+/** The messages the run sent to the scrape results queue. */
+const sent = () => vi.mocked(sendScrapeResult).mock.calls.map(([, , message]) => message);
+
 /** The events the run requeued, in the order it invoked them. */
 const requeued = () => vi.mocked(invokeAsync).mock.calls.map(([, , event]) => event as ScrapeEvent);
 
@@ -56,11 +49,8 @@ const alerts = () => vi.mocked(discordAlert).mock.calls.map(([title, players]) =
 describe('handler', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(MU.ensureHiscoreLayouts).mockResolvedValue();
-    vi.mocked(MU.bulkWrite).mockImplementation(async (_, operations) => operations.length);
-    vi.mocked(MU.recordHiscoreNotFound).mockResolvedValue(false);
     vi.mocked(invokeAsync).mockResolvedValue(true);
-    vi.mocked(sendScrapeResult).mockResolvedValue(true);
+    vi.mocked(sendScrapeResult).mockResolvedValue();
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(null, { status: 204 })),
@@ -74,17 +64,34 @@ describe('handler', () => {
     expect(fetchHiscore).not.toHaveBeenCalled();
   });
 
-  it('stores an entry for each found player and requeues the failed ones in new events to itself', async () => {
-    hiscores({ alice: found, bob: failed, carol: failed, dave: failed });
+  it('sends the found and not-found players in one hiscores message, with one scrape time and the offset', async () => {
+    hiscores({ alice: found, bob: notFound, carol: failed });
+    const before = Date.now();
 
-    await expect(handler({ usernames: ['alice', 'bob', 'carol', 'dave'], scrapingOffset: 3 }, context)).resolves.toBe(
+    await expect(handler({ usernames: ['alice', 'bob', 'carol'], scrapingOffset: 3 }, context)).resolves.toBe(
       'log-stream',
     );
 
-    expect(MU.ensureHiscoreLayouts).toHaveBeenCalledOnce();
-    expect(MU.bulkWrite).toHaveBeenCalledExactlyOnceWith(undefined, [
-      { updateOne: { filter: { username: 'alice' }, update: [] } },
+    expect(sent()).toEqual([
+      {
+        v: 1,
+        type: 'hiscores',
+        scrapedAt: expect.any(String),
+        scrapingOffset: 3,
+        found: [{ username: 'alice', hiscore: found.hiscore, layout: found.layout }],
+        notFound: ['bob'],
+      },
     ]);
+    const scrapedAt = Date.parse((sent()[0] as { scrapedAt: string }).scrapedAt);
+    expect(scrapedAt).toBeGreaterThanOrEqual(before);
+    expect(scrapedAt).toBeLessThanOrEqual(Date.now());
+  });
+
+  it('requeues the failed players in new events to itself, after the send', async () => {
+    hiscores({ alice: found, bob: failed, carol: failed, dave: failed });
+
+    await handler({ usernames: ['alice', 'bob', 'carol', 'dave'], scrapingOffset: 3 }, context);
+
     // PLAYERS_PER_EVENT is 2
     expect(vi.mocked(invokeAsync).mock.calls.map(([, functionName]) => functionName)).toEqual([
       'osrs-tracker_process-players',
@@ -94,35 +101,20 @@ describe('handler', () => {
       { usernames: ['bob', 'carol'], scrapingOffset: 3, retry: 1 },
       { usernames: ['dave'], scrapingOffset: 3, retry: 1 },
     ]);
+    expect(vi.mocked(sendScrapeResult).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(invokeAsync).mock.invocationCallOrder[0],
+    );
     expect(alerts()).toEqual([]);
   });
 
-  it('sends the hiscores it stored to the scrape results queue, dated like their entries', async () => {
-    hiscores({ alice: found, bob: notFound, carol: failed });
-
-    await handler({ usernames: ['alice', 'bob', 'carol'], scrapingOffset: 3 }, context);
-
-    const [[, [layout]]] = vi.mocked(MU.ensureHiscoreLayouts).mock.calls;
-    expect(vi.mocked(sendScrapeResult).mock.calls.map(([, , message]) => message)).toEqual([
-      {
-        v: 1,
-        type: 'hiscores',
-        scrapedAt: layout.since.toISOString(),
-        scrapingOffset: 3,
-        found: [{ username: 'alice', hiscore: found.hiscore, layout: found.layout }],
-        notFound: [],
-      },
-    ]);
-  });
-
-  describe('throws, so Lambda retries the event, only when nothing was written and no 404 recorded', () => {
+  describe('throws, so Lambda retries the event, only when there is nothing to send or the send fails', () => {
     it('throws when every scrape failed', async () => {
       hiscores({ alice: failed, bob: failed });
 
       await expect(handler({ usernames: ['alice', 'bob'], scrapingOffset: 0 }, context)).rejects.toThrow(
         'No players were updated. Failed to update 2 players.',
       );
-      expect(MU.bulkWrite).not.toHaveBeenCalled();
+      expect(sendScrapeResult).not.toHaveBeenCalled();
       expect(invokeAsync).not.toHaveBeenCalled();
       expect(alerts()).toEqual([]);
     });
@@ -134,51 +126,39 @@ describe('handler', () => {
       expect(alerts()).toEqual([{ title: 'No players were updated', players: ['alice'] }]);
     });
 
-    it("throws when every found player's layouts failed to store, since nothing was written", async () => {
-      hiscores({ alice: found });
-      vi.mocked(MU.ensureHiscoreLayouts).mockRejectedValue(new Error('Atlas unreachable'));
+    it("throws SQS's error, without requeueing, when the queue doesn't take the message", async () => {
+      hiscores({ alice: found, bob: failed });
+      vi.mocked(sendScrapeResult).mockRejectedValue(new Error('Access denied'));
 
-      await expect(handler({ usernames: ['alice'], scrapingOffset: 0 }, context)).rejects.toThrow(
-        'No players were updated',
+      await expect(handler({ usernames: ['alice', 'bob'], scrapingOffset: 0 }, context)).rejects.toThrow(
+        'Access denied',
       );
-      expect(MU.bulkWrite).not.toHaveBeenCalled();
+      expect(invokeAsync).not.toHaveBeenCalled();
     });
 
-    it('requeues the failed players instead when a 404 was recorded, which a retry would record again', async () => {
+    it('sends and requeues the failed players when only a 404 was found', async () => {
       hiscores({ alice: notFound, bob: failed });
 
       await expect(handler({ usernames: ['alice', 'bob'], scrapingOffset: 5 }, context)).resolves.toBeDefined();
-      expect(MU.recordHiscoreNotFound).toHaveBeenCalledExactlyOnceWith(undefined, 'alice');
+      expect(sent()).toMatchObject([{ found: [], notFound: ['alice'] }]);
       expect(requeued()).toEqual([{ usernames: ['bob'], scrapingOffset: 5, retry: 1 }]);
     });
 
-    it('completes when no player is on the hiscores, and alerts on the paused ones', async () => {
+    it('completes when no player is on the hiscores', async () => {
       hiscores({ alice: notFound, bob: notFound });
-      vi.mocked(MU.recordHiscoreNotFound).mockImplementation(async (_, username) => username === 'bob');
 
       await expect(handler({ usernames: ['alice', 'bob'], scrapingOffset: 0 }, context)).resolves.toBeDefined();
-      expect(MU.bulkWrite).not.toHaveBeenCalled();
+      expect(sent()).toMatchObject([{ found: [], notFound: ['alice', 'bob'] }]);
       expect(invokeAsync).not.toHaveBeenCalled();
-      expect(alerts()).toEqual([{ title: 'Paused scraping', players: ['bob'] }]);
+      expect(alerts()).toEqual([]);
     });
   });
 
-  it('requeues a player whose scrape threw (recording the 404 failed) instead of dropping it', async () => {
-    hiscores({ alice: notFound, bob: found });
-    vi.mocked(MU.recordHiscoreNotFound).mockRejectedValue(new Error('Atlas unreachable'));
+  it('requeues a player whose scrape threw instead of dropping it', async () => {
+    hiscores({ alice: () => Promise.reject(new Error('Unexpected')), bob: found });
 
     await expect(handler({ usernames: ['alice', 'bob'], scrapingOffset: 1 }, context)).resolves.toBeDefined();
     expect(requeued()).toEqual([{ usernames: ['alice'], scrapingOffset: 1, retry: 1 }]);
-  });
-
-  it('requeues the found players instead of writing their entries when their layouts failed to store', async () => {
-    // alice's 404 keeps the run from throwing
-    hiscores({ alice: notFound, bob: found, carol: found });
-    vi.mocked(MU.ensureHiscoreLayouts).mockRejectedValueOnce(new Error('layout id hash collision'));
-
-    await expect(handler({ usernames: ['alice', 'bob', 'carol'], scrapingOffset: 1 }, context)).resolves.toBeDefined();
-    expect(MU.bulkWrite).not.toHaveBeenCalled();
-    expect(requeued()).toEqual([{ usernames: ['bob', 'carol'], scrapingOffset: 1, retry: 1 }]);
   });
 
   it('counts the retry up from a requeued event, then gives up and alerts past MAX_RETRIES', async () => {
@@ -193,17 +173,8 @@ describe('handler', () => {
     expect(alerts()).toEqual([{ title: 'Gave up retrying', players: ['bob'] }]);
   });
 
-  // a Lambda retry would store duplicate hiscore entries for the writes that did happen
-  describe('never rejects once a bulk write started', () => {
-    it('alerts on a failed bulk write instead of throwing or retrying it, and still requeues the failed players', async () => {
-      hiscores({ alice: found, bob: failed });
-      vi.mocked(MU.bulkWrite).mockRejectedValue(new Error('write conflict'));
-
-      await expect(handler({ usernames: ['alice', 'bob'], scrapingOffset: 0 }, context)).resolves.toBeDefined();
-      expect(requeued()).toEqual([{ usernames: ['bob'], scrapingOffset: 0, retry: 1 }]);
-      expect(alerts()).toEqual([{ title: 'Failed to store hiscores', players: ['alice'] }]);
-    });
-
+  // a Lambda retry would requeue the failed players a second time
+  describe('never rejects once the results are sent', () => {
     it.each([
       ['refuses one of the retry events', [false, true], ['bob', 'carol']],
       ['refuses every retry event', [false, false], ['bob', 'carol', 'dave']],
@@ -218,11 +189,11 @@ describe('handler', () => {
     });
 
     it('logs a failed alert instead of throwing', async () => {
-      hiscores({ alice: found });
-      vi.mocked(MU.bulkWrite).mockRejectedValue(new Error('write conflict'));
+      hiscores({ alice: found, bob: failed });
+      vi.mocked(invokeAsync).mockResolvedValue(false);
       vi.mocked(fetch).mockRejectedValue(new TypeError('fetch failed'));
 
-      await expect(handler({ usernames: ['alice'], scrapingOffset: 0 }, context)).resolves.toBeDefined();
+      await expect(handler({ usernames: ['alice', 'bob'], scrapingOffset: 0 }, context)).resolves.toBeDefined();
       expect(fetch).toHaveBeenCalledOnce();
       expect(console.error).toHaveBeenCalledWith('Failed to send Discord alert', expect.any(TypeError));
     });

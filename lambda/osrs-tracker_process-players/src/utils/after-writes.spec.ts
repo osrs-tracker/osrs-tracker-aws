@@ -7,7 +7,7 @@ import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { afterWrites, AwsClients, MAX_RETRIES, ScrapeRun } from './after-writes';
 import { discordAlert } from './discord-alert';
 
-// the outcomes it shares with the handler (failed writes, refused retries, paused players) are in index.spec.ts
+// the outcomes it shares with the handler (failed sends, refused retries) are in index.spec.ts
 vi.mock('@lambda/shared/lambda.utils', () => ({ invokeAsync: vi.fn() }));
 vi.mock('@lambda/shared/sqs.utils', () => ({ sendScrapeResult: vi.fn() }));
 vi.mock('./discord-alert', () => ({ discordAlert: vi.fn() }));
@@ -24,7 +24,6 @@ function run(overrides: Partial<ScrapeRun>): ScrapeRun {
     found: [],
     failedUsernames: [],
     notFoundUsernames: [],
-    pausedUsernames: [],
     ...overrides,
   };
 }
@@ -36,31 +35,22 @@ describe('afterWrites', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(invokeAsync).mockResolvedValue(true);
-    vi.mocked(sendScrapeResult).mockResolvedValue(true);
+    vi.mocked(sendScrapeResult).mockResolvedValue();
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  describe('sends the found hiscores to the scrape results queue', () => {
+  describe('sends the results to the scrape results queue', () => {
     const alice = {
       username: 'alice',
       hiscore: { skills: { Overall: { rank: 1, level: 2277, xp: 4_600_000_000 } }, activities: {} },
       layout: { skills: ['Overall'], activities: [] },
     };
-    const settled = (result: PromiseSettledResult<number>) => ({
-      usernames: ['alice'],
-      result: Promise.resolve(result),
-    });
 
-    it('in one hiscores message, with the scrape time and offset, and without the not-found players', async () => {
+    it('in one hiscores message, with the scrape time, the offset and the not-found players', async () => {
       await afterWrites(
         clients,
-        run({
-          event: { usernames: [], scrapingOffset: -4 },
-          bulkWrite: settled({ status: 'fulfilled', value: 1 }),
-          found: [alice],
-          notFoundUsernames: ['bob'],
-        }),
+        run({ event: { usernames: [], scrapingOffset: -4 }, found: [alice], notFoundUsernames: ['bob'] }),
         context,
       );
 
@@ -73,49 +63,25 @@ describe('afterWrites', () => {
           scrapedAt: '2026-10-21T13:00:02.000Z',
           scrapingOffset: -4,
           found: [alice],
-          notFound: [],
+          notFound: ['bob'],
         },
       );
       expect(alerts()).toEqual([]);
     });
 
-    it('only once the bulk write settled', async () => {
-      let settle!: (result: PromiseSettledResult<number>) => void;
-      const result = new Promise<PromiseSettledResult<number>>((resolve) => (settle = resolve));
-
-      const done = afterWrites(clients, run({ bulkWrite: { usernames: ['alice'], result }, found: [alice] }), context);
-      await Promise.resolve();
-      expect(sendScrapeResult).not.toHaveBeenCalled();
-
-      settle({ status: 'fulfilled', value: 1 });
-      await done;
-      expect(sendScrapeResult).toHaveBeenCalledOnce();
-    });
-
-    it('also when the bulk write failed, so the ingester stores those entries', async () => {
-      await afterWrites(
-        clients,
-        run({ bulkWrite: settled({ status: 'rejected', reason: new Error('write conflict') }), found: [alice] }),
-        context,
-      );
-
-      expect(sendScrapeResult).toHaveBeenCalledOnce();
-      expect(alerts()).toEqual([['Failed to store hiscores', ['alice']]]);
-    });
-
-    it('sends nothing when no player was found', async () => {
-      await afterWrites(clients, run({ notFoundUsernames: ['bob'] }), context);
-
-      expect(sendScrapeResult).not.toHaveBeenCalled();
-    });
-
-    it("alerts on the message's players instead of throwing when SQS doesn't take it", async () => {
-      vi.mocked(sendScrapeResult).mockResolvedValue(false);
+    it("rejects with SQS's error, before requeueing or alerting, when SQS doesn't take it", async () => {
+      const error = new Error('Access denied');
+      vi.mocked(sendScrapeResult).mockRejectedValue(error);
 
       await expect(
-        afterWrites(clients, run({ bulkWrite: settled({ status: 'fulfilled', value: 1 }), found: [alice] }), context),
-      ).resolves.toBeUndefined();
-      expect(alerts()).toEqual([['Failed to send scrape results', ['alice']]]);
+        afterWrites(
+          clients,
+          run({ event: { usernames: [], scrapingOffset: 0, retry: MAX_RETRIES }, failedUsernames: ['carol'] }),
+          context,
+        ),
+      ).rejects.toBe(error);
+      expect(invokeAsync).not.toHaveBeenCalled();
+      expect(alerts()).toEqual([]);
     });
   });
 

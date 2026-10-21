@@ -40,13 +40,12 @@ describe('sendScrapeResult', () => {
 
   beforeEach(() => {
     send.mockReset();
-    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('sends the message as JSON in its group, without a deduplication ID, and returns true', async () => {
+  it('sends the message as JSON in its group, without a deduplication ID', async () => {
     send.mockResolvedValue({ MessageId: '1' });
 
-    expect(await sendScrapeResult(client, queueUrl, hiscores)).toBe(true);
+    await expect(sendScrapeResult(client, queueUrl, hiscores)).resolves.toBeUndefined();
     expect(send).toHaveBeenCalledExactlyOnceWith(expect.any(SendMessageCommand));
     expect(send.mock.calls[0][0].input).toEqual({
       QueueUrl: queueUrl,
@@ -55,14 +54,10 @@ describe('sendScrapeResult', () => {
     });
   });
 
-  it('never rejects: returns false and logs when the call fails', async () => {
+  it("rejects with SQS's error when the call fails", async () => {
     const error = new Error('Access denied');
     send.mockRejectedValue(error);
 
-    expect(await sendScrapeResult(client, queueUrl, playerCount)).toBe(false);
-    expect(console.error).toHaveBeenCalledWith('Failed to send a playerCount result to the scrape results queue', {
-      MessageGroupId: 'playerCount',
-      error,
-    });
+    await expect(sendScrapeResult(client, queueUrl, playerCount)).rejects.toBe(error);
   });
 });

@@ -13,28 +13,20 @@ export function scrapeResultGroupId(message: ScrapeResultMessage): string {
 /**
  * Sends `message` to the scrape results queue (`queueUrl`, FIFO) in its group ({@link scrapeResultGroupId}). No
  * deduplication ID: the queue deduplicates by content, and an ID shared by a slot's messages would drop all but one.
- * Never rejects: returns false, and logs the error, when SQS didn't take it, so process-players can use it after its
- * bulk writes. True without sending in `DRY_RUN`.
+ * Rejects with SQS's error when SQS didn't take it: the send is the scraping Lambdas' only write, so their run fails and
+ * the result isn't lost silently. Only logged in `DRY_RUN`.
  */
 export async function sendScrapeResult(
   sqsClient: SQSClient,
   queueUrl: string,
   message: ScrapeResultMessage,
-): Promise<boolean> {
+): Promise<void> {
   const MessageGroupId = scrapeResultGroupId(message);
 
-  if (DRY_RUN) {
-    logDryRun(`send a ${message.type} result to the scrape results queue in group ${MessageGroupId}`, message);
-    return true;
-  }
+  if (DRY_RUN)
+    return logDryRun(`send a ${message.type} result to the scrape results queue in group ${MessageGroupId}`, message);
 
-  try {
-    await sqsClient.send(
-      new SendMessageCommand({ QueueUrl: queueUrl, MessageGroupId, MessageBody: JSON.stringify(message) }),
-    );
-    return true;
-  } catch (e) {
-    console.error(`Failed to send a ${message.type} result to the scrape results queue`, { MessageGroupId, error: e });
-    return false;
-  }
+  await sqsClient.send(
+    new SendMessageCommand({ QueueUrl: queueUrl, MessageGroupId, MessageBody: JSON.stringify(message) }),
+  );
 }

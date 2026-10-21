@@ -1,8 +1,10 @@
 # Data model
 
-The `players` and `items` collections in MongoDB are written by two repos (`hiscoreLayouts`, `playerCounts` and
-`playerCountsDaily` by the Lambdas only, and read by both; `news` by the API only, `jobRuns` by its ingester only): the
-Lambdas in this repo and [osrs-tracker-api](https://github.com/osrs-tracker/osrs-tracker-api). This file says which side
+The `players` and `items` collections in MongoDB are written by two repos (`hiscoreLayouts` by the API and its ingester,
+`playerCounts` and `playerCountsDaily` by the ingester only, and read by both; `news` by the API only, `jobRuns` by its
+ingester only): the Lambdas in this repo and [osrs-tracker-api](https://github.com/osrs-tracker/osrs-tracker-api). Since
+#166, process-players and record-player-count write nothing to MongoDB: they send their results to the scrape results
+queue, and the API's ingester (`api:src/ingester/scrape-results.service.ts`) writes them. This file says which side
 writes each field and owns each index, so a change on one side doesn't break the other. The TypeScript shapes are in
 [`@osrs-tracker/models`](https://github.com/osrs-tracker/osrs-tracker-packages/tree/main/packages/models/src/models);
 this file covers who writes what and when.
@@ -23,20 +25,21 @@ hiscore entries left (not scraped or looked up for `MAX_AGE_IN_DAYS`); a lookup 
 | `combatLevel`, `type`, `status`, `diedAsHardcore` | API `refreshPlayerInfo`, from the four hiscore tables.                                                                                                                                                                                                                                                                                                                                                                                                   | API, web.                                                                                                   |
 | `lastModified`                                    | API `refreshPlayerInfo`: when the type and status were last determined.                                                                                                                                                                                                                                                                                                                                                                                  | API (refresh at most every `MIN_PLAYER_REFRESH_HOURS` = 2, and `Cache-Control`).                            |
 | `lastHiscoreFetch`                                | API `recordLookup` (`POST /players/:username/lookup`): when a visitor last looked the player up. Never set on insert, so players nobody looked up lack it.                                                                                                                                                                                                                                                                                               | API recent players list.                                                                                    |
-| `scrapingOffsets`                                 | API `refreshPlayerInfo` adds the requested offset (`$setUnion` with any `pausedScrapingOffsets`). process-players removes the field when it pauses the player. clean-hiscores drops an offset not looked up for 180 days (see `scrapingOffsetLookups`).                                                                                                                                                                                                  | The ingester's sync (to the subscriptions table), API (the player sitemap lists only players with offsets). |
-| `pausedScrapingOffsets`                           | process-players sets it when it pauses the player. API `refreshPlayerInfo` merges it back and unsets it.                                                                                                                                                                                                                                                                                                                                                 | API (a paused player still counts as tracked).                                                              |
+| `scrapingOffsets`                                 | API `refreshPlayerInfo` adds the requested offset (`$setUnion` with any `pausedScrapingOffsets`). The ingester removes the field when it pauses the player. clean-hiscores drops an offset not looked up for 180 days (see `scrapingOffsetLookups`).                                                                                                                                                                                                     | The ingester's sync (to the subscriptions table), API (the player sitemap lists only players with offsets). |
+| `pausedScrapingOffsets`                           | The ingester sets it when it pauses the player. API `refreshPlayerInfo` merges it back and unsets it.                                                                                                                                                                                                                                                                                                                                                    | API (a paused player still counts as tracked).                                                              |
 | `scrapingOffsetLookups`                           | API `recordLookup` sets `scrapingOffsetLookups.<offset>` (the offset as a string, `"-12"` to `"11"`) to the lookup time. clean-hiscores, every night: gives an offset without a date the current time, drops the offsets (active or paused) not looked up for 180 days with all their hiscore entries, but always keeps the most recently looked up one, and removes the keys of offsets the player no longer has.                                       | clean-hiscores.                                                                                             |
-| `hiscoreNotFoundCount`, `hiscoreNotFoundSince`    | process-players sets them on a 404/400 hiscore and unsets them on the next scraped entry. API `refreshPlayerInfo` also unsets them.                                                                                                                                                                                                                                                                                                                      | process-players, API (the player sitemap leaves them out).                                                  |
-| `hiscoreEntries`                                  | process-players prepends one entry per scrape. API `refreshPlayerInfo` prepends an initial entry when the player didn't have the requested offset. clean-hiscores pulls entries older than `MAX_AGE_IN_DAYS` (90), and all entries of an offset it drops.                                                                                                                                                                                                | API (the player sitemap reads the newest `d`), web.                                                         |
+| `hiscoreNotFoundCount`, `hiscoreNotFoundSince`    | The ingester sets them for a username in a `hiscores` message's `notFound` (a 404/400 hiscore) and unsets them on the next entry it stores. API `refreshPlayerInfo` also unsets them.                                                                                                                                                                                                                                                                    | The ingester, API (the player sitemap leaves them out).                                                     |
+| `hiscoreEntries`                                  | The ingester prepends one entry per found player in a `hiscores` message, unless it has one for that slot already. API `refreshPlayerInfo` prepends an initial entry when the player didn't have the requested offset. clean-hiscores pulls entries older than `MAX_AGE_IN_DAYS` (90), and all entries of an offset it drops.                                                                                                                            | API (the player sitemap reads the newest `d`), web.                                                         |
 | `trackedSince`, `refreshFailed`                   | Never stored: computed per response by the API.                                                                                                                                                                                                                                                                                                                                                                                                          | Web.                                                                                                        |
 
 `hiscoreEntries` is stored **newest first** in a compact format (since 2026-10-10, roadmap
 osrs-tracker/osrs-tracker-aws#52). Both writers prepend with `hiscoreEntriesWriteExpression` from `@osrs-tracker/models`
-(a pipeline update: process-players' bulk write, and the API's `buildRefreshUpdate` in
-`api:src/features/players/player.policy.ts`), and readers decode with `decodeHiscoreEntries`. Bare values only point to
-newer entries, so readers must decode from the newest entry, and the order matters: the API takes the first matching
-entry as the latest and the last as `trackedSince`, and its player sitemap (`GET /sitemap/players`,
-`api:src/features/players/player-sitemap.ts`) lists players whose first entry is at most 30 days old.
+(a pipeline update: the ingester's bulk write, `hiscoreEntryUpdate` in `api:src/ingester/scrape-results.ts`, and the
+API's `buildRefreshUpdate` in `api:src/features/players/player.policy.ts`), and readers decode with
+`decodeHiscoreEntries`. Bare values only point to newer entries, so readers must decode from the newest entry, and the
+order matters: the API takes the first matching entry as the latest and the last as `trackedSince`, and its player
+sitemap (`GET /sitemap/players`, `api:src/features/players/player-sitemap.ts`) lists players whose first entry is at
+most 30 days old.
 
 A change to this format that existing entries can't be decoded with (in `encodeHiscoreEntry`, `decodeHiscoreEntries`,
 `hiscoreEntriesWriteExpression` or `layoutId`) isn't a normal release: it needs a migration and every writer and reader
@@ -46,7 +49,7 @@ Each entry:
 
 | Field | Notes                                                                                                                                      |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `d`   | Date: scrape time. One time per process-players event, so every player in an event shares it.                                              |
+| `d`   | Date: scrape time. One time per process-players event (its message's `scrapedAt`), so every player in an event shares it.                  |
 | `o`   | Scraping offset. Usually one entry per offset per day (the API's initial entry can add a second on the first day).                         |
 | `l`   | Layout id: `_id` in [`hiscoreLayouts`](#hiscorelayouts), the skill and activity names the values are positioned by.                        |
 | `s`   | Skills by position in the layout. Index 0 (Overall) is always `[rank or null, level, xp]`; other levels are derived from xp when decoding. |
@@ -66,13 +69,15 @@ queues offset `12` together with `-12` (the same time); nothing writes `12`.
 A player who's off the hiscores (renamed, banned or unranked) shouldn't be scraped forever, but must come back when
 found again.
 
-1. **The Lambda counts 404s.** Only process-players counts. On a 404 or 400 hiscore it sets `hiscoreNotFoundSince` (if
-   not set) and increments `hiscoreNotFoundCount` (`MU.recordHiscoreNotFound`). The streak is date-based: once
-   `hiscoreNotFoundSince` is 7 days old (`HISCORE_NOT_FOUND_PAUSE_DAYS`), it moves `scrapingOffsets` into
-   `pausedScrapingOffsets` and removes `scrapingOffsets`, so the sync drops the player's subscription and queue-players
-   stops queueing them. History is kept.
-2. **A successful scrape ends the streak.** process-players unsets `hiscoreNotFoundCount` and `hiscoreNotFoundSince`
-   when it stores an entry.
+1. **The ingester counts 404s.** Only the ingester counts, from the `notFound` usernames process-players sends for a 404
+   or 400 hiscore. It sets `hiscoreNotFoundSince` (if not set) and increments `hiscoreNotFoundCount`
+   (`hiscoreNotFoundPipeline` in `api:src/ingester/scrape-results.ts`), and alerts on Discord when it pauses a player. A
+   repeated message counts once more, which changes nothing: the count is only read as "more than 0". The streak is
+   date-based: once `hiscoreNotFoundSince` is 7 days old (`HISCORE_NOT_FOUND_PAUSE_DAYS`), it moves `scrapingOffsets`
+   into `pausedScrapingOffsets` and removes `scrapingOffsets`, so the sync drops the player's subscription and
+   queue-players stops queueing them. History is kept.
+2. **A successful scrape ends the streak.** The ingester unsets `hiscoreNotFoundCount` and `hiscoreNotFoundSince` when
+   it stores an entry.
 3. **The API resumes.** A successful `refreshPlayerInfo` merges `pausedScrapingOffsets` (and the requested offset) into
    `scrapingOffsets` and unsets `pausedScrapingOffsets`, `hiscoreNotFoundSince` and `hiscoreNotFoundCount`.
 4. **The API never counts.** A refresh that isn't successful (404 or hiscores outage) writes nothing.
@@ -85,7 +90,7 @@ skill or activity gives a new layout; older entries keep theirs.
 | Field                  | Written by                                                                                                                                                                                               | Read by                      |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | `_id`                  | `layoutId(skills, activities)` from models: 32-bit FNV-1a over the names, as a signed int32. Writers upsert the layout **before** the first entry using it and fail when an existing id has other names. | API (cached).                |
-| `skills`, `activities` | `$setOnInsert` by process-players (`MU.ensureHiscoreLayouts`), the API, and once by the 2026-10-10 migration (a one-off script, removed since). Never changed after insert.                              | API, to decode entries.      |
+| `skills`, `activities` | `$setOnInsert` by the API and its ingester (`api:src/features/players/hiscore-layouts.service.ts`), and once by the 2026-10-10 migration (a one-off script, removed since). Never changed after insert.  | API, to decode entries.      |
 | `since`                | `$setOnInsert` (the first writer's scrape time); the migration lowered it with `$min` to the oldest entry using it.                                                                                      | clean-hiscores' 1-day guard. |
 
 clean-hiscores deletes layouts no entry uses that are older than a day (`since`), after its nightly pull. The guard
@@ -108,35 +113,35 @@ that run's delete when more than 50 would go (`MAX_REMOVED_ITEMS`), so a truncat
 One document per sample of the players online (`PlayerCount` in models), every 10 minutes (about 52,560 a year, roughly
 10 MB). Kept forever: nothing deletes or updates them.
 
-| Field                                             | Written by                                                                                                                                                                                                                                                                                                                                                                                              | Read by                                                      |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `date`                                            | record-player-count, `insertOne` per run: when it fetched Jagex's world list.                                                                                                                                                                                                                                                                                                                           | API (osrs-tracker/osrs-tracker-api#146: latest and history). |
-| `total`, `members`, `f2p`, `worlds`, `byLocation` | record-player-count, from the world list: players summed over every world (an offline world counts 0), split by the world's members flag; the number of worlds; players per raw location code, as a string key: 0 United States (east and west together), 1 United Kingdom, 3 Australia, 7 Germany, 8 Brazil, 9 Japan, 10 Singapore, 12 South Africa; a new code can appear when Jagex adds a location. | API.                                                         |
+| Field                                             | Written by                                                                                                                                                                                                                                                                                                                                                                                                                        | Read by                                                      |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `date`                                            | The ingester, from record-player-count's `playerCount` message: an upsert on `date` with `$setOnInsert`, so a repeated message stores nothing. When record-player-count fetched Jagex's world list.                                                                                                                                                                                                                               | API (osrs-tracker/osrs-tracker-api#146: latest and history). |
+| `total`, `members`, `f2p`, `worlds`, `byLocation` | The ingester, as record-player-count read them from the world list: players summed over every world (an offline world counts 0), split by the world's members flag; the number of worlds; players per raw location code, as a string key: 0 United States (east and west together), 1 United Kingdom, 3 Australia, 7 Germany, 8 Brazil, 9 Japan, 10 Singapore, 12 South Africa; a new code can appear when Jagex adds a location. | API.                                                         |
 
-A run that can't read the world list, or reads 0 worlds or 0 players, inserts nothing, so a gap in `date` is a missed
-sample, not a count of 0.
+A record-player-count run that can't read the world list, reads 0 worlds or 0 players, or can't send the message sends
+nothing, so a gap in `date` is a missed sample, not a count of 0.
 
 ## `playerCountsDaily`
 
 One document per UTC day that has [`playerCounts`](#playercounts) samples (`PlayerCountDay` in models): that day's
-averages, about 365 a year. record-player-count recomputes them on every run, after inserting its sample, with one
-aggregation over the samples from the newest stored day on (normally only today, also yesterday on the first run after
-midnight, every sample when the collection is empty) ending in `$merge` (`on: 'date'`, `whenMatched: 'replace'`).
-Recomputing instead of adding to running sums keeps it idempotent: the next run repairs a day that a failed or repeated
-run got wrong. The grouping and rounding are the API's daily history
+averages, about 365 a year. The ingester recomputes them for every `playerCount` message it applies, after storing its
+sample, with one aggregation over the samples from the start of the sample's UTC day on (so a late sample reaches its
+day) ending in `$merge` (`on: 'date'`, `whenMatched: 'replace'`). Recomputing instead of adding to running sums keeps it
+idempotent: a repeated message, or the retry of one whose recompute failed, gives the same days. Until #166
+record-player-count did this, from the newest stored day on. The grouping and rounding are the API's daily history
 (`api:src/features/player-counts/player-count-history.ts`), so the API answers the same from either. Nothing else writes
 or deletes them.
 
-| Field                     | Written by                                                                                                                                                  | Read by                                                              |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `date`                    | record-player-count: the UTC day's start (`$dateTrunc`).                                                                                                    | API (osrs-tracker/osrs-tracker-api#159: the `1y` and `all` history). |
-| `total`, `members`, `f2p` | record-player-count: the day's averages of the samples' fields, `$round`ed (half to even), so `members + f2p` can be one off `total`.                       | API.                                                                 |
-| `byLocation`              | record-player-count: the average per location code over the samples that have the code (one that appears mid-day averages only the samples since), rounded. | API.                                                                 |
-| `peak`                    | record-player-count: the highest `total` sampled that day.                                                                                                  | API.                                                                 |
-| `samples`                 | record-player-count: how many samples the day averages. Today's is partial; a whole day has 144, fewer when samples were missed.                            | API.                                                                 |
+| Field                     | Written by                                                                                                                                           | Read by                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `date`                    | The ingester: the UTC day's start (`$dateTrunc`).                                                                                                    | API (osrs-tracker/osrs-tracker-api#159: the `1y` and `all` history). |
+| `total`, `members`, `f2p` | The ingester: the day's averages of the samples' fields, `$round`ed (half to even), so `members + f2p` can be one off `total`.                       | API.                                                                 |
+| `byLocation`              | The ingester: the average per location code over the samples that have the code (one that appears mid-day averages only the samples since), rounded. | API.                                                                 |
+| `peak`                    | The ingester: the highest `total` sampled that day.                                                                                                  | API.                                                                 |
+| `samples`                 | The ingester: how many samples the day averages. Today's is partial; a whole day has 144, fewer when samples were missed.                            | API.                                                                 |
 
-A day without samples has no document, so a gap stays a gap. When the recompute fails, the sample is still stored and
-the run alerts (`Daily player counts not updated`) without failing.
+A day without samples has no document, so a gap stays a gap. When the recompute fails, the message fails and comes back:
+its retry finds the sample stored and recomputes the days again.
 
 ## `news`
 
@@ -204,18 +209,18 @@ last copy while MongoDB is unreachable.
 
 One owner per index. The owner creates it; everyone else may rely on it (`hint`) but shouldn't create it.
 
-| Collection          | Index                                           | Owner (creates it)                                                                             | Relied on by                                                                                                                          |
-| ------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `players`           | `{ username: 1 }`, unique                       | API, at startup (`api:src/common/mongo/mongo.provider.ts`)                                     | API `hint` in `getPlayer`, `recordLookup`, `refreshPlayerInfo`; process-players `hint` in its bulk write and `recordHiscoreNotFound`. |
-| `players`           | `{ lastHiscoreFetch: -1 }`, partial (`$exists`) | API, at startup                                                                                | API `getLastFetchedPlayers` (`hint`).                                                                                                 |
-| `items`             | `{ id: 1 }`, unique                             | API, at startup                                                                                | API `getItem`, `recordLookup` (`hint`); refresh-items upsert and delete (`hint`).                                                     |
-| `items`             | `name_autocomplete`, Atlas Search               | API, at startup when missing                                                                   | API `searchItems` (`$search`).                                                                                                        |
-| `items`             | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).                     |
-| `items`             | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                                | API `getLastFetchedItems` (`hint`).                                                                                                   |
-| `playerCounts`      | `{ date: 1 }`                                   | record-player-count, on every run (`aws:lambda/osrs-tracker_record-player-count/src/index.ts`) | API latest count and history ranges.                                                                                                  |
-| `playerCountsDaily` | `{ date: 1 }`, unique                           | record-player-count, on every run                                                              | record-player-count `$merge` (its `on` needs a unique index) and newest-day lookup; API `1y` and `all` history.                       |
-| `news`              | `{ link: 1 }`, unique                           | API, at startup                                                                                | API `storeNews` upsert (no `hint`).                                                                                                   |
-| `news`              | `{ pubDate: -1 }`                               | API, at startup                                                                                | API `getNewsSince` (no `hint`).                                                                                                       |
+| Collection          | Index                                           | Owner (creates it)                                                                                       | Relied on by                                                                                                           |
+| ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `players`           | `{ username: 1 }`, unique                       | API, at startup (`api:src/common/mongo/mongo.provider.ts`)                                               | API `hint` in `getPlayer`, `recordLookup`, `refreshPlayerInfo`; the ingester `hint` in its entry and not-found writes. |
+| `players`           | `{ lastHiscoreFetch: -1 }`, partial (`$exists`) | API, at startup                                                                                          | API `getLastFetchedPlayers` (`hint`).                                                                                  |
+| `items`             | `{ id: 1 }`, unique                             | API, at startup                                                                                          | API `getItem`, `recordLookup` (`hint`); refresh-items upsert and delete (`hint`).                                      |
+| `items`             | `name_autocomplete`, Atlas Search               | API, at startup when missing                                                                             | API `searchItems` (`$search`).                                                                                         |
+| `items`             | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                          | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).      |
+| `items`             | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                                          | API `getLastFetchedItems` (`hint`).                                                                                    |
+| `playerCounts`      | `{ date: 1 }`                                   | The ingester (osrs-tracker/osrs-tracker-api#205); record-player-count created it on every run until #166 | API latest count and history ranges; the ingester's upsert on `date`.                                                  |
+| `playerCountsDaily` | `{ date: 1 }`, unique                           | The ingester (osrs-tracker/osrs-tracker-api#205); record-player-count created it on every run until #166 | The ingester's `$merge` (its `on` needs a unique index); API `1y` and `all` history.                                   |
+| `news`              | `{ link: 1 }`, unique                           | API, at startup                                                                                          | API `storeNews` upsert (no `hint`).                                                                                    |
+| `news`              | `{ pubDate: -1 }`                               | API, at startup                                                                                          | API `getNewsSince` (no `hint`).                                                                                        |
 
 `name_autocomplete` is an Atlas Search index (`listSearchIndexes`, not `indexes()`): `name` as `autocomplete`
 (`edgeGram`, `minGrams` 2, `maxGrams` 15, `foldDiacritics`) and `string`, `dynamic: false`. The API creates it only when
@@ -243,9 +248,9 @@ What the live database holds beyond what the code above writes. Recheck (read-on
   `scrapingOffsets: []` whose entries aged out, 9 looked up before tracking existed with neither field) were deleted by
   clean-hiscores that day; it deletes any new ones nightly.
 - **`scrapingOffsets: []`** on 8 players that still have entries (2026-10-10), from older code (current code always adds
-  the requested offset). queue-players doesn't queue them and process-players won't pause them (it only pauses a
-  non-empty `scrapingOffsets`); a lookup gives them an offset again. Otherwise their entries age out and clean-hiscores
-  deletes them.
+  the requested offset). queue-players doesn't queue them and the ingester won't pause them (it only pauses a non-empty
+  `scrapingOffsets`); a lookup gives them an offset again. Otherwise their entries age out and clean-hiscores deletes
+  them.
 - **Offsets in use**: -12, -6, -4, -3, 0, 1, 2, 3; 0 for over 90% of entries. Per player (2026-10-10): 469 have one
   offset, 32 two, 5 three. No `scrapingOffsetLookups` yet: clean-hiscores dates every current offset on its first run
   after 2026-10-10, so the first drops come 180 days after that.

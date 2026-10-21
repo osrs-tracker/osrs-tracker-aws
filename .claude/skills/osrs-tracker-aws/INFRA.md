@@ -35,14 +35,14 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 - Each function's limits and async retries (all arm64, nodejs24.x). Retries are turned off with
   `put-function-event-invoke-config --maximum-retry-attempts 0`; without that config Lambda retries twice.
 
-  | Function            | Timeout | Memory | Async retries                                                                                                                           |
-  | ------------------- | ------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-  | alarm-to-discord    | 10 s    | 256 MB | default (2): it throws when a message isn't an alarm or Discord can't be reached; a duplicate alert beats a lost one                    |
-  | clean-hiscores      | 60 s    | 256 MB | 0: a retry would send the "No hiscores scraped" alert again, and the next night's run catches up a missed clean-up                      |
-  | process-players     | 60 s    | 256 MB | 2, max event age 1 h, on failure to `osrs-tracker_players-to-scrape-dead`: it throws only when nothing was written. Never 0 (see below) |
-  | queue-players       | 30 s    | 256 MB | 0: a retry after its first invoke would queue the hour's players again (a second snapshot that day)                                     |
-  | record-player-count | 30 s    | 256 MB | 0: a missed sample stays missed, and a retry would send the same alert again                                                            |
-  | refresh-items       | 30 s    | 256 MB | default (2): its upserts are idempotent                                                                                                 |
+  | Function            | Timeout | Memory | Async retries                                                                                                                                                 |
+  | ------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | alarm-to-discord    | 10 s    | 256 MB | default (2): it throws when a message isn't an alarm or Discord can't be reached; a duplicate alert beats a lost one                                          |
+  | clean-hiscores      | 60 s    | 256 MB | 0: a retry would send the "No hiscores scraped" alert again, and the next night's run catches up a missed clean-up                                            |
+  | process-players     | 60 s    | 256 MB | 2, max event age 1 h, on failure to `osrs-tracker_players-to-scrape-dead`: it throws only when there's nothing to send or the send fails. Never 0 (see below) |
+  | queue-players       | 30 s    | 256 MB | 0: a retry after its first invoke would queue the hour's players again (a second snapshot that day)                                                           |
+  | record-player-count | 30 s    | 256 MB | 0: a missed sample stays missed, and a retry would send the same alert again                                                                                  |
+  | refresh-items       | 30 s    | 256 MB | default (2): its upserts are idempotent                                                                                                                       |
 
 - queue-players invokes process-players asynchronously (`InvocationType: 'Event'`), one event
   `{ usernames, scrapingOffset }` per `PLAYERS_PER_EVENT` players. Lambda's own event queue holds the events: nothing
@@ -51,13 +51,13 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
   Events past 5 at once are throttled and wait in Lambda's queue, retried with backoff (1 s up to 5 min apart) until the
   max event age, not failed. So the 00:00 UTC run (offset 0, about 54 events) takes roughly 10 to 20 minutes to drain,
   against 3.5 with SQS. That's expected, not a fault.
-- Its async retries handle the one throw, when every scrape in an event failed (usually a hiscores or proxy outage):
-  Lambda retries the event 1 and then 2 minutes later. Retries at 0 would drop those events at once.
-- Players whose fetch failed in a run that wrote others are requeued: process-players invokes itself with them and
+- Its async retries handle its two throws, when every scrape in an event failed (usually a hiscores or proxy outage) or
+  the results queue didn't take its message: Lambda retries the event 1 and then 2 minutes later. Retries at 0 would
+  drop those events at once.
+- Players whose fetch failed in a run that sent others are requeued: process-players invokes itself with them and
   `retry` counted up, at most 3 times (`MAX_RETRIES`); after that it alerts `Gave up retrying` instead. Lambda's
   recursive loop detection would stop a chain at about 16 invocations; this one has at most 5.
-- Async invokes are at-least-once: rarely, an event runs twice and stores a duplicate hiscore entry, as SQS redelivery
-  could.
+- Async invokes are at-least-once: rarely, an event runs twice, and the ingester's slot guard skips the second entry.
 - An event whose attempts all failed, or that waited past the max event age, goes to the on-failure destination,
   `osrs-tracker_players-to-scrape-dead` (SQS, kept 7 days), as an invocation record: the event is under
   `requestPayload`, next to `requestContext` (`condition`: `RetriesExhausted` or `EventAgeExceeded`;
@@ -78,7 +78,7 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. queue-players reads the table since #164.
 
 - `osrs-tracker_scrape-results.fifo` carries the scrape results from process-players and record-player-count (#165,
-  `SCRAPE_RESULTS_QUEUE_URL`; both still write MongoDB too until #166) to the ingester on fremen-server
+  `SCRAPE_RESULTS_QUEUE_URL`; since #166 their only output: neither writes MongoDB) to the ingester on fremen-server
   (osrs-tracker/osrs-tracker-api#203), which long-polls it once a minute and applies them to MongoDB.
   - **Never a standard queue**: FIFO keeps the results in order per message group (one per offset, plus `playerCount`).
   - **Content-based deduplication only.** An explicit deduplication ID such as `slot:offset` would be shared by the ~54
@@ -114,20 +114,17 @@ Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. queue-players 
 An alert's title links to the invocation's log stream and its author to the Lambda's monitoring tab: read that stream
 first (logs are kept 7 days).
 
-| Alert                                                 | Means                                                                                                                                                                           | Do                                                                                                                                                   |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| clean-hiscores `No hiscores scraped`                  | No player has an entry from the last 2 days: scraping stopped (EventBridge `Hourly`, queue-players or process-players).                                                         | Check the latest queue-players and process-players runs and the dead queue.                                                                          |
-| queue-players `No subscriptions`                      | `osrs-tracker_subscriptions` is empty, so nothing was queued this hour. The sync never empties it (its delete guard): someone emptied or replaced it.                           | Read the ingester's `Subscriptions` logs on the cluster; its next sync (every 15 minutes) refills the table from MongoDB.                            |
-| queue-players `Failed to queue players`               | Lambda refused async invokes of process-players: those players miss this hour's scrape.                                                                                         | Read the logged errors (throttling, permissions); they're scraped again the next day.                                                                |
-| process-players `No players were updated`             | Every fetch in a requeued event failed (usually a hiscores or proxy outage), or its hiscore layout couldn't be stored (Atlas unreachable). Lambda retries, then the dead queue. | Check the proxy and Jagex's hiscores; then handle the dead queue as above.                                                                           |
-| process-players `Gave up retrying`                    | These players' fetches failed in 4 runs in a row (requeued 3 times): they miss today.                                                                                           | Check the proxy and Jagex's hiscores for them. Nothing unless it repeats.                                                                            |
-| process-players `Failed to store hiscores`            | A bulk write failed after the fetches: those players have no entry for today.                                                                                                   | Check Atlas (limits, connectivity) in the logs. Don't requeue by hand on a day they already have an entry.                                           |
-| process-players `Failed to send scrape results`       | The results queue didn't take the run's `hiscores` message (logged with its error). Their entries are in MongoDB while process-players still writes them (until #166).          | Read the logged error (permissions on `AWS_Lambda`, the queue URL). Nothing to replay before #166.                                                   |
-| process-players `Failed to queue retries`             | Lambda refused the retry events for failed players: they miss today.                                                                                                            | Read the logged errors.                                                                                                                              |
-| process-players `Paused scraping`                     | Players off the hiscores for 7 days were paused (expected for renames and bans).                                                                                                | Nothing; a lookup in the API resumes them ([DATA-MODEL.md](../../../DATA-MODEL.md)).                                                                 |
-| record-player-count `Player count not recorded`       | Jagex's world list failed, didn't parse (a format change) or had no worlds or players: no sample for those 10 minutes. Repeats every run until it's fixed.                      | Read the error in the alert. A format change needs `parseWorldList` updated against a fresh response.                                                |
-| record-player-count `Player count not sent`           | The results queue didn't take the sample's `playerCount` message. The sample is stored in MongoDB (until #166).                                                                 | Read the logged error (permissions, the queue URL). Nothing to replay before #166.                                                                   |
-| record-player-count `Daily player counts not updated` | The sample was stored, but recomputing the daily averages (`playerCountsDaily`) failed. The next run recomputes every day it missed. Repeats every run while it lasts.          | Nothing for a one-off. When it repeats, read the error: Atlas connectivity or limits, or the Lambda's database user can't write `playerCountsDaily`. |
+| Alert                                           | Means                                                                                                                                                                                                   | Do                                                                                                                        |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| clean-hiscores `No hiscores scraped`            | No player has an entry from the last 2 days: scraping stopped (EventBridge `Hourly`, queue-players or process-players), or the ingester isn't applying the results queue.                               | Check the latest queue-players and process-players runs and the dead queue.                                               |
+| queue-players `No subscriptions`                | `osrs-tracker_subscriptions` is empty, so nothing was queued this hour. The sync never empties it (its delete guard): someone emptied or replaced it.                                                   | Read the ingester's `Subscriptions` logs on the cluster; its next sync (every 15 minutes) refills the table from MongoDB. |
+| queue-players `Failed to queue players`         | Lambda refused async invokes of process-players: those players miss this hour's scrape.                                                                                                                 | Read the logged errors (throttling, permissions); they're scraped again the next day.                                     |
+| process-players `No players were updated`       | Every fetch in a requeued event failed (usually a hiscores or proxy outage). Lambda retries, then the dead queue.                                                                                       | Check the proxy and Jagex's hiscores; then handle the dead queue as above.                                                |
+| process-players `Gave up retrying`              | These players' fetches failed in 4 runs in a row (requeued 3 times): they miss today.                                                                                                                   | Check the proxy and Jagex's hiscores for them. Nothing unless it repeats.                                                 |
+| process-players `Failed to queue retries`       | Lambda refused the retry events for failed players: they miss today.                                                                                                                                    | Read the logged errors.                                                                                                   |
+| record-player-count `Player count not recorded` | Jagex's world list failed, didn't parse (a format change) or had no worlds or players, or the results queue didn't take the sample: no sample for those 10 minutes. Repeats every run until it's fixed. | Read the error in the alert. A format change needs `parseWorldList` updated against a fresh response.                     |
+
+The ingester's own alerts, such as `Paused scraping`, come from osrs-tracker-api since #166.
 
 ### CloudWatch alarms
 

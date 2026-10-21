@@ -11,8 +11,8 @@ Each job is a small AWS Lambda function in [`lambda/`](lambda):
 | -------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [refresh‑items](lambda/osrs-tracker_refresh-items)             | Hourly              | Fetches the full item list from the [OSRS Wiki prices API](https://prices.runescape.wiki) and saves it to the database, then removes items no longer on the GE.                                                                           |
 | [queue‑players](lambda/osrs-tracker_queue-players)             | Hourly              | Finds the tracked players whose daily snapshot is due at that hour and hands them to process-players.                                                                                                                                     |
-| [process‑players](lambda/osrs-tracker_process-players)         | After queue‑players | Fetches the player's current hiscores and saves them as a new daily snapshot. Failures are retried, and persistent ones are reported on Discord. Players off the hiscores for 7 days stop being queued until someone looks them up again. |
-| [record‑player‑count](lambda/osrs-tracker_record-player-count) | Every 10 minutes    | Records how many players are online, from Jagex's world list, to chart the player count over time, and keeps each day's averages. Reports on Discord when the list can't be read.                                                         |
+| [process‑players](lambda/osrs-tracker_process-players)         | After queue‑players | Fetches the player's current hiscores and hands them to the ingester, which saves them as a new daily snapshot. Failures are retried, and persistent ones are reported on Discord. Players off the hiscores for 7 days stop being queued. |
+| [record‑player‑count](lambda/osrs-tracker_record-player-count) | Every 10 minutes    | Counts how many players are online, from Jagex's world list, and hands the count to the ingester, which stores it and each day's averages. Reports on Discord when the list can't be read.                                                |
 | [clean‑hiscores](lambda/osrs-tracker_clean-hiscores)           | Nightly             | At midnight (UTC), drops scraping offsets nobody looked up for 180 days, removes snapshots older than 90 days, deletes players with no snapshots left, and alerts when scraping has stopped.                                              |
 | [alarm‑to‑discord](lambda/osrs-tracker_alarm-to-discord)       | On an alarm         | Posts the CloudWatch alarm on any job's errors (a failed run, a timeout, a bad configuration) to Discord, and again when it recovers. The alarms also go out by email.                                                                    |
 
@@ -24,10 +24,12 @@ install them from npm.
 
 ## How it fits together
 
-The jobs collect item and player data into a MongoDB database. The [website](https://osrs-tracker.freekmencke.com)
-([osrs-tracker-web](https://github.com/osrs-tracker/osrs-tracker-web)) and the
-[API](https://github.com/osrs-tracker/osrs-tracker-api) read that data to show prices and player progress. Hiscores are
-fetched from Jagex through a small proxy (`runescape-api.freekmencke.com`), which the website and the API use as well.
+The jobs collect item and player data into a MongoDB database: process-players and record-player-count send their
+results to a queue, which the API's ingester applies to the database. The
+[website](https://osrs-tracker.freekmencke.com) ([osrs-tracker-web](https://github.com/osrs-tracker/osrs-tracker-web))
+and the [API](https://github.com/osrs-tracker/osrs-tracker-api) read that data to show prices and player progress.
+Hiscores are fetched from Jagex through a small proxy (`runescape-api.freekmencke.com`), which the website and the API
+use as well.
 
 The jobs and the API write to the same collections. [DATA-MODEL.md](DATA-MODEL.md) describes which side writes each
 field and owns each index.
@@ -52,8 +54,7 @@ What goes in `.env` (each job's `.env.example` lists the ones it needs):
 | Variable                               | Locally                                                                                               |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `MONGODB_URI`, `MONGODB_DATABASE`      | The Atlas cluster's connection string and database name.                                              |
-| `MONGODB_COLLECTION`                   | `players`, `items` for refresh-items, `playerCounts` for record-player-count.                         |
-| `MONGODB_DAILY_COLLECTION`             | `playerCountsDaily` (record-player-count only).                                                       |
+| `MONGODB_COLLECTION`                   | `players`, `items` for refresh-items.                                                                 |
 | `MONGODB_USERNAME`, `MONGODB_PASSWORD` | An Atlas database user. Required locally: without them the driver tries AWS authentication and fails. |
 | `OSRS_API_BASE_URL`                    | The hiscore proxy, `https://runescape-api.freekmencke.com/rs`.                                        |
 | `PLAYERS_PER_EVENT`                    | Any whole number of at least 1; it only changes how the logged events are grouped.                    |

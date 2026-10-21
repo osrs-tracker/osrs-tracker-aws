@@ -18,13 +18,10 @@
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.1145.0",
     "@aws-sdk/client-sqs": "^3.1154.0",
-    "@aws-sdk/credential-providers": "^3.1145.0",
     "@lambda/shared": "*",
     "@osrs-tracker/hiscores": "^6.0.0",
     "@osrs-tracker/models": "^3.2.0",
-    "date-fns": "^4.4.0",
-    "envalid": "^8.2.0",
-    "mongodb": "^7.7.0"
+    "envalid": "^8.2.0"
   },
   "engines": {
     "node": ">=24"

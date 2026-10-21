@@ -32,8 +32,6 @@ Keep detail there, not in this file.
 - Every write goes through a `DRY_RUN`-aware helper (Mongo in `MU`, `invokeAsync`, `sendScrapeResult`, `discordAlert`).
 - Lambda deploys go live immediately: get an explicit go-ahead (a "release it" counts). Mutating `aws` commands follow
   `INFRA.md`: show the exact command and wait for approval.
-- process-players must not throw after its bulk writes: Lambda would retry the event and store duplicate hiscore
-  entries.
 - A change to a shared field or index updates `DATA-MODEL.md` in the same change, plus an issue in osrs-tracker-api when
   it has to follow.
 - Every change except a doc-only one gets a changelog entry: Lambdas, infra, CI and tooling (`.claude/hooks/`,
