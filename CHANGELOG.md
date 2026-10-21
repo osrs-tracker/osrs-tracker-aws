@@ -31,7 +31,8 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   `lambda/shared/src/sqs.utils.ts` gets `sendScrapeResult` (`DRY_RUN`-aware), and `@aws-sdk/client-sqs` adds about 36 KB
   (minified) to each bundle. The other Lambdas move to `@osrs-tracker/models` 3.2.0 too (for `ScrapeResultMessage`), and
   process-players and record-player-count to `@osrs-tracker/hiscores` 6.0.0, the first to accept models 3. Neither major
-  removed anything the Lambdas use.
+  removed anything the Lambdas use. Deployed at 16:10 UTC as process-players version 54 and record-player-count version
+  5, commit ea2ab00, after adding `SCRAPE_RESULTS_QUEUE_URL` to both functions.
 - queue-players reads who to scrape from the DynamoDB table `osrs-tracker_subscriptions` instead of MongoDB (issue #164,
   roadmap #162): a Scan of the whole table each hour, keeping the players whose `scrapingOffsets` have the hour's
   offset. Once MongoDB moves into the cluster the Lambda can't reach it, and the table, which osrs-tracker-api's

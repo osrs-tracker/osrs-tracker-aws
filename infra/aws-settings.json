@@ -386,6 +386,7 @@
         "MONGODB_URI",
         "OSRS_API_BASE_URL",
         "PLAYERS_PER_EVENT",
+        "SCRAPE_RESULTS_QUEUE_URL",
         "WEBHOOK_URL"
       ],
       "ephemeralStorageMB": 512,
@@ -439,6 +440,7 @@
         "MONGODB_DAILY_COLLECTION",
         "MONGODB_DATABASE",
         "MONGODB_URI",
+        "SCRAPE_RESULTS_QUEUE_URL",
         "WEBHOOK_URL"
       ],
       "ephemeralStorageMB": 512,
