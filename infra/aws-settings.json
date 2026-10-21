@@ -184,6 +184,75 @@
       "statistic": "Sum",
       "threshold": 1.0,
       "treatMissingData": "notBreaching"
+    },
+    "osrs-tracker_scrape-results-age-10d": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanThreshold",
+      "datapointsToAlarm": null,
+      "description": "The oldest scrape result has waited over 10 days: results start expiring in 4 days, and scrape history is lost with them. Get the ingester applying them now. See INFRA.md, Scrape results and subscriptions",
+      "dimensions": {
+        "QueueName": "osrs-tracker_scrape-results.fifo"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "ApproximateAgeOfOldestMessage",
+      "namespace": "AWS/SQS",
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
+      "periodSeconds": 3600,
+      "statistic": "Maximum",
+      "threshold": 864000.0,
+      "treatMissingData": "notBreaching"
+    },
+    "osrs-tracker_scrape-results-age-2d": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanThreshold",
+      "datapointsToAlarm": null,
+      "description": "The oldest scrape result has waited over 2 days: the ingester on fremen-server isn't applying them (cluster down, ingester failing, or its key or IP condition out of date). Results expire after 14 days. See INFRA.md, Scrape results and subscriptions",
+      "dimensions": {
+        "QueueName": "osrs-tracker_scrape-results.fifo"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "ApproximateAgeOfOldestMessage",
+      "namespace": "AWS/SQS",
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
+      "periodSeconds": 3600,
+      "statistic": "Maximum",
+      "threshold": 172800.0,
+      "treatMissingData": "notBreaching"
+    },
+    "osrs-tracker_scrape-results-dead-messages": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "Scrape results failed 10 receives and moved to the dead-letter queue: the ingester can't apply them. Read the ingester's logs. See INFRA.md, Scrape results and subscriptions",
+      "dimensions": {
+        "QueueName": "osrs-tracker_scrape-results-dead.fifo"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "namespace": "AWS/SQS",
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
+      "periodSeconds": 300,
+      "statistic": "Maximum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
     }
   },
   "httpApis": {
@@ -421,6 +490,37 @@
       "retentionSeconds": 604800,
       "sseManaged": true,
       "visibilityTimeoutSeconds": 30
+    },
+    "osrs-tracker_scrape-results-dead.fifo": {
+      "delaySeconds": 0,
+      "fifo": {
+        "contentBasedDeduplication": true,
+        "deduplicationScope": "queue",
+        "throughputLimit": "perQueue"
+      },
+      "maxMessageBytes": 1048576,
+      "receiveWaitSeconds": 0,
+      "redrive": null,
+      "retentionSeconds": 1209600,
+      "sseManaged": true,
+      "visibilityTimeoutSeconds": 30
+    },
+    "osrs-tracker_scrape-results.fifo": {
+      "delaySeconds": 0,
+      "fifo": {
+        "contentBasedDeduplication": true,
+        "deduplicationScope": "queue",
+        "throughputLimit": "perQueue"
+      },
+      "maxMessageBytes": 1048576,
+      "receiveWaitSeconds": 0,
+      "redrive": {
+        "deadLetterQueue": "osrs-tracker_scrape-results-dead.fifo",
+        "maxReceiveCount": 10
+      },
+      "retentionSeconds": 1209600,
+      "sseManaged": true,
+      "visibilityTimeoutSeconds": 60
     }
   },
   "region": "eu-central-1",
@@ -474,6 +574,24 @@
           "pending": 0
         }
       }
+    }
+  },
+  "tables": {
+    "osrs-tracker_subscriptions": {
+      "attributes": {
+        "username": "S"
+      },
+      "billingMode": "PROVISIONED",
+      "deletionProtection": true,
+      "keys": {
+        "username": "HASH"
+      },
+      "pointInTimeRecovery": "DISABLED",
+      "readCapacity": 5,
+      "sse": "AWS owned key",
+      "stream": null,
+      "tableClass": "STANDARD",
+      "writeCapacity": 5
     }
   }
 }

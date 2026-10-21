@@ -74,19 +74,43 @@ for rule in $(aws events list-rules --query 'Rules[].Name' |
     "$defs"'{($rule): ($r[0] + {targets: ([$t[0][] | name] | sort)})}' >"$tmp/schedule-$rule.json"
 done
 
-# SQS queues
+# SQS queues. A standard queue rejects the FIFO-only attribute names (InvalidAttributeName), so only a `.fifo` queue is
+# asked for them
 for url in $(aws sqs list-queues --queue-name-prefix osrs-tracker --query 'QueueUrls || `[]`' | jq -r '.[]'); do
   queue=${url##*/}
+  fifoAttributes=()
+  [[ $queue == *.fifo ]] && fifoAttributes=(FifoQueue ContentBasedDeduplication DeduplicationScope FifoThroughputLimit)
   aws sqs get-queue-attributes --queue-url "$url" --attribute-names VisibilityTimeout MessageRetentionPeriod \
     ReceiveMessageWaitTimeSeconds DelaySeconds MaximumMessageSize RedrivePolicy SqsManagedSseEnabled \
-    --query Attributes >"$tmp/attributes.json"
-  jq --arg q "$queue" "$defs"'{($q): {
+    "${fifoAttributes[@]}" --query Attributes >"$tmp/attributes.json"
+  jq --arg q "$queue" "$defs"'{($q): ({
     visibilityTimeoutSeconds: (.VisibilityTimeout | num), retentionSeconds: (.MessageRetentionPeriod | num),
     receiveWaitSeconds: (.ReceiveMessageWaitTimeSeconds | num), delaySeconds: (.DelaySeconds | num),
     maxMessageBytes: (.MaximumMessageSize | num), sseManaged: (.SqsManagedSseEnabled == "true"),
     redrive: (.RedrivePolicy | if . then fromjson | {deadLetterQueue: (.deadLetterTargetArn | name), maxReceiveCount}
       else null end)
-  }}' "$tmp/attributes.json" >"$tmp/queue-$queue.json"
+  } + if .FifoQueue == "true" then {fifo: {contentBasedDeduplication: (.ContentBasedDeduplication == "true"),
+    deduplicationScope: .DeduplicationScope, throughputLimit: .FifoThroughputLimit}} else {} end)}' \
+    "$tmp/attributes.json" >"$tmp/queue-$queue.json"
+done
+
+# DynamoDB tables, with their point-in-time recovery status (no ARNs or table IDs)
+for table in $(aws dynamodb list-tables --query 'TableNames' | jq -r '.[] | select(startswith("osrs-tracker"))'); do
+  aws dynamodb describe-table --table-name "$table" --query 'Table.{keys: KeySchema, attributes: AttributeDefinitions,
+    billingMode: BillingModeSummary.BillingMode, readCapacity: ProvisionedThroughput.ReadCapacityUnits,
+    writeCapacity: ProvisionedThroughput.WriteCapacityUnits, deletionProtection: DeletionProtectionEnabled,
+    tableClass: TableClassSummary.TableClass, sse: SSEDescription.SSEType, stream: StreamSpecification}' \
+    >"$tmp/describe.json"
+  aws dynamodb describe-continuous-backups --table-name "$table" \
+    --query 'ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus' >"$tmp/pitr.json"
+  # without a BillingModeSummary or TableClassSummary, a table has the defaults: provisioned, standard; without an
+  # SSEDescription, it's encrypted with a key AWS owns
+  jq --arg t "$table" --slurpfile pitr "$tmp/pitr.json" '{($t): (. + {
+    keys: (.keys | map({(.AttributeName): .KeyType}) | add),
+    attributes: (.attributes | map({(.AttributeName): .AttributeType}) | add),
+    billingMode: (.billingMode // "PROVISIONED"), tableClass: (.tableClass // "STANDARD"),
+    sse: (.sse // "AWS owned key"), pointInTimeRecovery: $pitr[0]
+  })}' "$tmp/describe.json" >"$tmp/table-$table.json"
 done
 
 # Every HTTP API's ID and name. The IDs are what an alarm's `ApiId` dimension holds; they and the integrations' IDs
@@ -168,9 +192,10 @@ done
 # One object per section from its per-resource files ({} when there are none)
 section() { if compgen -G "$tmp/$1-*.json" >/dev/null; then jq -s 'add' "$tmp/$1"-*.json; else echo '{}'; fi; }
 jq -n -S --argjson lambdas "$(section lambda)" --argjson schedules "$(section schedule)" \
-  --argjson queues "$(section queue)" --slurpfile alarms "$tmp/alarms.json" --argjson topics "$(section topic)" \
-  --argjson apis "$(section api)" '{region: env.AWS_REGION, lambdas: $lambdas, schedules: $schedules, queues: $queues,
-    alarms: $alarms[0], snsTopics: $topics, httpApis: $apis}' >"$tmp/out.json"
+  --argjson queues "$(section queue)" --argjson tables "$(section table)" --slurpfile alarms "$tmp/alarms.json" \
+  --argjson topics "$(section topic)" --argjson apis "$(section api)" '{region: env.AWS_REGION, lambdas: $lambdas,
+    schedules: $schedules, queues: $queues, tables: $tables, alarms: $alarms[0], snsTopics: $topics,
+    httpApis: $apis}' >"$tmp/out.json"
 
 if grep -nE 'arn:|[0-9]{12}|amazonaws\.com|execute-api' "$tmp/out.json" >&2 ||
   { [ -s "$tmp/ids.txt" ] && grep -nF -f "$tmp/ids.txt" "$tmp/out.json" >&2; }; then

@@ -7,6 +7,20 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
 
 ## 2026-10-21
 
+### Infra
+
+- Set up the AWS side of MongoDB's move to fremen-server (issue #163, roadmap #162), unused until #164 and #165:
+  - the FIFO queue `osrs-tracker_scrape-results.fifo` (content-based deduplication, 14 days, visibility timeout 60 s)
+    with its dead-letter queue `osrs-tracker_scrape-results-dead.fifo` (after 10 receives);
+  - the DynamoDB table `osrs-tracker_subscriptions` (key `username`, provisioned 5/5, deletion protection);
+  - three alarms on the topic: the results' age over 2 and over 10 days, and anything in the dead-letter queue;
+  - the IAM user `osrs-tracker_ingester` for the ingester on the cluster, allowed only from the server's IP;
+  - `AWS_Lambda` may now send to the queue and Scan the table.
+
+  `infra/snapshot.sh` now records DynamoDB tables and a FIFO queue's settings.
+
+### Lambdas
+
 - queue-players invokes process-players asynchronously, one event per `PLAYERS_PER_EVENT` players, instead of sending
   SQS messages (issue #161). The SQS trigger's pollers made about 21,600 empty receives a day, over 99% of the scrape
   queue's requests; Lambda's own event queue polls nothing. process-players gets reserved concurrency 5 (the trigger's

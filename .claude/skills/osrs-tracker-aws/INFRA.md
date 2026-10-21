@@ -73,6 +73,42 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
   Replayed events are scraped with the current date, so a day that was missed stays missed. The `claude` profile can
   invoke but not delete or purge: the maintainer does that part.
 
+## Scrape results and subscriptions
+
+Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. Until #164 and #165, nothing uses them.
+
+- `osrs-tracker_scrape-results.fifo` will carry the scrape results from process-players and record-player-count (#165)
+  to the ingester on fremen-server (osrs-tracker/osrs-tracker-api#203), which long-polls it once a minute and applies
+  them to MongoDB.
+  - **Never a standard queue**: FIFO keeps the results in order per message group (one per offset, plus `playerCount`).
+  - **Content-based deduplication only.** An explicit deduplication ID such as `slot:offset` would be shared by the ~54
+    offset-0 messages at 00:00 UTC, and SQS would drop all but one.
+  - Retention 14 days (the maximum): the cluster can be down that long before results are lost.
+  - Visibility timeout 60 s: the ingester restarts on every API deploy, and a message it held blocks its group until the
+    timeout.
+  - SSE-SQS, so no `kms:Decrypt` is needed.
+- `osrs-tracker_scrape-results-dead.fifo` takes a result after 10 receives and keeps it 14 days.
+- `osrs-tracker_subscriptions` (DynamoDB) is who to scrape: one item per player, `{ username, scrapingOffsets }`
+  (`scrapingOffsets` is a Number Set). It's a copy of MongoDB that queue-players will read (#164), so scraping goes on
+  while the cluster is down; the ingester rewrites it every 15 minutes (osrs-tracker/osrs-tracker-api#204).
+  - Provisioned 5 RCU and 5 WCU, inside the always-free 25 and 25 (no other tables in the account).
+  - Deletion protection on.
+  - No point-in-time recovery: it's a derived copy.
+- IAM user `osrs-tracker_ingester`, for the ingester, which runs outside AWS. Its one inline policy
+  (`osrs-tracker_ingester`) grants:
+  - on the results queue: receive, delete, change visibility and get attributes;
+  - on the table: Scan, PutItem and DeleteItem;
+  - all of it only from fremen-server's static IPv4 (`aws:SourceIp`). The IP is in the fremen-cluster README and never
+    in this repo. A new server IP needs this condition updated, or every call is denied, which only the 2-day age alarm
+    shows.
+
+  Its one access key is in the cluster's `osrs-tracker-ingester` Secret (FreekMencke/fremen-cluster#17).
+
+- The Lambdas' shared role `AWS_Lambda` has two inline policies from this work (#168 splits the role):
+  - `osrs-tracker_process-players-async`: invoke process-players, and send to its on-failure destination (#161);
+  - `osrs-tracker_results-and-subscriptions`: SendMessage on the results queue (#165) and Scan on the table (#164).
+- The `claude` profile can't read IAM, so `infra/aws-settings.json` shows neither the user nor the role's policies.
+
 ## When an alert fires
 
 An alert's title links to the invocation's log stream and its author to the Lambda's monitoring tab: read that stream
@@ -103,6 +139,19 @@ and notifies once per failure, also when Lambda retries a failing process-player
 `ApproximateNumberOfMessagesVisible` of `osrs-tracker_players-to-scrape-dead`, 1 or more (maximum over 5 minutes,
 missing data not breaching), also on the topic, going into `ALARM` and back to `OK`. It stays in `ALARM` until the queue
 is emptied (see "Schedules and async invokes"), so one alert per batch of failed events.
+
+The scrape results have three alarms, also on the topic, going into `ALARM` and back to `OK`, with missing data not
+breaching. They're on AWS so they fire while the cluster, and its own alerting, is down:
+
+- `osrs-tracker_scrape-results-age-2d`: the results queue's `ApproximateAgeOfOldestMessage` (maximum over an hour) above
+  2 days.
+- `osrs-tracker_scrape-results-age-10d`: the same above 10 days, 4 days before results expire.
+- `osrs-tracker_scrape-results-dead-messages`: the results dead-letter queue's `ApproximateNumberOfMessagesVisible`, 1
+  or more (maximum over 5 minutes).
+
+For an age alarm, check the cluster, the ingester's pod and logs, and whether the server's IP changed (the IAM user's
+`aws:SourceIp`, see "Scrape results and subscriptions"). For the dead-letter alarm, read the ingester's logs: it can't
+apply those results.
 
 `osrs-tracker_hiscore-proxy-requests` watches the hiscore proxy instead (#138): its `AWS/ApiGateway` `Count` on the
 `$default` stage, 1,500 or more in 5 minutes (sum, missing data not breaching), also on the topic, going into `ALARM`
