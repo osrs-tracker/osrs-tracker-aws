@@ -22,8 +22,10 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   (`invokeAsync`, `@aws-sdk/client-lambda`), which adds about 77 KB to each of the two bundles.
 - Cut over at 13:04 UTC, between two hourly runs: disabled the SQS trigger, then deployed process-players as version 53
   and queue-players as version 25, commit c8e96f0, each with its new env vars. The role `AWS_Lambda` got an inline
-  policy to invoke process-players and send to the dead queue. The trigger is kept, disabled, for a rollback until a run
-  with players has gone through.
+  policy to invoke process-players and send to the dead queue. Checked without writes: both live bundles carry the new
+  code, an async event with no players ran process-players through Lambda's event queue, queue-players ran for an hour
+  without players, and IAM's policy simulator allows the role to invoke process-players. Then deleted the trigger and
+  `osrs-tracker_players-to-scrape`; the dead queue stays as the on-failure destination.
 
 ## 2026-10-18
 

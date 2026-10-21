@@ -320,16 +320,7 @@
         "WEBHOOK_URL"
       ],
       "ephemeralStorageMB": 512,
-      "eventSourceMappings": [
-        {
-          "batchSize": 1,
-          "functionResponseTypes": [],
-          "maxBatchingWindowSeconds": 1,
-          "maxConcurrency": 5,
-          "source": "osrs-tracker_players-to-scrape",
-          "state": "Disabled"
-        }
-      ],
+      "eventSourceMappings": [],
       "handler": "index.handler",
       "logFormat": "Text",
       "logRetentionDays": 7,
@@ -422,18 +413,6 @@
     }
   },
   "queues": {
-    "osrs-tracker_players-to-scrape": {
-      "delaySeconds": 0,
-      "maxMessageBytes": 262144,
-      "receiveWaitSeconds": 0,
-      "redrive": {
-        "deadLetterQueue": "osrs-tracker_players-to-scrape-dead",
-        "maxReceiveCount": 3
-      },
-      "retentionSeconds": 86400,
-      "sseManaged": true,
-      "visibilityTimeoutSeconds": 120
-    },
     "osrs-tracker_players-to-scrape-dead": {
       "delaySeconds": 0,
       "maxMessageBytes": 262144,
