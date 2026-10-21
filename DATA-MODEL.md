@@ -1,9 +1,9 @@
 # Data model
 
 The `players` and `items` collections in MongoDB are written by two repos (`hiscoreLayouts`, `playerCounts` and
-`playerCountsDaily` by the Lambdas only, and read by both; `news` by the API only): the Lambdas in this repo and
-[osrs-tracker-api](https://github.com/osrs-tracker/osrs-tracker-api). This file says which side writes each field and
-owns each index, so a change on one side doesn't break the other. The TypeScript shapes are in
+`playerCountsDaily` by the Lambdas only, and read by both; `news` by the API only, `jobRuns` by its ingester only): the
+Lambdas in this repo and [osrs-tracker-api](https://github.com/osrs-tracker/osrs-tracker-api). This file says which side
+writes each field and owns each index, so a change on one side doesn't break the other. The TypeScript shapes are in
 [`@osrs-tracker/models`](https://github.com/osrs-tracker/osrs-tracker-packages/tree/main/packages/models/src/models);
 this file covers who writes what and when.
 
@@ -173,6 +173,14 @@ for Wiki text.
 Measured on 2026-10-13: a post with teaser and image is about 420 bytes, one with a teaser only about 265, one with
 neither about 200; the collection is about 700 KB.
 
+## `jobRuns`
+
+One document per scheduled job of osrs-tracker-api's ingester, `_id` the job's name (`subscriptions`, the sync below;
+`items` and `clean` once they move there in osrs-tracker/osrs-tracker-api#205), with `lastSuccess` (Date), when it last
+completed. Written and read only by the ingester's `JobRunsService` (`api:src/ingester/job-runs.service.ts`), an
+`updateOne` with `$set` and `upsert` after each success; on boot it runs a job whose `lastSuccess` is missing or older
+than its interval. No Lambda touches it, and it has no index beyond `_id`.
+
 ## `osrs-tracker_subscriptions` (DynamoDB)
 
 Who to scrape, outside MongoDB: one item per player, `PlayerSubscription` in models, `{ username, scrapingOffsets }`,
@@ -180,11 +188,12 @@ keyed by `username`. `scrapingOffsets` is a Number Set (a `Set<number>` through 
 empty: a player with no offsets to scrape has no item. A derived copy of `players.scrapingOffsets`, never authoritative:
 MongoDB stays the source of truth, and a wrong item is fixed there, not in the table.
 
-- **Written only by** the ingester's subscriptions sync in osrs-tracker-api (`api:src/ingester/subscriptions.ts`,
-  osrs-tracker/osrs-tracker-api#204), every 15 minutes: whole items (puts and deletes), never deltas, so each run
-  repairs any drift. `pausedScrapingOffsets` don't count, and offset `12` isn't copied (queue-players queues it with
-  `-12`). It skips the deletes when MongoDB returns no players or over 10% of the items would go, so an empty or wrong
-  database can't empty the table.
+- **Written only by** the ingester's subscriptions sync in osrs-tracker-api
+  (`api:src/ingester/subscriptions-sync.service.ts`, osrs-tracker/osrs-tracker-api#204), every 15 minutes and on boot
+  when overdue (`jobRuns`): whole items (puts and deletes), never deltas, so each run repairs any drift.
+  `pausedScrapingOffsets` don't count, and offset `12` isn't copied (queue-players queues it with `-12`). It skips the
+  deletes when MongoDB returns no players or over 10% of the items would go, so an empty or wrong database can't empty
+  the table.
 - **Read only by** queue-players, every hour: a Scan of the whole table, keeping the items whose `scrapingOffsets` have
   the hour's offset. It never writes it, and an empty table alerts on Discord and queues nothing.
 
