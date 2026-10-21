@@ -21,6 +21,18 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
 
 ### Lambdas
 
+- process-players and record-player-count send their results to the scrape results queue as well as writing MongoDB
+  (issue #165, roadmap #162), for the ingester on fremen-server (osrs-tracker/osrs-tracker-api#203), which skips what
+  they already stored. That proves the path before #166 stops the writes. process-players sends one `hiscores` message
+  per event once its bulk write settles (group `offset:<offset>`), with the found players only: it still records the
+  404s itself, so the ingester would count them twice. record-player-count sends a `playerCount` message (group
+  `playerCount`) after the daily averages. A send that fails alerts on Discord (`Failed to send scrape results`,
+  `Player count not sent`) and never fails the run. New env var `SCRAPE_RESULTS_QUEUE_URL` in both;
+  `lambda/shared/src/sqs.utils.ts` gets `sendScrapeResult` (`DRY_RUN`-aware), and `@aws-sdk/client-sqs` adds about 36 KB
+  (minified) to each bundle. The other Lambdas move to `@osrs-tracker/models` 3.2.0 too (for `ScrapeResultMessage`), and
+  process-players and record-player-count to `@osrs-tracker/hiscores` 6.0.0, the first to accept models 3. Neither major
+  removed anything the Lambdas use. Deployed at 16:10 UTC as process-players version 54 and record-player-count version
+  5, commit ea2ab00, after adding `SCRAPE_RESULTS_QUEUE_URL` to both functions.
 - queue-players reads who to scrape from the DynamoDB table `osrs-tracker_subscriptions` instead of MongoDB (issue #164,
   roadmap #162): a Scan of the whole table each hour, keeping the players whose `scrapingOffsets` have the hour's
   offset. Once MongoDB moves into the cluster the Lambda can't reach it, and the table, which osrs-tracker-api's
@@ -28,11 +40,11 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   nothing and sends a `No subscriptions` alert. queue-players no longer ensures the `{ scrapingOffsets: 1 }` index on
   `players`, which nothing else uses. Env vars: `SUBSCRIPTIONS_TABLE` replaces the `MONGODB_*` ones. Its zip shrinks
   from 441 KB to 214 KB (the DynamoDB client instead of the MongoDB driver). It's the first Lambda on
-  `@osrs-tracker/models` 3 (for `PlayerSubscription`); the others stay on 2 until process-players' hiscores package
-  moves. Deployed at 15:33 UTC as version 26, commit 93a57c7: `SUBSCRIPTIONS_TABLE` added to the function before the
-  code and the `MONGODB_*` env vars removed after it. Checked before: the table matched MongoDB's old query for all 24
-  offsets (543 players), and dry runs at four hours queued the same players. The 16:00 UTC run was clean (built from
-  93a57c7, the Scan allowed); then the index was dropped on Atlas.
+  `@osrs-tracker/models` 3 (for `PlayerSubscription`); the others followed with #165. Deployed at 15:33 UTC as version
+  26, commit 93a57c7: `SUBSCRIPTIONS_TABLE` added to the function before the code and the `MONGODB_*` env vars removed
+  after it. Checked before: the table matched MongoDB's old query for all 24 offsets (543 players), and dry runs at four
+  hours queued the same players. The 16:00 UTC run was clean (built from 93a57c7, the Scan allowed); then the index was
+  dropped on Atlas.
 - queue-players invokes process-players asynchronously, one event per `PLAYERS_PER_EVENT` players, instead of sending
   SQS messages (issue #161). The SQS trigger's pollers made about 21,600 empty receives a day, over 99% of the scrape
   queue's requests; Lambda's own event queue polls nothing. process-players gets reserved concurrency 5 (the trigger's

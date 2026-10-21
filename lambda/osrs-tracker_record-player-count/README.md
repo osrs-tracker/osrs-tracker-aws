@@ -13,6 +13,11 @@ sample on the first run, the backfill) ends in `$merge` on `date`, so a run repa
 creates that collection's unique `{ date: 1 }` index, which `$merge` needs. Details in
 [DATA-MODEL.md](../../DATA-MODEL.md).
 
+Last, it sends the sample as a `playerCount` message to the scrape results queue (`osrs-tracker_scrape-results.fifo`,
+group `playerCount`) for the ingester on fremen-server. While this Lambda still writes MongoDB (until #166), the
+ingester finds the sample stored and skips it. A message the queue doesn't take is reported on Discord
+(`Player count not sent`) and the run succeeds: the sample is stored.
+
 The world list is an undocumented big-endian binary format; its client and parser (`fetchWorldList`, `parseWorldList`)
 live in `@osrs-tracker/hiscores`, which osrs-tracker-api uses for its live count, and are tested there on a response
 captured on 2026-10-13. The Lambda fetches Jagex itself, not through the API, so recording doesn't depend on the API.
@@ -25,7 +30,8 @@ the run succeeds.
 
 Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
 variable): `MONGODB_URI`, `MONGODB_DATABASE`, `MONGODB_COLLECTION` (`playerCounts`), `MONGODB_DAILY_COLLECTION`
-(`playerCountsDaily`), `WEBHOOK_URL`. Optional: `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local SCRAM only) and `DRY_RUN`.
+(`playerCountsDaily`), `SCRAPE_RESULTS_QUEUE_URL`, `WEBHOOK_URL`. Optional: `MONGODB_USERNAME`/`MONGODB_PASSWORD` (local
+SCRAM only) and `DRY_RUN`.
 
 Run it locally without writing anything: copy `.env.example` to `.env`, fill it in, then `npm run invoke:dry`. See the
 [root README](../../README.md) and [DATA-MODEL.md](../../DATA-MODEL.md) for how it fits with the other jobs and the API.

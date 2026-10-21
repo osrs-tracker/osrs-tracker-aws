@@ -2,6 +2,7 @@ import { HiscoreResult } from '@osrs-tracker/hiscores';
 import { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { invokeAsync } from '@lambda/shared/lambda.utils';
+import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { handler } from './index';
 import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
@@ -21,6 +22,7 @@ vi.mock('./utils/mongo.utils', () => ({
   },
 }));
 vi.mock('@lambda/shared/lambda.utils', () => ({ invokeAsync: vi.fn() }));
+vi.mock('@lambda/shared/sqs.utils', () => ({ sendScrapeResult: vi.fn() }));
 // spied, not replaced: the real alert runs against the stubbed `fetch`, so a failed webhook request is part of the run
 vi.mock('./utils/discord-alert', { spy: true });
 
@@ -58,6 +60,7 @@ describe('handler', () => {
     vi.mocked(MU.bulkWrite).mockImplementation(async (_, operations) => operations.length);
     vi.mocked(MU.recordHiscoreNotFound).mockResolvedValue(false);
     vi.mocked(invokeAsync).mockResolvedValue(true);
+    vi.mocked(sendScrapeResult).mockResolvedValue(true);
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(null, { status: 204 })),
@@ -92,6 +95,24 @@ describe('handler', () => {
       { usernames: ['dave'], scrapingOffset: 3, retry: 1 },
     ]);
     expect(alerts()).toEqual([]);
+  });
+
+  it('sends the hiscores it stored to the scrape results queue, dated like their entries', async () => {
+    hiscores({ alice: found, bob: notFound, carol: failed });
+
+    await handler({ usernames: ['alice', 'bob', 'carol'], scrapingOffset: 3 }, context);
+
+    const [[, [layout]]] = vi.mocked(MU.ensureHiscoreLayouts).mock.calls;
+    expect(vi.mocked(sendScrapeResult).mock.calls.map(([, , message]) => message)).toEqual([
+      {
+        v: 1,
+        type: 'hiscores',
+        scrapedAt: layout.since.toISOString(),
+        scrapingOffset: 3,
+        found: [{ username: 'alice', hiscore: found.hiscore, layout: found.layout }],
+        notFound: [],
+      },
+    ]);
   });
 
   describe('throws, so Lambda retries the event, only when nothing was written and no 404 recorded', () => {

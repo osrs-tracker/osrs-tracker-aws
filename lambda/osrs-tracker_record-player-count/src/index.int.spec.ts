@@ -5,10 +5,13 @@ import { Collection, MongoClient } from 'mongodb';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
 import { logDryRun } from '@lambda/shared/dry-run.utils';
+import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { MU } from './utils/mongo.utils';
 
 // the world list's request and parser are tested in @osrs-tracker/hiscores
 vi.mock('@osrs-tracker/hiscores', () => ({ fetchWorldList: vi.fn(), parseWorldList: vi.fn() }));
+
+vi.mock('@lambda/shared/sqs.utils', () => ({ sendScrapeResult: vi.fn() }));
 
 // DRY_RUN is read once at import; the getter lets a test turn it on
 const dryRun = vi.hoisted(() => ({ on: false }));
@@ -94,6 +97,7 @@ describe('record-player-count handler (MongoDB)', () => {
     await days.deleteMany({});
     vi.mocked(fetchWorldList).mockResolvedValue(worldList);
     vi.mocked(parseWorldList).mockReturnValue(counts);
+    vi.mocked(sendScrapeResult).mockReset().mockResolvedValue(true);
     // the alert's webhook is down too: the run must still fail with the world list's error
     discord = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Webhook down'));
     vi.spyOn(console, 'info').mockImplementation(() => {});
@@ -160,6 +164,35 @@ describe('record-player-count handler (MongoDB)', () => {
     });
     expect(await playerCounts.countDocuments()).toBe(0);
     expect(await days.countDocuments()).toBe(0);
+    expect(sendScrapeResult).not.toHaveBeenCalled();
+  });
+
+  describe('scrape results queue', () => {
+    it('sends the stored sample as a playerCount message, its date as an ISO string', async () => {
+      await expect(runAt('2026-10-14T10:00:00Z')).resolves.toBe('test-stream');
+
+      expect(sendScrapeResult).toHaveBeenCalledOnce();
+      const [, queueUrl, message] = vi.mocked(sendScrapeResult).mock.calls[0];
+      expect(queueUrl).toBe('https://sqs.invalid/osrs-tracker_scrape-results.fifo');
+      expect(message).toEqual({
+        v: 1,
+        type: 'playerCount',
+        playerCount: { ...counts, date: '2026-10-14T10:00:00.000Z' },
+      });
+      expect(discord).not.toHaveBeenCalled();
+    });
+
+    it("alerts, without failing the run, when the queue doesn't take it", async () => {
+      vi.mocked(sendScrapeResult).mockResolvedValue(false);
+
+      await expect(runAt('2026-10-14T10:00:00Z')).resolves.toBe('test-stream');
+
+      expect(await playerCounts.countDocuments()).toBe(1);
+      expect(discord).toHaveBeenCalledOnce();
+      expect(JSON.parse(String(discord.mock.calls[0][1]?.body)).embeds[0]).toMatchObject({
+        title: 'Player count not sent',
+      });
+    });
   });
 
   describe('daily averages', () => {

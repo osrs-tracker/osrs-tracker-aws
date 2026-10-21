@@ -1,15 +1,19 @@
 import { LambdaClient } from '@aws-sdk/client-lambda';
+import { SQSClient } from '@aws-sdk/client-sqs';
 import { Context } from 'aws-lambda';
 import { ServerApiVersion } from 'mongodb';
 import { logCommit } from '@lambda/shared/commit';
-import { afterWrites, BulkWrite } from './utils/after-writes';
+import { afterWrites, AwsClients, BulkWrite } from './utils/after-writes';
 import { discordAlert } from './utils/discord-alert';
 import { MU } from './utils/mongo.utils';
 import { ScrapeEvent, scrapeMessage } from './utils/scrape-message';
 
 logCommit();
 
-const lambdaClient = new LambdaClient({ region: 'eu-central-1' });
+const awsClients: AwsClients = {
+  lambda: new LambdaClient({ region: 'eu-central-1' }),
+  sqs: new SQSClient({ region: 'eu-central-1' }),
+};
 
 const client = MU.client({ serverApi: { version: ServerApiVersion.v1, deprecationErrors: true } });
 
@@ -21,7 +25,7 @@ export const handler = async (event: ScrapeEvent, context: Context) => {
 
   // `scrapeMessage` never rejects
   const scraped = await scrapeMessage(client, event);
-  const { failedUsernames, notFoundUsernames, pausedUsernames } = scraped;
+  const { scrapedAt, found, failedUsernames, notFoundUsernames, pausedUsernames } = scraped;
 
   // throw error if nothing was written because every scrape failed, so Lambda retries the event (twice, 1 and 2
   // minutes later). The only throw: once the bulk write started, a retry would store duplicates for the part of its
@@ -46,7 +50,11 @@ export const handler = async (event: ScrapeEvent, context: Context) => {
       }
     : undefined;
 
-  await afterWrites(lambdaClient, { event, bulkWrite, failedUsernames, notFoundUsernames, pausedUsernames }, context);
+  await afterWrites(
+    awsClients,
+    { event, bulkWrite, scrapedAt, found, failedUsernames, notFoundUsernames, pausedUsernames },
+    context,
+  );
 
   return context.logStreamName;
 };

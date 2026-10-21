@@ -5,5 +5,7 @@ import { cleanLambdaEnv, positiveInt } from '@lambda/shared/env';
 export const env = cleanLambdaEnv({
   OSRS_API_BASE_URL: url(),
   PLAYERS_PER_EVENT: positiveInt(),
+  // osrs-tracker_scrape-results.fifo, which the ingester applies to MongoDB
+  SCRAPE_RESULTS_QUEUE_URL: url(),
   WEBHOOK_URL: url(),
 });
