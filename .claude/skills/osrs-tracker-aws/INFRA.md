@@ -75,7 +75,8 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 
 ## Scrape results and subscriptions
 
-Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. Until #164 and #165, nothing uses them.
+Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. queue-players reads the table since #164; the results
+queue is unused until #165.
 
 - `osrs-tracker_scrape-results.fifo` will carry the scrape results from process-players and record-player-count (#165)
   to the ingester on fremen-server (osrs-tracker/osrs-tracker-api#203), which long-polls it once a minute and applies
@@ -89,8 +90,8 @@ Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. Until #164 and
   - SSE-SQS, so no `kms:Decrypt` is needed.
 - `osrs-tracker_scrape-results-dead.fifo` takes a result after 10 receives and keeps it 14 days.
 - `osrs-tracker_subscriptions` (DynamoDB) is who to scrape: one item per player, `{ username, scrapingOffsets }`
-  (`scrapingOffsets` is a Number Set). It's a copy of MongoDB that queue-players will read (#164), so scraping goes on
-  while the cluster is down; the ingester rewrites it every 15 minutes (osrs-tracker/osrs-tracker-api#204).
+  (`scrapingOffsets` is a Number Set). It's a copy of MongoDB that queue-players reads (#164), so scraping goes on while
+  the cluster is down; the ingester rewrites it every 15 minutes (osrs-tracker/osrs-tracker-api#204).
   - Provisioned 5 RCU and 5 WCU, inside the always-free 25 and 25 (no other tables in the account).
   - Deletion protection on.
   - No point-in-time recovery: it's a derived copy.
@@ -117,6 +118,7 @@ first (logs are kept 7 days).
 | Alert                                                 | Means                                                                                                                                                                           | Do                                                                                                                                                   |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | clean-hiscores `No hiscores scraped`                  | No player has an entry from the last 2 days: scraping stopped (EventBridge `Hourly`, queue-players or process-players).                                                         | Check the latest queue-players and process-players runs and the dead queue.                                                                          |
+| queue-players `No subscriptions`                      | `osrs-tracker_subscriptions` is empty, so nothing was queued this hour. The sync never empties it (its delete guard): someone emptied or replaced it.                           | Read the ingester's `Subscriptions` logs on the cluster; its next sync (every 15 minutes) refills the table from MongoDB.                            |
 | queue-players `Failed to queue players`               | Lambda refused async invokes of process-players: those players miss this hour's scrape.                                                                                         | Read the logged errors (throttling, permissions); they're scraped again the next day.                                                                |
 | process-players `No players were updated`             | Every fetch in a requeued event failed (usually a hiscores or proxy outage), or its hiscore layout couldn't be stored (Atlas unreachable). Lambda retries, then the dead queue. | Check the proxy and Jagex's hiscores; then handle the dead queue as above.                                                                           |
 | process-players `Gave up retrying`                    | These players' fetches failed in 4 runs in a row (requeued 3 times): they miss today.                                                                                           | Check the proxy and Jagex's hiscores for them. Nothing unless it repeats.                                                                            |

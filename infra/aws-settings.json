@@ -409,11 +409,9 @@
       "asyncOnSuccess": null,
       "asyncRetries": 0,
       "envVarNames": [
-        "MONGODB_COLLECTION",
-        "MONGODB_DATABASE",
-        "MONGODB_URI",
         "PLAYERS_PER_EVENT",
         "PROCESS_PLAYERS_FUNCTION",
+        "SUBSCRIPTIONS_TABLE",
         "WEBHOOK_URL"
       ],
       "ephemeralStorageMB": 512,

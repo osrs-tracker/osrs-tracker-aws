@@ -27,9 +27,11 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   ingester rewrites from MongoDB every 15 minutes, keeps scraping going while the cluster is down. An empty table queues
   nothing and sends a `No subscriptions` alert. queue-players no longer ensures the `{ scrapingOffsets: 1 }` index on
   `players`, which nothing else uses. Env vars: `SUBSCRIPTIONS_TABLE` replaces the `MONGODB_*` ones. Its zip shrinks
-  from 441 KB to 190 KB (the DynamoDB client instead of the MongoDB driver). It's the first Lambda on
+  from 441 KB to 214 KB (the DynamoDB client instead of the MongoDB driver). It's the first Lambda on
   `@osrs-tracker/models` 3 (for `PlayerSubscription`); the others stay on 2 until process-players' hiscores package
-  moves.
+  moves. Deployed at 15:33 UTC as version 26, commit 93a57c7: `SUBSCRIPTIONS_TABLE` added to the function before the
+  code and the `MONGODB_*` env vars removed after it. Checked before: the table matched MongoDB's old query for all 24
+  offsets (543 players), and dry runs at four hours queued the same players.
 - queue-players invokes process-players asynchronously, one event per `PLAYERS_PER_EVENT` players, instead of sending
   SQS messages (issue #161). The SQS trigger's pollers made about 21,600 empty receives a day, over 99% of the scrape
   queue's requests; Lambda's own event queue polls nothing. process-players gets reserved concurrency 5 (the trigger's
