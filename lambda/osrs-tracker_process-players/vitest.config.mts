@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['src/**/*.spec.ts', '../shared/src/**/*.spec.ts'],
     environment: 'node',
     // read and validated when src/env.ts and ../shared/src/env.ts load. Nothing connects to these: the in-memory MongoDB
-    // specs pass their own client, and fetch and SQS are mocked
+    // specs pass their own client, and fetch and Lambda are mocked
     env: {
       // nothing listens on port 1: a connection made by mistake fails at once
       MONGODB_URI: 'mongodb://127.0.0.1:1',
@@ -14,8 +14,7 @@ export default defineConfig({
       MONGODB_COLLECTION: 'players',
       DRY_RUN: 'false',
       OSRS_API_BASE_URL: 'https://hiscores.invalid',
-      PLAYERS_PER_SQS_MESSAGE: '2',
-      SQS_QUEUE_URL: 'https://sqs.invalid/queue',
+      PLAYERS_PER_EVENT: '2',
       WEBHOOK_URL: 'https://discord.invalid/webhook',
     },
   },

@@ -4,10 +4,8 @@
  */
 const { invokeDry } = require('../../shared/build/invoke');
 
-// SQS event with one message containing the usernames passed as arguments
+// the event queue-players sends, with the usernames passed as arguments
 const usernames = process.argv.slice(2);
 if (!usernames.length) throw new Error('Pass at least one username.');
 
-invokeDry('osrs-tracker_process-players', {
-  Records: [{ body: JSON.stringify({ usernames, scrapingOffset: 0 }), attributes: { ApproximateReceiveCount: '1' } }],
-});
+invokeDry('osrs-tracker_process-players', { usernames, scrapingOffset: 0 });

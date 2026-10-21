@@ -10,7 +10,15 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { MU } from './mongo.utils';
 import { fetchHiscore } from './player.utils';
 
-/** What {@link scrapeMessage} found for one message's players. */
+/**
+ * process-players' event: one offset's players from queue-players, or the ones a run requeued. `retry` counts the
+ * requeues; queue-players leaves it out.
+ */
+export interface ScrapeEvent extends PlayerScrapeMessageBody {
+  retry?: number;
+}
+
+/** What {@link scrapeMessage} found for one event's players. */
 export interface ScrapedMessage {
   /** one op per player found, adding its hiscore entry; the layouts the entries use are stored */
   bulkUpdateOps: AnyBulkWriteOperation<StoredPlayer>[];
@@ -25,9 +33,9 @@ export interface ScrapedMessage {
 }
 
 /**
- * Scrapes a message's players with staggered requests, records the ones not on the hiscores, and builds the bulk write
- * ops for the ones found, once the layouts their entries use are stored. Never rejects: an earlier message's bulk write
- * may already be running, so a failure only moves the players it concerns to `failedUsernames`.
+ * Scrapes an event's players with staggered requests, records the ones not on the hiscores, and builds the bulk write
+ * ops for the ones found, once the layouts their entries use are stored. Never rejects: a failure only moves the
+ * players it concerns to `failedUsernames`, so the others are still written.
  */
 export async function scrapeMessage(
   client: MongoClient,

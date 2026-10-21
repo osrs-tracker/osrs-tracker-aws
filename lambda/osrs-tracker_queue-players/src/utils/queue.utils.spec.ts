@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SQS_MESSAGE_BATCH_SIZE } from '@lambda/shared/sqs.utils';
-import { messageBatches, scrapingOffsetForHour } from './queue.utils';
+import { chunks, scrapingOffsetForHour } from './queue.utils';
 
 describe('scrapingOffsetForHour', () => {
   it.each([
@@ -13,9 +12,8 @@ describe('scrapingOffsetForHour', () => {
   });
 });
 
-describe('messageBatches', () => {
-  // not SQS_MESSAGE_BATCH_SIZE (10), so a mix-up of the two sizes fails
-  const perMessage = 3;
+describe('chunks', () => {
+  const size = 3;
 
   const names = (count: number, from = 1) => Array.from({ length: count }, (_, i) => `player ${from + i}`);
 
@@ -27,42 +25,36 @@ describe('messageBatches', () => {
   }
 
   // Array.fromAsync is ES2024, past the Lambdas' `lib`
-  async function batchesFor(count: number) {
-    const batches: string[][][] = [];
-    for await (const batch of messageBatches(source(names(count)), perMessage)) batches.push(batch);
-    return batches;
+  async function chunksFor(count: number) {
+    const result: string[][] = [];
+    for await (const chunk of chunks(source(names(count)), size)) result.push(chunk);
+    return result;
   }
 
   it('yields nothing without usernames', async () => {
-    expect(await batchesFor(0)).toEqual([]);
+    expect(await chunksFor(0)).toEqual([]);
   });
 
-  it('sends a single username in a partial message', async () => {
-    expect(await batchesFor(1)).toEqual([[['player 1']]]);
+  it('yields a single username in a partial chunk', async () => {
+    expect(await chunksFor(1)).toEqual([['player 1']]);
   });
 
-  it('fills exactly one message', async () => {
-    expect(await batchesFor(perMessage)).toEqual([[names(perMessage)]]);
+  it('fills exactly one chunk', async () => {
+    expect(await chunksFor(size)).toEqual([names(size)]);
   });
 
-  it('starts a new batch after SQS_MESSAGE_BATCH_SIZE messages and sends the last partial message', async () => {
-    const count = SQS_MESSAGE_BATCH_SIZE * perMessage + 1;
-    const batches = await batchesFor(count);
+  it('starts a new chunk once one is full and yields the last partial one', async () => {
+    const count = 2 * size + 1;
 
-    expect(batches).toHaveLength(2);
-    expect(batches[0]).toEqual(
-      Array.from({ length: SQS_MESSAGE_BATCH_SIZE }, (_, i) => names(perMessage, i * perMessage + 1)),
-    );
-    expect(batches[1]).toEqual([[`player ${count}`]]);
-    expect(batches.flat(2)).toEqual(names(count));
+    expect(await chunksFor(count)).toEqual([names(size), names(size, size + 1), [`player ${count}`]]);
   });
 
-  it('yields a full batch before reading the next username', async () => {
+  it('yields a full chunk before reading the next username', async () => {
     const read = { count: 0 };
-    const batches = messageBatches(source(names(100), read), perMessage);
+    const result = chunks(source(names(100), read), size);
 
-    await batches.next();
+    await result.next();
 
-    expect(read.count).toBe(SQS_MESSAGE_BATCH_SIZE * perMessage);
+    expect(read.count).toBe(size);
   });
 });

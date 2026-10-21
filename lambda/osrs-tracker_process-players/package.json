@@ -16,7 +16,7 @@
   },
   "prettier": "../../.prettierrc.json",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.1145.0",
+    "@aws-sdk/client-lambda": "^3.1145.0",
     "@aws-sdk/credential-providers": "^3.1145.0",
     "@lambda/shared": "*",
     "@osrs-tracker/hiscores": "^5.0.0",

@@ -40,7 +40,7 @@ const mongoSpecs = {
 
 /**
  * The shared environment variables, validated once at cold start when this module loads. Anything else shared code
- * needs, such as a queue or webhook URL, is passed in by the Lambda.
+ * needs, such as a function name or webhook URL, is passed in by the Lambda.
  */
 export const sharedEnv = cleanEnv(process.env, sharedSpecs, { reporter });
 

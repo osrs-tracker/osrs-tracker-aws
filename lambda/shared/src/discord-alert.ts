@@ -83,7 +83,7 @@ export async function discordAlert(
     headers: { 'content-type': 'application/json', 'user-agent': USER_AGENT },
     body: JSON.stringify(message),
     // undici's own timeouts are 300 s; a stalled request must not hold the Lambda until it times out (process-players
-    // would then be retried by SQS after its bulk writes, storing duplicate hiscore entries)
+    // would then be retried by Lambda after its bulk writes, storing duplicate hiscore entries)
     signal: AbortSignal.timeout(5_000),
   });
   if (!response.ok) console.error(`Failed to send Discord alert: HTTP ${response.status}`);
