@@ -12,8 +12,10 @@ call the unqualified function (`$LATEST`), so it's live immediately. Every `aws`
    aws lambda get-function-configuration --profile claude --function-name <fn> --query '{sha:CodeSha256,size:CodeSize,version:Version,modified:LastModified,runtime:Runtime}'
    ```
 
-   Compare `size` (the live zip, in bytes) with the new build's `gzip -c dist/index.js | wc -c`, which lands within a
-   few hundred bytes of the zip. A jump you can't explain is a dependency that came along by accident: the esbuild
+   Compare `size` (the live zip, in bytes) with the zip `npm run deploy` will upload: `npm run predeploy`, then
+   `stat -c %s dist.zip` (it matches the uploaded `CodeSize` to within a byte), then `rm dist.zip` (git doesn't ignore
+   it; `npm run deploy` builds it again). Not `gzip -c dist/index.js | wc -c`: bestzip compresses less, about 57 KB
+   larger for process-players. A jump you can't explain is a dependency that came along by accident: the esbuild
    metafile recipe in `CLAUDE.md` shows what grew.
 
 3. `AWS_PROFILE=claude npm run deploy`
