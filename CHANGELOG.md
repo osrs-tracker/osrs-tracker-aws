@@ -20,6 +20,10 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
 - Env vars: `PLAYERS_PER_SQS_MESSAGE` is now `PLAYERS_PER_EVENT` in both Lambdas, and `SQS_QUEUE_URL` is gone;
   queue-players reads `PROCESS_PLAYERS_FUNCTION`. `lambda/shared`'s `sqs.utils.ts` became `lambda.utils.ts`
   (`invokeAsync`, `@aws-sdk/client-lambda`), which adds about 77 KB to each of the two bundles.
+- Cut over at 13:04 UTC, between two hourly runs: disabled the SQS trigger, then deployed process-players as version 53
+  and queue-players as version 25, commit c8e96f0, each with its new env vars. The role `AWS_Lambda` got an inline
+  policy to invoke process-players and send to the dead queue. The trigger is kept, disabled, for a rollback until a run
+  with players has gone through.
 
 ## 2026-10-18
 

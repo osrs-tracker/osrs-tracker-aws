@@ -93,6 +93,29 @@
       "threshold": 1.0,
       "treatMissingData": "notBreaching"
     },
+    "osrs-tracker_process-players-failed-events": {
+      "actionsEnabled": true,
+      "alarmActions": [
+        "osrs-tracker-alerts"
+      ],
+      "comparison": "GreaterThanOrEqualToThreshold",
+      "datapointsToAlarm": null,
+      "description": "A process-players event failed all 3 attempts or waited over 1 hour in Lambda's queue: its players missed today's scrape. See INFRA.md, Schedules and async invokes",
+      "dimensions": {
+        "QueueName": "osrs-tracker_players-to-scrape-dead"
+      },
+      "evaluationPeriods": 1,
+      "insufficientDataActions": [],
+      "metric": "ApproximateNumberOfMessagesVisible",
+      "namespace": "AWS/SQS",
+      "okActions": [
+        "osrs-tracker-alerts"
+      ],
+      "periodSeconds": 300,
+      "statistic": "Maximum",
+      "threshold": 1.0,
+      "treatMissingData": "notBreaching"
+    },
     "osrs-tracker_queue-players-errors": {
       "actionsEnabled": true,
       "alarmActions": [
@@ -284,17 +307,16 @@
       "architectures": [
         "arm64"
       ],
-      "asyncMaxEventAgeSeconds": "default (21600)",
-      "asyncOnFailure": null,
+      "asyncMaxEventAgeSeconds": 3600,
+      "asyncOnFailure": "osrs-tracker_players-to-scrape-dead",
       "asyncOnSuccess": null,
-      "asyncRetries": "default (2)",
+      "asyncRetries": 2,
       "envVarNames": [
         "MONGODB_COLLECTION",
         "MONGODB_DATABASE",
         "MONGODB_URI",
         "OSRS_API_BASE_URL",
-        "PLAYERS_PER_SQS_MESSAGE",
-        "SQS_QUEUE_URL",
+        "PLAYERS_PER_EVENT",
         "WEBHOOK_URL"
       ],
       "ephemeralStorageMB": 512,
@@ -305,7 +327,7 @@
           "maxBatchingWindowSeconds": 1,
           "maxConcurrency": 5,
           "source": "osrs-tracker_players-to-scrape",
-          "state": "Enabled"
+          "state": "Disabled"
         }
       ],
       "handler": "index.handler",
@@ -313,7 +335,7 @@
       "logRetentionDays": 7,
       "memoryMB": 256,
       "packageType": "Zip",
-      "reservedConcurrency": null,
+      "reservedConcurrency": 5,
       "runtime": "nodejs24.x",
       "timeoutSeconds": 60,
       "tracing": "PassThrough"
@@ -330,8 +352,8 @@
         "MONGODB_COLLECTION",
         "MONGODB_DATABASE",
         "MONGODB_URI",
-        "PLAYERS_PER_SQS_MESSAGE",
-        "SQS_QUEUE_URL",
+        "PLAYERS_PER_EVENT",
+        "PROCESS_PLAYERS_FUNCTION",
         "WEBHOOK_URL"
       ],
       "ephemeralStorageMB": 512,
