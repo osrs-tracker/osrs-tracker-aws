@@ -58,12 +58,13 @@ What goes in `.env` (each job's `.env.example` lists the ones it needs):
 | `OSRS_API_BASE_URL`                    | The hiscore proxy, `https://runescape-api.freekmencke.com/rs`.                                        |
 | `PLAYERS_PER_EVENT`                    | Any whole number of at least 1; it only changes how the logged events are grouped.                    |
 | `PROCESS_PLAYERS_FUNCTION`             | `osrs-tracker_process-players`: a dry run only logs the invoke.                                       |
+| `SUBSCRIPTIONS_TABLE`                  | `osrs-tracker_subscriptions`; set `AWS_PROFILE` to a profile that may Scan it.                        |
 | `WEBHOOK_URL`                          | Any valid URL: a dry run never sends to Discord.                                                      |
 | `MAX_AGE_IN_DAYS`                      | `90`, as in production.                                                                               |
 
 ## Built with
 
-TypeScript, AWS Lambda on Node 24, Amazon EventBridge, Amazon CloudWatch and SNS, and MongoDB Atlas.
+TypeScript, AWS Lambda on Node 24, Amazon EventBridge, Amazon DynamoDB, Amazon CloudWatch and SNS, and MongoDB Atlas.
 
 ## Development
 

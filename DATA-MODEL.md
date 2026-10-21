@@ -23,7 +23,7 @@ hiscore entries left (not scraped or looked up for `MAX_AGE_IN_DAYS`); a lookup 
 | `combatLevel`, `type`, `status`, `diedAsHardcore` | API `refreshPlayerInfo`, from the four hiscore tables.                                                                                                                                                                                                                                                                                                                                                                                                   | API, web.                                                                                                   |
 | `lastModified`                                    | API `refreshPlayerInfo`: when the type and status were last determined.                                                                                                                                                                                                                                                                                                                                                                                  | API (refresh at most every `MIN_PLAYER_REFRESH_HOURS` = 2, and `Cache-Control`).                            |
 | `lastHiscoreFetch`                                | API `recordLookup` (`POST /players/:username/lookup`): when a visitor last looked the player up. Never set on insert, so players nobody looked up lack it.                                                                                                                                                                                                                                                                                               | API recent players list.                                                                                    |
-| `scrapingOffsets`                                 | API `refreshPlayerInfo` adds the requested offset (`$setUnion` with any `pausedScrapingOffsets`). process-players removes the field when it pauses the player. clean-hiscores drops an offset not looked up for 180 days (see `scrapingOffsetLookups`).                                                                                                                                                                                                  | queue-players (which players to queue each hour), API (the player sitemap lists only players with offsets). |
+| `scrapingOffsets`                                 | API `refreshPlayerInfo` adds the requested offset (`$setUnion` with any `pausedScrapingOffsets`). process-players removes the field when it pauses the player. clean-hiscores drops an offset not looked up for 180 days (see `scrapingOffsetLookups`).                                                                                                                                                                                                  | The ingester's sync (to the subscriptions table), API (the player sitemap lists only players with offsets). |
 | `pausedScrapingOffsets`                           | process-players sets it when it pauses the player. API `refreshPlayerInfo` merges it back and unsets it.                                                                                                                                                                                                                                                                                                                                                 | API (a paused player still counts as tracked).                                                              |
 | `scrapingOffsetLookups`                           | API `recordLookup` sets `scrapingOffsetLookups.<offset>` (the offset as a string, `"-12"` to `"11"`) to the lookup time. clean-hiscores, every night: gives an offset without a date the current time, drops the offsets (active or paused) not looked up for 180 days with all their hiscore entries, but always keeps the most recently looked up one, and removes the keys of offsets the player no longer has.                                       | clean-hiscores.                                                                                             |
 | `hiscoreNotFoundCount`, `hiscoreNotFoundSince`    | process-players sets them on a 404/400 hiscore and unsets them on the next scraped entry. API `refreshPlayerInfo` also unsets them.                                                                                                                                                                                                                                                                                                                      | process-players, API (the player sitemap leaves them out).                                                  |
@@ -69,7 +69,8 @@ found again.
 1. **The Lambda counts 404s.** Only process-players counts. On a 404 or 400 hiscore it sets `hiscoreNotFoundSince` (if
    not set) and increments `hiscoreNotFoundCount` (`MU.recordHiscoreNotFound`). The streak is date-based: once
    `hiscoreNotFoundSince` is 7 days old (`HISCORE_NOT_FOUND_PAUSE_DAYS`), it moves `scrapingOffsets` into
-   `pausedScrapingOffsets` and removes `scrapingOffsets`, so queue-players stops queueing the player. History is kept.
+   `pausedScrapingOffsets` and removes `scrapingOffsets`, so the sync drops the player's subscription and queue-players
+   stops queueing them. History is kept.
 2. **A successful scrape ends the streak.** process-players unsets `hiscoreNotFoundCount` and `hiscoreNotFoundSince`
    when it stores an entry.
 3. **The API resumes.** A successful `refreshPlayerInfo` merges `pausedScrapingOffsets` (and the requested offset) into
@@ -172,6 +173,24 @@ for Wiki text.
 Measured on 2026-10-13: a post with teaser and image is about 420 bytes, one with a teaser only about 265, one with
 neither about 200; the collection is about 700 KB.
 
+## `osrs-tracker_subscriptions` (DynamoDB)
+
+Who to scrape, outside MongoDB: one item per player, `PlayerSubscription` in models, `{ username, scrapingOffsets }`,
+keyed by `username`. `scrapingOffsets` is a Number Set (a `Set<number>` through `@aws-sdk/lib-dynamodb`), so it's never
+empty: a player with no offsets to scrape has no item. A derived copy of `players.scrapingOffsets`, never authoritative:
+MongoDB stays the source of truth, and a wrong item is fixed there, not in the table.
+
+- **Written only by** the ingester's subscriptions sync in osrs-tracker-api (`api:src/ingester/subscriptions.ts`,
+  osrs-tracker/osrs-tracker-api#204), every 15 minutes: whole items (puts and deletes), never deltas, so each run
+  repairs any drift. `pausedScrapingOffsets` don't count, and offset `12` isn't copied (queue-players queues it with
+  `-12`). It skips the deletes when MongoDB returns no players or over 10% of the items would go, so an empty or wrong
+  database can't empty the table.
+- **Read only by** queue-players, every hour: a Scan of the whole table, keeping the items whose `scrapingOffsets` have
+  the hour's offset. It never writes it, and an empty table alerts on Discord and queues nothing.
+
+So a player starts or stops being scraped up to 15 minutes after the change in MongoDB, and scraping goes on from the
+last copy while MongoDB is unreachable.
+
 ## Indexes
 
 One owner per index. The owner creates it; everyone else may rely on it (`hint`) but shouldn't create it.
@@ -180,7 +199,6 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | ------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `players`           | `{ username: 1 }`, unique                       | API, at startup (`api:src/common/mongo/mongo.provider.ts`)                                     | API `hint` in `getPlayer`, `recordLookup`, `refreshPlayerInfo`; process-players `hint` in its bulk write and `recordHiscoreNotFound`. |
 | `players`           | `{ lastHiscoreFetch: -1 }`, partial (`$exists`) | API, at startup                                                                                | API `getLastFetchedPlayers` (`hint`).                                                                                                 |
-| `players`           | `{ scrapingOffsets: 1 }`, sparse                | queue-players, on every run (`aws:lambda/osrs-tracker_queue-players/src/index.ts`)             | queue-players `getAllUsernamesForOffset` (`hint`).                                                                                    |
 | `items`             | `{ id: 1 }`, unique                             | API, at startup                                                                                | API `getItem`, `recordLookup` (`hint`); refresh-items upsert and delete (`hint`).                                                     |
 | `items`             | `name_autocomplete`, Atlas Search               | API, at startup when missing                                                                   | API `searchItems` (`$search`).                                                                                                        |
 | `items`             | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).                     |

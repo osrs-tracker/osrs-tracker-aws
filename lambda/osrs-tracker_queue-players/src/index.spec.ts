@@ -3,28 +3,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { invokeAsync } from '@lambda/shared/lambda.utils';
 import { handler } from './index';
-import { MU } from './utils/mongo.utils';
+import { scanSubscriptions } from './utils/subscriptions.utils';
 
-const client = vi.hoisted(() => ({ fake: 'MongoClient' }));
-const close = vi.hoisted(() => vi.fn());
-vi.mock('./utils/mongo.utils', () => ({
-  MU: { client: () => client, col: vi.fn(), getAllUsernamesForOffset: vi.fn() },
-}));
-vi.mock('@lambda/shared/mongo.utils', () => ({ ensureIndex: vi.fn() }));
+vi.mock('./utils/subscriptions.utils', () => ({ scanSubscriptions: vi.fn() }));
 vi.mock('@lambda/shared/lambda.utils', () => ({ invokeAsync: vi.fn() }));
 vi.mock('@lambda/shared/discord-alert', () => ({ discordAlert: vi.fn() }));
 
 const context = { logStreamName: 'stream' } as Context;
 const run = (time = '2026-10-14T03:00:00Z') => handler({ time } as ScheduledEvent, context);
 
-/** Makes the cursor yield `usernames`. */
-function players(...usernames: string[]) {
-  async function* cursor() {
-    yield* usernames;
-  }
-  vi.mocked(MU.getAllUsernamesForOffset).mockReturnValue(
-    Object.assign(cursor(), { close }) as unknown as ReturnType<typeof MU.getAllUsernamesForOffset>,
-  );
+/** Makes the table hold one subscription per username, each to `offset`, plus one player on another offset. */
+function players(offset: number, ...usernames: string[]) {
+  vi.mocked(scanSubscriptions).mockResolvedValue([
+    ...usernames.map((username) => ({ username, scrapingOffsets: new Set([offset]) })),
+    { username: 'elsewhere', scrapingOffsets: new Set([offset + 1]) },
+  ]);
 }
 
 const payloads = () => vi.mocked(invokeAsync).mock.calls.map(([, , payload]) => payload);
@@ -40,13 +33,13 @@ describe('handler', () => {
     vi.restoreAllMocks();
   });
 
-  it("invokes process-players once per PLAYERS_PER_EVENT of the hour's players, then closes the cursor", async () => {
+  it("invokes process-players once per PLAYERS_PER_EVENT of the hour's players", async () => {
     // PLAYERS_PER_EVENT is 2
-    players('alice', 'bob', 'carol');
+    players(3, 'alice', 'bob', 'carol');
 
     expect(await run()).toBe('stream');
 
-    expect(MU.getAllUsernamesForOffset).toHaveBeenCalledExactlyOnceWith(client, 3);
+    expect(scanSubscriptions).toHaveBeenCalledExactlyOnceWith(expect.anything(), 'osrs-tracker_subscriptions');
     expect(vi.mocked(invokeAsync).mock.calls.every(([, functionName]) => functionName === 'process-players')).toBe(
       true,
     );
@@ -54,21 +47,34 @@ describe('handler', () => {
       { usernames: ['alice', 'bob'], scrapingOffset: 3 },
       { usernames: ['carol'], scrapingOffset: 3 },
     ]);
-    expect(close).toHaveBeenCalledOnce();
     expect(discordAlert).not.toHaveBeenCalled();
   });
 
   it('invokes nothing when no player has the offset', async () => {
-    players();
+    players(3);
 
     await run('2026-10-14T23:00:00Z');
 
-    expect(MU.getAllUsernamesForOffset).toHaveBeenCalledExactlyOnceWith(client, -1);
     expect(invokeAsync).not.toHaveBeenCalled();
+    expect(discordAlert).not.toHaveBeenCalled();
+  });
+
+  it('invokes nothing and alerts when the table is empty', async () => {
+    vi.mocked(scanSubscriptions).mockResolvedValue([]);
+
+    expect(await run()).toBe('stream');
+
+    expect(invokeAsync).not.toHaveBeenCalled();
+    expect(discordAlert).toHaveBeenCalledExactlyOnceWith(
+      'https://discord.invalid/webhook',
+      'No subscriptions',
+      'osrs-tracker_subscriptions is empty: no players were queued for offset 3.',
+      context,
+    );
   });
 
   it('still invokes the other events, then alerts once with the count, when Lambda refuses some', async () => {
-    players('alice', 'bob', 'carol', 'dave', 'erin');
+    players(3, 'alice', 'bob', 'carol', 'dave', 'erin');
     vi.mocked(invokeAsync).mockResolvedValueOnce(false).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
     await run();
