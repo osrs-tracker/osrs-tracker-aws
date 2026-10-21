@@ -1,65 +1,83 @@
-import { SQSClient } from '@aws-sdk/client-sqs';
-import { PlayerScrapeMessageBody } from '@osrs-tracker/models';
+import { LambdaClient } from '@aws-sdk/client-lambda';
 import { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendMessageBatch } from '@lambda/shared/sqs.utils';
-import { afterWrites, ScrapeRun } from './after-writes';
+import { invokeAsync } from '@lambda/shared/lambda.utils';
+import { afterWrites, MAX_RETRIES, ScrapeRun } from './after-writes';
 import { discordAlert } from './discord-alert';
 
-// the outcomes it shares with the handler (failed writes, rejected retries, paused players) are in index.spec.ts
-vi.mock('@lambda/shared/sqs.utils', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@lambda/shared/sqs.utils')>()),
-  sendMessageBatch: vi.fn(),
-}));
+// the outcomes it shares with the handler (failed writes, refused retries, paused players) are in index.spec.ts
+vi.mock('@lambda/shared/lambda.utils', () => ({ invokeAsync: vi.fn() }));
 vi.mock('./discord-alert', () => ({ discordAlert: vi.fn() }));
 
-const sqsClient = {} as SQSClient;
-const context = { logStreamName: 'log-stream' } as Context;
+const lambdaClient = {} as LambdaClient;
+const context = { functionName: 'osrs-tracker_process-players', logStreamName: 'log-stream' } as Context;
 
 function run(overrides: Partial<ScrapeRun>): ScrapeRun {
   return {
-    bulkWrites: [],
-    failedMap: new Map(),
+    event: { usernames: [], scrapingOffset: 0 },
+    failedUsernames: [],
     notFoundUsernames: [],
     pausedUsernames: [],
-    maxReceiveCount: 1,
     ...overrides,
   };
 }
 
 const usernames = (count: number, prefix: string) => Array.from({ length: count }, (_, i) => `${prefix}${i}`);
+const alerts = () => vi.mocked(discordAlert).mock.calls.map(([title, players]) => [title, players]);
 
 describe('afterWrites', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(sendMessageBatch).mockResolvedValue([]);
+    vi.mocked(invokeAsync).mockResolvedValue(true);
     vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('requeues the failed players per scrapingOffset, at most 10 messages per SQS batch', async () => {
-    // PLAYERS_PER_SQS_MESSAGE is 2: 21 players make 11 messages
-    const failedMap = new Map([
-      [0, usernames(21, 'a')],
-      [1, ['b0']],
-    ]);
+  it('requeues the failed players to this function in events of PLAYERS_PER_EVENT, with the offset kept', async () => {
+    // PLAYERS_PER_EVENT is 2
+    const failedUsernames = usernames(5, 'a');
 
-    await afterWrites(sqsClient, run({ failedMap }), context);
+    await afterWrites(lambdaClient, run({ event: { usernames: [], scrapingOffset: -4 }, failedUsernames }), context);
 
-    const batches = vi.mocked(sendMessageBatch).mock.calls.map(([, , batch]) => batch);
-    const messages: PlayerScrapeMessageBody[] = batches.flat().map(({ MessageBody }) => JSON.parse(MessageBody!));
-    expect(batches.map((batch) => batch.length)).toEqual([10, 2]);
-    expect(messages.filter(({ scrapingOffset }) => scrapingOffset === 0).flatMap((m) => m.usernames)).toEqual(
-      failedMap.get(0),
+    expect(vi.mocked(invokeAsync).mock.calls).toEqual(
+      [['a0', 'a1'], ['a2', 'a3'], ['a4']].map((players) => [
+        lambdaClient,
+        'osrs-tracker_process-players',
+        { usernames: players, scrapingOffset: -4, retry: 1 },
+      ]),
     );
-    expect(messages.at(-1)).toEqual({ usernames: ['b0'], scrapingOffset: 1 });
   });
 
-  it.each([
-    [1, []],
-    [2, [['Failed to process some players', ['alice']]]],
-  ])('alerts on the failed players only on a redelivered message (receive count %i)', async (maxReceiveCount, sent) => {
-    await afterWrites(sqsClient, run({ failedMap: new Map([[0, ['alice']]]), maxReceiveCount }), context);
+  it.each([...Array(MAX_RETRIES).keys()])('requeues without an alert at retry %i', async (retry) => {
+    await afterWrites(
+      lambdaClient,
+      run({ event: { usernames: [], scrapingOffset: 0, retry }, failedUsernames: ['alice'] }),
+      context,
+    );
 
-    expect(vi.mocked(discordAlert).mock.calls.map(([title, players]) => [title, players])).toEqual(sent);
+    expect(invokeAsync).toHaveBeenCalledExactlyOnceWith(lambdaClient, context.functionName, {
+      usernames: ['alice'],
+      scrapingOffset: 0,
+      retry: retry + 1,
+    });
+    expect(alerts()).toEqual([]);
+  });
+
+  it('gives up on the failed players at retry MAX_RETRIES and alerts instead', async () => {
+    await afterWrites(
+      lambdaClient,
+      run({ event: { usernames: [], scrapingOffset: 0, retry: MAX_RETRIES }, failedUsernames: ['alice'] }),
+      context,
+    );
+
+    expect(invokeAsync).not.toHaveBeenCalled();
+    expect(alerts()).toEqual([['Gave up retrying', ['alice']]]);
+  });
+
+  it('neither requeues nor alerts at retry MAX_RETRIES when no player failed', async () => {
+    await afterWrites(lambdaClient, run({ event: { usernames: [], scrapingOffset: 0, retry: MAX_RETRIES } }), context);
+
+    expect(invokeAsync).not.toHaveBeenCalled();
+    expect(alerts()).toEqual([]);
   });
 });

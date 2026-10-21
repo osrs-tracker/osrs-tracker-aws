@@ -8,11 +8,11 @@ description:
 
 # osrs-tracker-aws
 
-Scheduled and SQS-driven Lambdas (`lambda/<function>/`, one npm workspace at the repo root) that keep OSRS Tracker's
-MongoDB data fresh. The `@osrs-tracker/*` npm packages they install live in `../osrs-tracker-packages`
-([osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages)): a package change (a new hiscores skill
-or activity, a model field) is a PR and a publish there, then a version bump here. That repo, `../osrs-tracker-web` and
-`../osrs-tracker-api` have their own skills.
+Scheduled Lambdas, plus process-players, which queue-players invokes (`lambda/<function>/`, one npm workspace at the
+repo root) that keep OSRS Tracker's MongoDB data fresh. The `@osrs-tracker/*` npm packages they install live in
+`../osrs-tracker-packages` ([osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages)): a package
+change (a new hiscores skill or activity, a model field) is a PR and a publish there, then a version bump here. That
+repo, `../osrs-tracker-web` and `../osrs-tracker-api` have their own skills.
 
 **This repo is public.** `CLAUDE.md`'s hard rules say what never goes into code, docs, issues or commits, and what is
 never printed.
@@ -30,7 +30,7 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
   (`--profile claude` or `AWS_PROFILE=claude`), never the default profile.
 - **Lambda deploys** go live immediately: get explicit go-ahead.
 - **Every write goes through a `DRY_RUN`-aware helper** (`lambda/shared/src/dry-run.utils.ts`): Mongo writes in `MU`,
-  `sendMessageBatch`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
+  `invokeAsync`, `discordAlert`. Guard new writes with `if (DRY_RUN) return logDryRun(…)`.
 - **Run handlers locally only via `npm run invoke:dry`** (from `lambda/<function>/`, `.env` filled in). There is no
   staging database. Reads and fetches are real; writes log `[DRY_RUN] Would …`. queue-players takes an optional event
   time (`-- 2026-10-02T18:00:00Z`; the other scheduled Lambdas accept it but ignore it), process-players takes usernames
@@ -45,13 +45,13 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
   `cleanLambdaEnv` adds the Lambda's own schema from its `src/env.ts`; `cleanMongoEnv`: the MongoDB variables, validated
   when `mongo.utils.ts` loads, so alarm-to-discord, which has no database, needs none), `dry-run.utils.ts`,
   `mongo.utils.ts` (each Lambda's `MU` extends `mongoUtils<Schema>()` with its own queries; `ensureIndex`),
-  `sqs.utils.ts` and `discord-alert.ts` (the Lambda passes its queue or webhook URL; `discordAlertNeverRejects` for code
-  that must not throw; `options.functionName` for an alert about another function), `commit.ts` (`logCommit()`, called
-  at module scope in every `src/index.ts`: logs the commit `esbuild.js` stamps into the bundle), `user-agent.ts`
-  (`USER_AGENT`, sent with every outgoing request: the OSRS Wiki asks for one; use it for any new fetch); `build/` holds
-  `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json` is every Lambda's oxlint config (oxlint, not ESLint, while
-  the repo is on TypeScript 7, which typescript-eslint doesn't support as of 2026-10-18). Keep Lambda-specific logic in
-  the Lambda.
+  `lambda.utils.ts` (`invokeAsync`: an async invoke that never rejects) and `discord-alert.ts` (the Lambda passes its
+  function name or webhook URL; `discordAlertNeverRejects` for code that must not throw; `options.functionName` for an
+  alert about another function), `commit.ts` (`logCommit()`, called at module scope in every `src/index.ts`: logs the
+  commit `esbuild.js` stamps into the bundle), `user-agent.ts` (`USER_AGENT`, sent with every outgoing request: the OSRS
+  Wiki asks for one; use it for any new fetch); `build/` holds `esbuild.js` and the `invoke.js` runner; `.oxlintrc.json`
+  is every Lambda's oxlint config (oxlint, not ESLint, while the repo is on TypeScript 7, which typescript-eslint
+  doesn't support as of 2026-10-18). Keep Lambda-specific logic in the Lambda.
 - Dependencies: devDependencies go in the root `package.json`, a runtime dependency in the Lambda that imports it
   (`npm install <pkg> -w lambda/<folder>`, from the root). Shared code's imports resolve from the root `node_modules`:
   each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version
@@ -59,8 +59,9 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
   for a new import, and bump its range with the Lambdas'.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
-- Throw to fail a run (SQS retries it); use `discordAlert` for operator-visible failures. process-players must not throw
-  after its bulk writes: the retry would store duplicate hiscore entries.
+- Throw to fail a run (Lambda retries it per [INFRA.md](INFRA.md)'s async retries); use `discordAlert` for
+  operator-visible failures. process-players must not throw after its bulk writes: the retry would store duplicate
+  hiscore entries.
 - Only process-players counts 404s: a 404/400 hiscore is skipped and starts a date-based streak; after 7 days the
   player's `scrapingOffsets` move to `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores them (full contract
   in [DATA-MODEL.md](../../../DATA-MODEL.md)).

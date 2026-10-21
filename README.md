@@ -7,14 +7,14 @@ tracking item prices and player progress in Old School RuneScape.
 
 Each job is a small AWS Lambda function in [`lambda/`](lambda):
 
-| Job                                                            | Runs             | Description                                                                                                                                                                                                                               |
-| -------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [refresh‑items](lambda/osrs-tracker_refresh-items)             | Hourly           | Fetches the full item list from the [OSRS Wiki prices API](https://prices.runescape.wiki) and saves it to the database, then removes items no longer on the GE.                                                                           |
-| [queue‑players](lambda/osrs-tracker_queue-players)             | Hourly           | Finds the tracked players whose daily snapshot is due at that hour and puts them in a queue.                                                                                                                                              |
-| [process‑players](lambda/osrs-tracker_process-players)         | From queue       | Fetches the player's current hiscores and saves them as a new daily snapshot. Failures are retried, and persistent ones are reported on Discord. Players off the hiscores for 7 days stop being queued until someone looks them up again. |
-| [record‑player‑count](lambda/osrs-tracker_record-player-count) | Every 10 minutes | Records how many players are online, from Jagex's world list, to chart the player count over time, and keeps each day's averages. Reports on Discord when the list can't be read.                                                         |
-| [clean‑hiscores](lambda/osrs-tracker_clean-hiscores)           | Nightly          | At midnight (UTC), drops scraping offsets nobody looked up for 180 days, removes snapshots older than 90 days, deletes players with no snapshots left, and alerts when scraping has stopped.                                              |
-| [alarm‑to‑discord](lambda/osrs-tracker_alarm-to-discord)       | On an alarm      | Posts the CloudWatch alarm on any job's errors (a failed run, a timeout, a bad configuration) to Discord, and again when it recovers. The alarms also go out by email.                                                                    |
+| Job                                                            | Runs                | Description                                                                                                                                                                                                                               |
+| -------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [refresh‑items](lambda/osrs-tracker_refresh-items)             | Hourly              | Fetches the full item list from the [OSRS Wiki prices API](https://prices.runescape.wiki) and saves it to the database, then removes items no longer on the GE.                                                                           |
+| [queue‑players](lambda/osrs-tracker_queue-players)             | Hourly              | Finds the tracked players whose daily snapshot is due at that hour and hands them to process-players.                                                                                                                                     |
+| [process‑players](lambda/osrs-tracker_process-players)         | After queue‑players | Fetches the player's current hiscores and saves them as a new daily snapshot. Failures are retried, and persistent ones are reported on Discord. Players off the hiscores for 7 days stop being queued until someone looks them up again. |
+| [record‑player‑count](lambda/osrs-tracker_record-player-count) | Every 10 minutes    | Records how many players are online, from Jagex's world list, to chart the player count over time, and keeps each day's averages. Reports on Discord when the list can't be read.                                                         |
+| [clean‑hiscores](lambda/osrs-tracker_clean-hiscores)           | Nightly             | At midnight (UTC), drops scraping offsets nobody looked up for 180 days, removes snapshots older than 90 days, deletes players with no snapshots left, and alerts when scraping has stopped.                                              |
+| [alarm‑to‑discord](lambda/osrs-tracker_alarm-to-discord)       | On an alarm         | Posts the CloudWatch alarm on any job's errors (a failed run, a timeout, a bad configuration) to Discord, and again when it recovers. The alarms also go out by email.                                                                    |
 
 ## Shared packages
 
@@ -45,7 +45,7 @@ npm run invoke:dry
 ```
 
 This runs the job once with `DRY_RUN=true`. It still reads data and calls the external APIs, but every write (to the
-database, the queue or Discord) is only logged. You need Node 24.
+database, Lambda or Discord) is only logged. You need Node 24.
 
 What goes in `.env` (each job's `.env.example` lists the ones it needs):
 
@@ -56,13 +56,14 @@ What goes in `.env` (each job's `.env.example` lists the ones it needs):
 | `MONGODB_DAILY_COLLECTION`             | `playerCountsDaily` (record-player-count only).                                                       |
 | `MONGODB_USERNAME`, `MONGODB_PASSWORD` | An Atlas database user. Required locally: without them the driver tries AWS authentication and fails. |
 | `OSRS_API_BASE_URL`                    | The hiscore proxy, `https://runescape-api.freekmencke.com/rs`.                                        |
-| `PLAYERS_PER_SQS_MESSAGE`              | Any whole number of at least 1; it only changes how the logged messages are grouped.                  |
-| `SQS_QUEUE_URL`, `WEBHOOK_URL`         | Any valid URL: a dry run never sends to the queue or Discord.                                         |
+| `PLAYERS_PER_EVENT`                    | Any whole number of at least 1; it only changes how the logged events are grouped.                    |
+| `PROCESS_PLAYERS_FUNCTION`             | `osrs-tracker_process-players`: a dry run only logs the invoke.                                       |
+| `WEBHOOK_URL`                          | Any valid URL: a dry run never sends to Discord.                                                      |
 | `MAX_AGE_IN_DAYS`                      | `90`, as in production.                                                                               |
 
 ## Built with
 
-TypeScript, AWS Lambda on Node 24, Amazon SQS, Amazon EventBridge, Amazon CloudWatch and SNS, and MongoDB Atlas.
+TypeScript, AWS Lambda on Node 24, Amazon EventBridge, Amazon CloudWatch and SNS, and MongoDB Atlas.
 
 ## Development
 

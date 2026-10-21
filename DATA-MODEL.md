@@ -46,7 +46,7 @@ Each entry:
 
 | Field | Notes                                                                                                                                      |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `d`   | Date: scrape time. One time per process-players SQS message, so every player in a message shares it.                                       |
+| `d`   | Date: scrape time. One time per process-players event, so every player in an event shares it.                                              |
 | `o`   | Scraping offset. Usually one entry per offset per day (the API's initial entry can add a second on the first day).                         |
 | `l`   | Layout id: `_id` in [`hiscoreLayouts`](#hiscorelayouts), the skill and activity names the values are positioned by.                        |
 | `s`   | Skills by position in the layout. Index 0 (Overall) is always `[rank or null, level, xp]`; other levels are derived from xp when decoding. |

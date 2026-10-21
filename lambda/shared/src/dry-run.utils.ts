@@ -1,7 +1,7 @@
 import { sharedEnv } from './env';
 
 /**
- * When `DRY_RUN=true`, writes (MongoDB, SQS, Discord) are logged instead of executed. Reads and external fetches still
+ * When `DRY_RUN=true`, writes (MongoDB, Lambda invokes, Discord) are logged instead of executed. Reads and external fetches still
  * happen. Never set in production.
  */
 export const DRY_RUN = sharedEnv.DRY_RUN === 'true';

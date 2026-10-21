@@ -4,14 +4,17 @@ export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts'],
     environment: 'node',
-    // read at import by lambda/shared/src/env.ts, through the shared `SQS_MESSAGE_BATCH_SIZE` import. Specs never
-    // connect to MONGODB_URI
+    // read at import by src/env.ts and lambda/shared/src/env.ts. Specs never connect to these: the handler spec mocks MU,
+    // invokeAsync and discordAlert
     env: {
       // nothing listens on port 1: a connection made by mistake fails at once
       MONGODB_URI: 'mongodb://127.0.0.1:1',
       MONGODB_DATABASE: 'test',
       MONGODB_COLLECTION: 'players',
       DRY_RUN: 'false',
+      PLAYERS_PER_EVENT: '2',
+      PROCESS_PLAYERS_FUNCTION: 'process-players',
+      WEBHOOK_URL: 'https://discord.invalid/webhook',
     },
   },
 });

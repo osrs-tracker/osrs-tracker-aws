@@ -29,10 +29,11 @@ Keep detail there, not in this file.
 
 - Never write secrets, account IDs or resource IDs into code, docs, issues or commits, and never print `.env` or Lambda
   env values.
-- Every write goes through a `DRY_RUN`-aware helper (Mongo in `MU`, `sendMessageBatch`, `discordAlert`).
+- Every write goes through a `DRY_RUN`-aware helper (Mongo in `MU`, `invokeAsync`, `discordAlert`).
 - Lambda deploys go live immediately: get an explicit go-ahead (a "release it" counts). Mutating `aws` commands follow
   `INFRA.md`: show the exact command and wait for approval.
-- process-players must not throw after its bulk writes: SQS would retry the message and store duplicate hiscore entries.
+- process-players must not throw after its bulk writes: Lambda would retry the event and store duplicate hiscore
+  entries.
 - A change to a shared field or index updates `DATA-MODEL.md` in the same change, plus an issue in osrs-tracker-api when
   it has to follow.
 - Every change except a doc-only one gets a changelog entry: Lambdas, infra, CI and tooling (`.claude/hooks/`,
@@ -52,7 +53,7 @@ Keep detail there, not in this file.
 - `package.json`: the workspace root (the Lambdas and `lambda/shared`) with every devDependency, the root Prettier
   scripts, and the one `package-lock.json`. Each Lambda's `package.json` holds its runtime dependencies and scripts.
 - `lambda/shared/`: code every Lambda bundles, the workspace package `@lambda/shared`: `src/` (`env.ts`,
-  `dry-run.utils.ts`, `mongo.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`, `user-agent.ts` (the
+  `dry-run.utils.ts`, `mongo.utils.ts`, `lambda.utils.ts`, `discord-alert.ts`, `commit.ts`, `user-agent.ts` (the
   `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players' `vitest.config.mts`),
   `build/esbuild.js`, `build/invoke.js` and `.oxlintrc.json` (every Lambda's `lint` passes it with `-c`; oxlint, not
   ESLint, while the repo is on TypeScript 7, which typescript-eslint doesn't support as of 2026-10-18). A change there

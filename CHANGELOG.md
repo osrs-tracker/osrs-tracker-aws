@@ -5,6 +5,22 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-10-21
+
+- queue-players invokes process-players asynchronously, one event per `PLAYERS_PER_EVENT` players, instead of sending
+  SQS messages (issue #161). The SQS trigger's pollers made about 21,600 empty receives a day, over 99% of the scrape
+  queue's requests; Lambda's own event queue polls nothing. process-players gets reserved concurrency 5 (the trigger's
+  maximum concurrency before), 2 async retries, a 1-hour max event age, and `osrs-tracker_players-to-scrape-dead` as its
+  on-failure destination, with a new alarm on it. The 00:00 UTC run now drains in roughly 10 to 20 minutes instead of
+  3.5, as throttled events back off.
+- process-players requeues failed players by invoking itself, with a `retry` count in the event, at most 3 times; past
+  that it sends a `Gave up retrying` alert. Nothing capped the requeue chain before. That alert replaces
+  `Failed to process some players`, and `No players were updated` now alerts on a requeued event, since an async event
+  carries no receive count.
+- Env vars: `PLAYERS_PER_SQS_MESSAGE` is now `PLAYERS_PER_EVENT` in both Lambdas, and `SQS_QUEUE_URL` is gone;
+  queue-players reads `PROCESS_PLAYERS_FUNCTION`. `lambda/shared`'s `sqs.utils.ts` became `lambda.utils.ts`
+  (`invokeAsync`, `@aws-sdk/client-lambda`), which adds about 77 KB to each of the two bundles.
+
 ## 2026-10-18
 
 ### Lambdas
