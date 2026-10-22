@@ -17,7 +17,8 @@ not on the hiscores, the scrape time and the offset. It has no database: the ing
 - **Not found** (HTTP 404/400) is skipped without retry and sent in the message's `notFound`. After 7 days off the
   hiscores the ingester moves the player's `scrapingOffsets` to `pausedScrapingOffsets`, so they're no longer queued,
   and reports it on Discord. The API restores them on the next lookup (see the pause/resume contract in
-  [DATA-MODEL.md](../../DATA-MODEL.md)).
+  osrs-tracker-api's
+  [DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md#pauseresume-contract)).
 
 Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
 variable): `OSRS_API_BASE_URL`, `PLAYERS_PER_EVENT`, `SCRAPE_RESULTS_QUEUE_URL`, `WEBHOOK_URL`. Optional: `DRY_RUN`.

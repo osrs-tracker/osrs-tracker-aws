@@ -1,9 +1,10 @@
 # osrs-tracker-aws
 
-Six AWS Lambdas (`lambda/<function>/`, Node 24, one npm workspace at the repo root): five keep OSRS Tracker's MongoDB
-Atlas data fresh, alarm-to-discord posts the CloudWatch alarms to Discord. Sibling repos: `../osrs-tracker-api` (writes
-the same collections), `../osrs-tracker-web` and `../osrs-tracker-packages` (the `@osrs-tracker/*` npm packages the
-Lambdas install from npm). **This repo is public.**
+Four AWS Lambdas (`lambda/<function>/`, Node 24, one npm workspace at the repo root): queue-players, process-players and
+record-player-count scrape OSRS Tracker's player data into a queue, alarm-to-discord posts the CloudWatch alarms to
+Discord. Sibling repos: `../osrs-tracker-api` (its ingester applies the queue to MongoDB and runs the item and clean-up
+jobs), `../osrs-tracker-web` and `../osrs-tracker-packages` (the `@osrs-tracker/*` npm packages the Lambdas install from
+npm). **This repo is public.**
 
 **Load the `osrs-tracker-aws` skill before writing, reviewing, running, deploying or committing anything here.** It
 holds the `DRY_RUN`, Lambda, changelog and release rules, with infra and deploy steps in its `INFRA.md` and `DEPLOY.md`.
@@ -32,14 +33,13 @@ Keep detail there, not in this file.
 - Every write goes through a `DRY_RUN`-aware helper (Mongo in `MU`, `invokeAsync`, `sendScrapeResult`, `discordAlert`).
 - Lambda deploys go live immediately: get an explicit go-ahead (a "release it" counts). Mutating `aws` commands follow
   `INFRA.md`: show the exact command and wait for approval.
-- A change to a shared field or index updates `DATA-MODEL.md` in the same change, plus an issue in osrs-tracker-api when
-  it has to follow.
+- The data model lives in osrs-tracker-api's `DATA-MODEL.md`: a change to a scrape result message or to how
+  queue-players reads the subscriptions table needs an issue there.
 - Every change except a doc-only one gets a changelog entry: Lambdas, infra, CI and tooling (`.claude/hooks/`,
   `.claude/settings.json`, scripts such as `.claude/skills/verify/verify.sh`) in the root `CHANGELOG.md` under today's
   `## YYYY-MM-DD`. Doc-only means `docs/`, `README.md` files (also a Lambda's), `CLAUDE.md`, the Markdown files in
-  `.claude/skills/` and `.claude/agents/`, and `DATA-MODEL.md` edits that only document (one that comes with a data
-  change is logged with it). A dependency bump gets an entry only when it changes behaviour (a new feature used, a fix
-  that matters, a breaking change handled).
+  `.claude/skills/` and `.claude/agents/`, and `DATA-MODEL.md`. A dependency bump gets an entry only when it changes
+  behaviour (a new feature used, a fix that matters, a breaking change handled).
 - Doc-only changes go straight to `main`; for anything else, ask: `main` or a PR (unless releasing). Never
   `--no-gpg-sign`.
 
@@ -55,9 +55,8 @@ Keep detail there, not in this file.
   `user-agent.ts` (the `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players'
   `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and `.oxlintrc.json` (every Lambda's `lint` passes it with
   `-c`; oxlint, not ESLint, while the repo is on TypeScript 7, which typescript-eslint doesn't support as of
-  2026-10-18). A change there touches all six Lambdas.
-- `DATA-MODEL.md`: who writes each `players`/`items`/`hiscoreLayouts` field and owns each index, the stored hiscore
-  format, and the pause/resume contract.
+  2026-10-18). A change there touches all four Lambdas.
+- `DATA-MODEL.md`: a pointer to osrs-tracker-api's copy (osrs-tracker/osrs-tracker-api#205).
 - `.github/workflows/main.yml`: on pushes to `main` and on PRs, CI checks only the folders changed (all of them when
   `.github/` changes); its `CI` job is a required check, with `zizmor.yml`'s `zizmor` (audits the workflows;
   `.github/zizmor.yml` says what it allows). `.github/actions/setup-deps` caches the workspace's `node_modules` (the

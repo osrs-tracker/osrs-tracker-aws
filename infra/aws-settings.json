@@ -23,29 +23,6 @@
       "threshold": 1.0,
       "treatMissingData": "notBreaching"
     },
-    "osrs-tracker_clean-hiscores-errors": {
-      "actionsEnabled": true,
-      "alarmActions": [
-        "osrs-tracker-alerts"
-      ],
-      "comparison": "GreaterThanOrEqualToThreshold",
-      "datapointsToAlarm": null,
-      "description": "Failed (error, timeout or out of memory): read its latest log stream",
-      "dimensions": {
-        "FunctionName": "osrs-tracker_clean-hiscores"
-      },
-      "evaluationPeriods": 1,
-      "insufficientDataActions": [],
-      "metric": "Errors",
-      "namespace": "AWS/Lambda",
-      "okActions": [
-        "osrs-tracker-alerts"
-      ],
-      "periodSeconds": 86400,
-      "statistic": "Sum",
-      "threshold": 1.0,
-      "treatMissingData": "notBreaching"
-    },
     "osrs-tracker_hiscore-proxy-requests": {
       "actionsEnabled": true,
       "alarmActions": [
@@ -158,29 +135,6 @@
         "osrs-tracker-alerts"
       ],
       "periodSeconds": 600,
-      "statistic": "Sum",
-      "threshold": 1.0,
-      "treatMissingData": "notBreaching"
-    },
-    "osrs-tracker_refresh-items-errors": {
-      "actionsEnabled": true,
-      "alarmActions": [
-        "osrs-tracker-alerts"
-      ],
-      "comparison": "GreaterThanOrEqualToThreshold",
-      "datapointsToAlarm": null,
-      "description": "Failed (error, timeout or out of memory): read its latest log stream",
-      "dimensions": {
-        "FunctionName": "osrs-tracker_refresh-items"
-      },
-      "evaluationPeriods": 1,
-      "insufficientDataActions": [],
-      "metric": "Errors",
-      "namespace": "AWS/Lambda",
-      "okActions": [
-        "osrs-tracker-alerts"
-      ],
-      "periodSeconds": 3600,
       "statistic": "Sum",
       "threshold": 1.0,
       "treatMissingData": "notBreaching"
@@ -345,33 +299,6 @@
       "timeoutSeconds": 10,
       "tracing": "PassThrough"
     },
-    "osrs-tracker_clean-hiscores": {
-      "architectures": [
-        "arm64"
-      ],
-      "asyncMaxEventAgeSeconds": "default (21600)",
-      "asyncOnFailure": null,
-      "asyncOnSuccess": null,
-      "asyncRetries": 0,
-      "envVarNames": [
-        "MAX_AGE_IN_DAYS",
-        "MONGODB_COLLECTION",
-        "MONGODB_DATABASE",
-        "MONGODB_URI",
-        "WEBHOOK_URL"
-      ],
-      "ephemeralStorageMB": 512,
-      "eventSourceMappings": [],
-      "handler": "index.handler",
-      "logFormat": "Text",
-      "logRetentionDays": 7,
-      "memoryMB": 256,
-      "packageType": "Zip",
-      "reservedConcurrency": null,
-      "runtime": "nodejs24.x",
-      "timeoutSeconds": 60,
-      "tracing": "PassThrough"
-    },
     "osrs-tracker_process-players": {
       "architectures": [
         "arm64"
@@ -447,31 +374,6 @@
       "runtime": "nodejs24.x",
       "timeoutSeconds": 30,
       "tracing": "PassThrough"
-    },
-    "osrs-tracker_refresh-items": {
-      "architectures": [
-        "arm64"
-      ],
-      "asyncMaxEventAgeSeconds": "default (21600)",
-      "asyncOnFailure": null,
-      "asyncOnSuccess": null,
-      "asyncRetries": "default (2)",
-      "envVarNames": [
-        "MONGODB_COLLECTION",
-        "MONGODB_DATABASE",
-        "MONGODB_URI"
-      ],
-      "ephemeralStorageMB": 512,
-      "eventSourceMappings": [],
-      "handler": "index.handler",
-      "logFormat": "Text",
-      "logRetentionDays": 7,
-      "memoryMB": 256,
-      "packageType": "Zip",
-      "reservedConcurrency": null,
-      "runtime": "nodejs24.x",
-      "timeoutSeconds": 30,
-      "tracing": "PassThrough"
     }
   },
   "queues": {
@@ -523,16 +425,7 @@
       "schedule": "cron(0 * * * ? *)",
       "state": "ENABLED",
       "targets": [
-        "osrs-tracker_queue-players",
-        "osrs-tracker_refresh-items"
-      ]
-    },
-    "daily": {
-      "eventBus": "default",
-      "schedule": "cron(0 0 * * ? *)",
-      "state": "ENABLED",
-      "targets": [
-        "osrs-tracker_clean-hiscores"
+        "osrs-tracker_queue-players"
       ]
     },
     "osrs-tracker_record-player-count": {

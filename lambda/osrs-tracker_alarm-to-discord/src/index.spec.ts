@@ -20,13 +20,13 @@ const context = {
 } as Context;
 
 const alarm: AlarmNotification = {
-  AlarmName: 'osrs-tracker_refresh-items-errors',
-  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
+  AlarmName: 'osrs-tracker_queue-players-errors',
+  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_queue-players-errors',
   NewStateValue: 'ALARM',
   OldStateValue: 'OK',
   AlarmDescription: 'Failed (error, timeout or out of memory): read its latest log stream',
   NewStateReason: 'Threshold Crossed: 1 out of the last 1 datapoints [1.0 (14/10/26 10:00:00)]',
-  Trigger: { Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }], Period: 3600 },
+  Trigger: { Dimensions: [{ value: 'osrs-tracker_queue-players', name: 'FunctionName' }], Period: 3600 },
 };
 
 /** An SNS event with one record per message. */
@@ -56,13 +56,13 @@ describe('handler', () => {
 
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith('https://discord.invalid/webhook', expect.anything());
     expect(sentEmbed()).toMatchObject({
-      title: 'Alarm: osrs-tracker_refresh-items-errors',
+      title: 'Alarm: osrs-tracker_queue-players-errors',
       description: `${alarm.AlarmDescription}\n\n${alarm.NewStateReason}`,
       color: 0xff0000,
-      author: { name: 'osrs-tracker_refresh-items' },
+      author: { name: 'osrs-tracker_queue-players' },
     });
-    expect(sentEmbed().url).toContain('log-group/$252Faws$252Flambda$252Fosrs-tracker_refresh-items');
-    expect(sentEmbed().author.url).toContain('#/functions/osrs-tracker_refresh-items?tab=monitoring');
+    expect(sentEmbed().url).toContain('log-group/$252Faws$252Flambda$252Fosrs-tracker_queue-players');
+    expect(sentEmbed().author.url).toContain('#/functions/osrs-tracker_queue-players?tab=monitoring');
   });
 
   it('posts a recovery in green and skips other changes', async () => {
@@ -73,11 +73,11 @@ describe('handler', () => {
 
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(sentEmbed()).toMatchObject({
-      title: 'Recovered: osrs-tracker_refresh-items-errors',
+      title: 'Recovered: osrs-tracker_queue-players-errors',
       description: 'Back to normal: no threshold crossed for 1 hour.',
       color: 0x00ff00,
     });
-    expect(console.info).toHaveBeenCalledWith('Skipped osrs-tracker_refresh-items-errors: INSUFFICIENT_DATA -> OK');
+    expect(console.info).toHaveBeenCalledWith('Skipped osrs-tracker_queue-players-errors: INSUFFICIENT_DATA -> OK');
   });
 
   it('rejects a message that is not an alarm, so Lambda retries it', async () => {
@@ -102,7 +102,7 @@ describe('handler', () => {
     expect(logDryRun).toHaveBeenCalledWith(
       'send Discord alert',
       expect.objectContaining({
-        embeds: [expect.objectContaining({ title: 'Alarm: osrs-tracker_refresh-items-errors' })],
+        embeds: [expect.objectContaining({ title: 'Alarm: osrs-tracker_queue-players-errors' })],
       }),
     );
   });
