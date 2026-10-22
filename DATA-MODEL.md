@@ -214,17 +214,12 @@ One owner per index. The owner creates it; everyone else may rely on it (`hint`)
 | `players`           | `{ username: 1 }`, unique                       | API, at startup (`api:src/common/mongo/mongo.provider.ts`)                                               | API `hint` in `getPlayer`, `recordLookup`, `refreshPlayerInfo`; the ingester `hint` in its entry and not-found writes. |
 | `players`           | `{ lastHiscoreFetch: -1 }`, partial (`$exists`) | API, at startup                                                                                          | API `getLastFetchedPlayers` (`hint`).                                                                                  |
 | `items`             | `{ id: 1 }`, unique                             | API, at startup                                                                                          | API `getItem`, `recordLookup` (`hint`); refresh-items upsert and delete (`hint`).                                      |
-| `items`             | `name_autocomplete`, Atlas Search               | API, at startup when missing                                                                             | API `searchItems` (`$search`).                                                                                         |
 | `items`             | `{ name: 1 }`, collation `en`, strength 2       | API, at startup                                                                                          | API `browseItems` (`hint`, with the same collation, `ITEM_NAME_COLLATION`: without it Mongo can't use the index).      |
 | `items`             | `{ lastFetch: -1 }`, partial (`$exists`)        | API, at startup                                                                                          | API `getLastFetchedItems` (`hint`).                                                                                    |
 | `playerCounts`      | `{ date: 1 }`                                   | The ingester (osrs-tracker/osrs-tracker-api#205); record-player-count created it on every run until #166 | API latest count and history ranges; the ingester's upsert on `date`.                                                  |
 | `playerCountsDaily` | `{ date: 1 }`, unique                           | The ingester (osrs-tracker/osrs-tracker-api#205); record-player-count created it on every run until #166 | The ingester's `$merge` (its `on` needs a unique index); API `1y` and `all` history.                                   |
 | `news`              | `{ link: 1 }`, unique                           | API, at startup                                                                                          | API `storeNews` upsert (no `hint`).                                                                                    |
 | `news`              | `{ pubDate: -1 }`                               | API, at startup                                                                                          | API `getNewsSince` (no `hint`).                                                                                        |
-
-`name_autocomplete` is an Atlas Search index (`listSearchIndexes`, not `indexes()`): `name` as `autocomplete`
-(`edgeGram`, `minGrams` 2, `maxGrams` 15, `foldDiacritics`) and `string`, `dynamic: false`. The API creates it only when
-it's missing and never updates an existing definition: apply a changed definition by hand.
 
 A `hint` on a missing index fails the query, so don't drop an index without checking this table.
 
