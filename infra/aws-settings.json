@@ -381,9 +381,6 @@
       "asyncOnSuccess": null,
       "asyncRetries": 2,
       "envVarNames": [
-        "MONGODB_COLLECTION",
-        "MONGODB_DATABASE",
-        "MONGODB_URI",
         "OSRS_API_BASE_URL",
         "PLAYERS_PER_EVENT",
         "SCRAPE_RESULTS_QUEUE_URL",
@@ -436,10 +433,6 @@
       "asyncOnSuccess": null,
       "asyncRetries": 0,
       "envVarNames": [
-        "MONGODB_COLLECTION",
-        "MONGODB_DAILY_COLLECTION",
-        "MONGODB_DATABASE",
-        "MONGODB_URI",
         "SCRAPE_RESULTS_QUEUE_URL",
         "WEBHOOK_URL"
       ],

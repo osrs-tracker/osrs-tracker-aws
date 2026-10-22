@@ -4,7 +4,7 @@ import { DRY_RUN, logDryRun } from './dry-run.utils';
 /**
  * Invokes `functionName` asynchronously (`InvocationType: 'Event'`) with `payload` as its event: Lambda queues the event
  * and returns before the function runs, then retries it per the function's async invoke config. Never rejects: returns
- * false, and logs the error, when Lambda didn't accept the event, so process-players can use it after its bulk writes.
+ * false, and logs the error, when Lambda didn't accept the event, so process-players can use it after its send.
  * True without invoking in `DRY_RUN`.
  */
 export async function invokeAsync(

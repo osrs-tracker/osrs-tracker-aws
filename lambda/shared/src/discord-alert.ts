@@ -38,7 +38,7 @@ export interface DiscordAlertOptions {
  * Sends a red Discord alert to `webhookUrl`, linking to this invocation's logs and the function's monitoring tab (see
  * `options` for an alert about another function). A non-2xx response (e.g. a revoked webhook) is logged, not thrown; a
  * failed or timed-out (5 s) request rejects. A description over Discord's limit is truncated. Code that must not throw,
- * such as process-players after its bulk writes, uses `discordAlertNeverRejects` instead.
+ * such as process-players after its send, uses `discordAlertNeverRejects` instead.
  */
 export async function discordAlert(
   webhookUrl: string,
@@ -83,7 +83,7 @@ export async function discordAlert(
     headers: { 'content-type': 'application/json', 'user-agent': USER_AGENT },
     body: JSON.stringify(message),
     // undici's own timeouts are 300 s; a stalled request must not hold the Lambda until it times out (process-players
-    // would then be retried by Lambda after its bulk writes, storing duplicate hiscore entries)
+    // would then be retried by Lambda after its send, scraping and requeueing the event a second time)
     signal: AbortSignal.timeout(5_000),
   });
   if (!response.ok) console.error(`Failed to send Discord alert: HTTP ${response.status}`);

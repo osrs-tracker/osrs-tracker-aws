@@ -5,6 +5,24 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-10-22
+
+- process-players and record-player-count stop writing MongoDB (issue #166, roadmap #162): the scrape results queue is
+  now their only output, and the ingester on fremen-server (osrs-tracker/osrs-tracker-api#203) writes the hiscore
+  entries, their layouts, the not-found streaks and pauses, the player counts and the daily averages. process-players'
+  `hiscores` message now carries the not-found usernames too, and the `Paused scraping` alert moves to the ingester.
+  Neither Lambda has a MongoDB client, `MONGODB_*` variables or the `mongodb` dependency any more; record-player-count
+  no longer ensures the `playerCounts` and `playerCountsDaily` indexes, which the ingester takes over in
+  osrs-tracker/osrs-tracker-api#205. `sendScrapeResult` now rejects when SQS doesn't take a message: the send is the
+  only write, so a failed send fails the run (process-players' async retry scrapes the event again, and the ingester
+  skips an entry it already stored; record-player-count alerts `Player count not recorded`). After its send
+  process-players still never throws, which would requeue its failed players twice. The alerts
+  `Failed to store hiscores`, `Failed to send scrape results`, `Player count not sent` and
+  `Daily player counts not updated` are gone. Deployed at 15:05 UTC as process-players version 55 and
+  record-player-count version 6, commit a8c41ca, after a clean night of the dual write (every result the ingester got
+  was already stored, including the 536 players of the 00:00 UTC run), then their `MONGODB_*` variables removed;
+  `infra/aws-settings.json` updated.
+
 ## 2026-10-21
 
 ### Infra

@@ -5,8 +5,8 @@ export default defineConfig({
     // lambda/shared has no scripts of its own: its specs run here, as its lint does
     include: ['src/**/*.spec.ts', '../shared/src/**/*.spec.ts'],
     environment: 'node',
-    // read and validated when src/env.ts and ../shared/src/env.ts load. Nothing connects to these: the in-memory MongoDB
-    // specs pass their own client, and fetch, Lambda and SQS are mocked
+    // read and validated when src/env.ts and ../shared/src/env.ts load. Nothing connects to these: fetch, Lambda and SQS
+    // are mocked. This Lambda has no database: the MongoDB variables are for ../shared/src/env.spec.ts's `cleanMongoEnv`
     env: {
       // nothing listens on port 1: a connection made by mistake fails at once
       MONGODB_URI: 'mongodb://127.0.0.1:1',
