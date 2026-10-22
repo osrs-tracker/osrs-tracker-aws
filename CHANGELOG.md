@@ -20,7 +20,8 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   `Failed to store hiscores`, `Failed to send scrape results`, `Player count not sent` and
   `Daily player counts not updated` are gone. Deployed at 15:05 UTC as process-players version 55 and
   record-player-count version 6, commit a8c41ca, after a clean night of the dual write (every result the ingester got
-  was already stored, including the 536 players of the 00:00 UTC run).
+  was already stored, including the 536 players of the 00:00 UTC run), then their `MONGODB_*` variables removed;
+  `infra/aws-settings.json` updated.
 
 ## 2026-10-21
 
