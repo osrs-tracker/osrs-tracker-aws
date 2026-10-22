@@ -7,6 +7,13 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
 
 ## 2026-10-22
 
+- MongoDB is out of the repo (issue #168, roadmap #162): `lambda/shared/src/mongo.utils.ts`, `cleanMongoEnv` and its
+  tests, and the `mongodb` peerDependency of `@lambda/shared` are gone, since no Lambda has used them since #167. On
+  AWS, queue-players, process-players and record-player-count each have their own execution role with only the
+  permissions they use, in place of the shared `AWS_Lambda` role (which also allowed invoking any function and reading
+  SQS queues), and the Atlas database users are read-only, so a rolled-back Lambda or API can't write to the frozen
+  copy. `infra/snapshot.sh` now records each Lambda's execution role by name; `infra/aws-settings.json` updated.
+
 - Retired refresh-items and clean-hiscores (issue #167, roadmap #162): the ingester on fremen-server runs both jobs
   since osrs-tracker/osrs-tracker-api#205, with its own freshness alerts, and the `No hiscores scraped` alert moves
   there. Both Lambdas are gone from the workspace, with their `date-fns` and `@aws-sdk/credential-providers`

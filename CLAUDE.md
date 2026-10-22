@@ -30,7 +30,7 @@ Keep detail there, not in this file.
 
 - Never write secrets, account IDs or resource IDs into code, docs, issues or commits, and never print `.env` or Lambda
   env values.
-- Every write goes through a `DRY_RUN`-aware helper (Mongo in `MU`, `invokeAsync`, `sendScrapeResult`, `discordAlert`).
+- Every write goes through a `DRY_RUN`-aware helper (`invokeAsync`, `sendScrapeResult`, `discordAlert`).
 - Lambda deploys go live immediately: get an explicit go-ahead (a "release it" counts). Mutating `aws` commands follow
   `INFRA.md`: show the exact command and wait for approval.
 - The data model lives in osrs-tracker-api's `DATA-MODEL.md`: a change to a scrape result message or to how
@@ -46,16 +46,16 @@ Keep detail there, not in this file.
 ## Where things live
 
 - `lambda/<function>/`: `src/index.ts` (handler, clients at module scope), `src/env.ts` (its env schema), `src/utils/`
-  (`mongo.utils.ts` = `MU` with its own queries, Lambda-specific helpers), `build/invoke.js` (its `invoke:dry` event),
-  and a `README.md` with the trigger and env var names (update it when either changes). Lambda `dist/` is not committed.
+  (Lambda-specific helpers), `build/invoke.js` (its `invoke:dry` event), and a `README.md` with the trigger and env var
+  names (update it when either changes). Lambda `dist/` is not committed.
 - `package.json`: the workspace root (the Lambdas and `lambda/shared`) with every devDependency, the root Prettier
   scripts, and the one `package-lock.json`. Each Lambda's `package.json` holds its runtime dependencies and scripts.
 - `lambda/shared/`: code every Lambda bundles, the workspace package `@lambda/shared`: `src/` (`env.ts`,
-  `dry-run.utils.ts`, `mongo.utils.ts`, `lambda.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`,
-  `user-agent.ts` (the `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players'
-  `vitest.config.mts`), `build/esbuild.js`, `build/invoke.js` and `.oxlintrc.json` (every Lambda's `lint` passes it with
-  `-c`; oxlint, not ESLint, while the repo is on TypeScript 7, which typescript-eslint doesn't support as of
-  2026-10-18). A change there touches all four Lambdas.
+  `dry-run.utils.ts`, `lambda.utils.ts`, `sqs.utils.ts`, `discord-alert.ts`, `commit.ts`, `user-agent.ts` (the
+  `User-Agent` every outgoing request sends); its `*.spec.ts` run from process-players' `vitest.config.mts`),
+  `build/esbuild.js`, `build/invoke.js` and `.oxlintrc.json` (every Lambda's `lint` passes it with `-c`; oxlint, not
+  ESLint, while the repo is on TypeScript 7, which typescript-eslint doesn't support as of 2026-10-18). A change there
+  touches all four Lambdas.
 - `DATA-MODEL.md`: a pointer to osrs-tracker-api's copy (osrs-tracker/osrs-tracker-api#205).
 - `.github/workflows/main.yml`: on pushes to `main` and on PRs, CI checks only the folders changed (all of them when
   `.github/` changes); its `CI` job is a required check, with `zizmor.yml`'s `zizmor` (audits the workflows;

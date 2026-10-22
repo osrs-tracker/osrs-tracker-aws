@@ -3,7 +3,7 @@ const path = require('path');
 /**
  * Runs the dev build of a Lambda's handler (`dist/index.js`, from the Lambda's folder) once, locally, with
  * `DRY_RUN=true`: reads and external fetches happen, writes are only logged. Each Lambda's `build/invoke.js` calls it
- * with its name and event; use it via `npm run invoke:dry`, with an Atlas database user in `.env` (see `.env.example`).
+ * with its name and event; use it via `npm run invoke:dry`, with `.env` filled in (see `.env.example`).
  */
 function invokeDry(functionName, event) {
   if (process.env.DRY_RUN !== 'true') throw new Error('Refusing to run locally without DRY_RUN=true.');

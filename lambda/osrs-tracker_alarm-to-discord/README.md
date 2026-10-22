@@ -9,7 +9,7 @@ Throws when a message isn't an alarm or Discord can't be reached, so Lambda retr
 subscription is filtered to this Lambda's own alarm, so a broken forwarder still reaches someone.
 
 Environment (validated at cold start by `src/env.ts` with `lambda/shared/src/env.ts`, which names any missing or invalid
-variable): `WEBHOOK_URL`. Optional: `DRY_RUN`. No MongoDB variables: it has no database.
+variable): `WEBHOOK_URL`. Optional: `DRY_RUN`.
 
 Run it locally without posting anything: copy `.env.example` to `.env`, fill it in, then `npm run invoke:dry` (an alarm)
 or `npm run invoke:dry -- OK` (a recovery). See the [root README](../../README.md) for how it fits with the other jobs.

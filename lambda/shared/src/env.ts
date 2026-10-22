@@ -28,16 +28,6 @@ const sharedSpecs = {
   DRY_RUN: str({ choices: ['true', 'false'], default: 'false' }),
 };
 
-/** The MongoDB variables, read only by mongo.utils.ts: a Lambda without a database (alarm-to-discord) has none. */
-const mongoSpecs = {
-  MONGODB_URI: nonEmptyStr(),
-  MONGODB_DATABASE: nonEmptyStr(),
-  MONGODB_COLLECTION: nonEmptyStr(),
-  // local SCRAM only (an Atlas database user); unset in production, which uses MONGODB-AWS
-  MONGODB_USERNAME: str({ default: undefined }),
-  MONGODB_PASSWORD: str({ default: undefined }),
-};
-
 /**
  * The shared environment variables, validated once at cold start when this module loads. Anything else shared code
  * needs, such as a function name or webhook URL, is passed in by the Lambda.
@@ -45,23 +35,9 @@ const mongoSpecs = {
 export const sharedEnv = cleanEnv(process.env, sharedSpecs, { reporter });
 
 /**
- * Validates the MongoDB variables. mongo.utils.ts calls it when it loads, so a Lambda that uses MongoDB checks them at
- * cold start.
- */
-export function cleanMongoEnv() {
-  const env = cleanEnv(process.env, mongoSpecs, { reporter });
-
-  // SCRAM needs both. A username alone would fail later with a driver auth error that doesn't name the variable
-  if (env.MONGODB_USERNAME && !env.MONGODB_PASSWORD)
-    throw new Error('Invalid environment variables: MONGODB_PASSWORD (missing, required with MONGODB_USERNAME)');
-
-  return env;
-}
-
-/**
  * Validates the Lambda's own environment variables (`specs`) together with `DRY_RUN` once at cold start, in one
  * `cleanEnv` call so envalid's accessor guard (reading an undeclared variable throws) stays in place. Call it once,
- * from the Lambda's `src/env.ts`. The MongoDB variables are validated by `cleanMongoEnv`.
+ * from the Lambda's `src/env.ts`.
  */
 export function cleanLambdaEnv<S extends object>(specs: S) {
   return cleanEnv(process.env, { ...sharedSpecs, ...specs }, { reporter });

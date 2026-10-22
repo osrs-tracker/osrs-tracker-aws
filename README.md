@@ -61,7 +61,7 @@ What goes in `.env` (each job's `.env.example` lists the ones it needs):
 
 ## Built with
 
-TypeScript, AWS Lambda on Node 24, Amazon EventBridge, Amazon DynamoDB, Amazon CloudWatch and SNS, and MongoDB Atlas.
+TypeScript, AWS Lambda on Node 24, Amazon EventBridge, Amazon SQS, Amazon DynamoDB, and Amazon CloudWatch and SNS.
 
 ## Development
 

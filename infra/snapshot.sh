@@ -38,7 +38,7 @@ aws logs describe-log-groups --log-group-name-prefix /aws/lambda/osrs-tracker_ \
 for fn in $(aws lambda list-functions --query "Functions[?starts_with(FunctionName, 'osrs-tracker_')].FunctionName" |
   jq -r '.[]'); do
   aws lambda get-function-configuration --function-name "$fn" --query '{
-    runtime: Runtime, architectures: Architectures, handler: Handler, packageType: PackageType,
+    role: Role, runtime: Runtime, architectures: Architectures, handler: Handler, packageType: PackageType,
     timeoutSeconds: Timeout, memoryMB: MemorySize, ephemeralStorageMB: EphemeralStorage.Size,
     logGroup: LoggingConfig.LogGroup, logFormat: LoggingConfig.LogFormat, tracing: TracingConfig.Mode,
     envVarNames: keys(Environment.Variables || `{}`)}' >"$tmp/config.json"
@@ -53,6 +53,8 @@ for fn in $(aws lambda list-functions --query "Functions[?starts_with(FunctionNa
   jq -n --arg fn "$fn" --slurpfile c "$tmp/config.json" --slurpfile i "$tmp/invoke.json" \
     --slurpfile rc "$tmp/concurrency.json" --slurpfile s "$tmp/sources.json" --slurpfile r "$tmp/retention.json" \
     "$defs"'$c[0] as $c | $i[0] as $i | {($fn): ($c + {
+      # the execution role by name only: its ARN holds the account ID
+      role: ($c.role | sub("^.*/"; "")),
       envVarNames: ($c.envVarNames | sort),
       logRetentionDays: ([$r[0][] | select(.name == $c.logGroup) | .days] | first // "never expire"),
       reservedConcurrency: $rc[0],

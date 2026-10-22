@@ -6,12 +6,8 @@ export default defineConfig({
     include: ['src/**/*.spec.ts', '../shared/src/**/*.spec.ts'],
     environment: 'node',
     // read and validated when src/env.ts and ../shared/src/env.ts load. Nothing connects to these: fetch, Lambda and SQS
-    // are mocked. This Lambda has no database: the MongoDB variables are for ../shared/src/env.spec.ts's `cleanMongoEnv`
+    // are mocked
     env: {
-      // nothing listens on port 1: a connection made by mistake fails at once
-      MONGODB_URI: 'mongodb://127.0.0.1:1',
-      MONGODB_DATABASE: 'test',
-      MONGODB_COLLECTION: 'players',
       DRY_RUN: 'false',
       OSRS_API_BASE_URL: 'https://hiscores.invalid',
       PLAYERS_PER_EVENT: '2',
