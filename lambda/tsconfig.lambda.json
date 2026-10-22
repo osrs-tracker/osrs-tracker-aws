@@ -10,8 +10,6 @@
     "removeComments": true,
     "strict": true,
     // since TypeScript 6 no @types package is included unless listed (aws-lambda's are imported, not global)
-    "types": ["node"],
-    // specs: mongodb-memory-server's declarations import semver, which has no types here
-    "skipLibCheck": true
+    "types": ["node"]
   }
 }

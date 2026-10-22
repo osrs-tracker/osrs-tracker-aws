@@ -14,4 +14,6 @@ variable): `PLAYERS_PER_EVENT`, `PROCESS_PLAYERS_FUNCTION`, `SUBSCRIPTIONS_TABLE
 
 Run it locally without writing anything: copy `.env.example` to `.env`, fill it in, then
 `AWS_PROFILE=<profile> npm run invoke:dry` (optionally `-- 2026-10-02T18:00:00Z` for another hour). See the
-[root README](../../README.md) and [DATA-MODEL.md](../../DATA-MODEL.md) for how it fits with the other jobs and the API.
+[root README](../../README.md) and osrs-tracker-api's
+[DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md) for how it fits with the other
+jobs and the API.

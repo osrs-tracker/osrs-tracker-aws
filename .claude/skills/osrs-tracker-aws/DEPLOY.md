@@ -23,8 +23,8 @@ call the unqualified function (`$LATEST`), so it's live immediately. Every `aws`
    highest number).
 5. Watch the next run finish cleanly: `aws logs tail /aws/lambda/<fn> --profile claude --since 10m --follow`. Its first
    line (the new code always starts cold) is `Built from commit <sha>`: check it's the commit you deployed.
-   queue-players and refresh-items run on the hour, process-players right after queue-players, clean-hiscores at 00:00
-   UTC, record-player-count every 10 minutes. Don't invoke a live Lambda by hand to check sooner: it does real writes.
+   queue-players runs on the hour, process-players right after it, record-player-count every 10 minutes. Don't invoke a
+   live Lambda by hand to check sooner: it does real writes.
 6. Add a changelog entry with the new version number and that commit for each deployed Lambda ("deployed as version 3,
    commit 1a2b3c4").
 

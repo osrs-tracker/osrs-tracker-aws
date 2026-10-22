@@ -1,6 +1,6 @@
 /**
  * `npm run invoke:dry [-- OK]`: runs the handler once with `DRY_RUN=true` (see shared/build/invoke.js) on a sample
- * alarm notification for refresh-items' alarm: going into `ALARM`, or with `OK` back from it.
+ * alarm notification for queue-players' alarm: going into `ALARM`, or with `OK` back from it.
  */
 const { invokeDry } = require('../../shared/build/invoke');
 
@@ -8,8 +8,8 @@ const recovered = process.argv[2] === 'OK';
 
 /** A CloudWatch alarm's SNS notification, cut down to the fields the handler reads. */
 const message = {
-  AlarmName: 'osrs-tracker_refresh-items-errors',
-  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
+  AlarmName: 'osrs-tracker_queue-players-errors',
+  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_queue-players-errors',
   AlarmDescription: 'Failed (error, timeout or out of memory): read its latest log stream',
   NewStateValue: recovered ? 'OK' : 'ALARM',
   OldStateValue: recovered ? 'ALARM' : 'OK',
@@ -18,7 +18,7 @@ const message = {
   Trigger: {
     MetricName: 'Errors',
     Namespace: 'AWS/Lambda',
-    Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }],
+    Dimensions: [{ value: 'osrs-tracker_queue-players', name: 'FunctionName' }],
     Period: 3600,
     EvaluationPeriods: 1,
   },

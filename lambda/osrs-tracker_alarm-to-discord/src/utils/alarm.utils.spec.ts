@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { alarmAlert, AlarmNotification, parseAlarm } from './alarm.utils';
 
 const alarm = (change: Partial<AlarmNotification>): AlarmNotification => ({
-  AlarmName: 'osrs-tracker_refresh-items-errors',
-  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_refresh-items-errors',
+  AlarmName: 'osrs-tracker_queue-players-errors',
+  AlarmArn: 'arn:aws:cloudwatch:eu-central-1:000000000000:alarm:osrs-tracker_queue-players-errors',
   NewStateValue: 'ALARM',
   OldStateValue: 'OK',
   AlarmDescription: 'Failed (error, timeout or out of memory): read its latest log stream',
   NewStateReason: 'Threshold Crossed',
   Trigger: {
-    Dimensions: [{ value: 'osrs-tracker_refresh-items', name: 'FunctionName' }],
+    Dimensions: [{ value: 'osrs-tracker_queue-players', name: 'FunctionName' }],
     Period: 3600,
     EvaluationPeriods: 1,
   },
@@ -23,7 +23,7 @@ describe('parseAlarm', () => {
 
   it.each([
     ['a message without an alarm name', JSON.stringify({ NewStateValue: 'ALARM' })],
-    ['a message without a state', JSON.stringify({ AlarmName: 'osrs-tracker_refresh-items-errors' })],
+    ['a message without a state', JSON.stringify({ AlarmName: 'osrs-tracker_queue-players-errors' })],
   ])('rejects %s', (_, message) => {
     expect(() => parseAlarm(message)).toThrow('Not a CloudWatch alarm notification');
   });
@@ -36,10 +36,10 @@ describe('parseAlarm', () => {
 describe('alarmAlert', () => {
   it('turns an ALARM into a red alert about the alarmed function, with its description and the reason', () => {
     expect(alarmAlert(alarm({}))).toEqual({
-      title: 'Alarm: osrs-tracker_refresh-items-errors',
+      title: 'Alarm: osrs-tracker_queue-players-errors',
       description: 'Failed (error, timeout or out of memory): read its latest log stream\n\nThreshold Crossed',
       color: 0xff0000,
-      functionName: 'osrs-tracker_refresh-items',
+      functionName: 'osrs-tracker_queue-players',
     });
   });
 
@@ -49,10 +49,10 @@ describe('alarmAlert', () => {
 
   it('turns ALARM -> OK into a green recovery', () => {
     expect(alarmAlert(alarm({ NewStateValue: 'OK', OldStateValue: 'ALARM' }))).toEqual({
-      title: 'Recovered: osrs-tracker_refresh-items-errors',
+      title: 'Recovered: osrs-tracker_queue-players-errors',
       description: 'Back to normal: no threshold crossed for 1 hour.',
       color: 0x00ff00,
-      functionName: 'osrs-tracker_refresh-items',
+      functionName: 'osrs-tracker_queue-players',
     });
   });
 

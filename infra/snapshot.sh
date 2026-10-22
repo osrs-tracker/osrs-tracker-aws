@@ -64,9 +64,9 @@ for fn in $(aws lambda list-functions --query "Functions[?starts_with(FunctionNa
     } | del(.logGroup))}' >"$tmp/lambda-$fn.json"
 done
 
-# EventBridge schedules: the shared `Hourly` and `daily` rules and the `osrs-tracker_*` ones
+# EventBridge schedules: the shared `Hourly` rule and the `osrs-tracker_*` ones
 for rule in $(aws events list-rules --query 'Rules[].Name' |
-  jq -r '.[] | select(. == "Hourly" or . == "daily" or startswith("osrs-tracker"))'); do
+  jq -r '.[] | select(. == "Hourly" or startswith("osrs-tracker"))'); do
   aws events describe-rule --name "$rule" --query '{schedule: ScheduleExpression, state: State, eventBus: EventBusName}' \
     >"$tmp/rule.json"
   aws events list-targets-by-rule --rule "$rule" --query 'Targets[].Arn' >"$tmp/targets.json"

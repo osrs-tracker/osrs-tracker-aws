@@ -7,6 +7,12 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
 
 ## 2026-10-22
 
+- Retired refresh-items and clean-hiscores (issue #167, roadmap #162): the ingester on fremen-server runs both jobs
+  since osrs-tracker/osrs-tracker-api#205, with its own freshness alerts, and the `No hiscores scraped` alert moves
+  there. Both Lambdas are gone from the workspace, with their `date-fns` and `@aws-sdk/credential-providers`
+  dependencies and the `mongodb-memory-server` devDependency only their tests used (and the `skipLibCheck` it needed).
+  `DATA-MODEL.md` now points to osrs-tracker-api's copy. `infra/snapshot.sh` no longer reads the `daily` rule.
+
 - process-players and record-player-count stop writing MongoDB (issue #166, roadmap #162): the scrape results queue is
   now their only output, and the ingester on fremen-server (osrs-tracker/osrs-tracker-api#203) writes the hiscore
   entries, their layouts, the not-found streaks and pauses, the player counts and the daily averages. process-players'

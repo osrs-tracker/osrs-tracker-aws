@@ -30,7 +30,7 @@ It then runs every check at once, never stopping at a failure:
    1. `npm run lint`
    2. `npx tsc --noEmit -p .` (the esbuild build doesn't type-check; this also checks the shared files it imports)
    3. `npm run build`
-   4. `npx vitest run`, for a Lambda with a `vitest.config.mts` (all six; process-players' also runs `lambda/shared`'s
+   4. `npx vitest run`, for a Lambda with a `vitest.config.mts` (all four; process-players' also runs `lambda/shared`'s
       specs)
 
 Never run `npm test`: it's watch mode in every Lambda.

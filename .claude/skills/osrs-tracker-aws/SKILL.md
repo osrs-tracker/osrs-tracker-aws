@@ -17,11 +17,12 @@ repo, `../osrs-tracker-web` and `../osrs-tracker-api` have their own skills.
 **This repo is public.** `CLAUDE.md`'s hard rules say what never goes into code, docs, issues or commits, and what is
 never printed.
 
-Load when needed: [DATA-MODEL.md](../../../DATA-MODEL.md) (who writes which `players`/`items`/`hiscoreLayouts` field and
-owns which index, the stored hiscore format; update it with any field or index change), [INFRA.md](INFRA.md) (AWS
-resources, infra changes), [DEPLOY.md](DEPLOY.md) (deploy and rollback). The `conventions-reviewer` agent reviews diffs
-against these files at runtime, so keep rules here, not in the agent; repo-specific review rules go in
-`## Review rules`.
+Load when needed: osrs-tracker-api's
+[DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md) (the collections, the
+subscriptions table and the pause/resume contract; a change to a scrape result message needs an issue there),
+[INFRA.md](INFRA.md) (AWS resources, infra changes), [DEPLOY.md](DEPLOY.md) (deploy and rollback). The
+`conventions-reviewer` agent reviews diffs against these files at runtime, so keep rules here, not in the agent;
+repo-specific review rules go in `## Review rules`.
 
 ## Rules
 
@@ -57,8 +58,8 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
 - Dependencies: devDependencies go in the root `package.json`, a runtime dependency in the Lambda that imports it
   (`npm install <pkg> -w lambda/<folder>`, from the root). Shared code's imports resolve from the root `node_modules`:
   each package `lambda/shared/src/` imports is a `peerDependency` of `@lambda/shared`, which keeps the Lambdas' version
-  hoisted there (without one, mongodb-memory-server's older mongodb takes that place, and a bundle gets two). Add one
-  for a new import, and bump its range with the Lambdas'.
+  hoisted there (without one, another package's older version can take that place, and a bundle gets two). Add one for a
+  new import, and bump its range with the Lambdas'.
 - `MU.client()` uses `MONGODB-AWS` from the role, or SCRAM when `MONGODB_USERNAME` is set (local and the API). mongodb 7
   **rejects an explicit username/password with `MONGODB-AWS`**.
 - Throw to fail a run (Lambda retries it per [INFRA.md](INFRA.md)'s async retries); use `discordAlert` for
@@ -67,16 +68,15 @@ against these files at runtime, so keep rules here, not in the agent; repo-speci
 - process-players and record-player-count write nothing to MongoDB since #166: the ingester in osrs-tracker-api applies
   their scrape results queue messages. Only the ingester counts 404s, from the `notFound` usernames process-players
   sends: a 404/400 hiscore starts a date-based streak; after 7 days the player's `scrapingOffsets` move to
-  `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores them (full contract in
-  [DATA-MODEL.md](../../../DATA-MODEL.md)).
+  `pausedScrapingOffsets`. The API's `refreshPlayerInfo` restores them (full contract in osrs-tracker-api's
+  [DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md#pauseresume-contract)).
 
 ## Verify
 
 - Each touched Lambda: `npm run lint && npx tsc --noEmit -p . && npm run build` (esbuild doesn't type-check; `tsc` also
   checks the shared files that Lambda imports, and CI runs it), plus `npx vitest run` in a Lambda with a
-  `vitest.config.mts` (all six; `*.int.spec.ts` tests start an in-memory MongoDB 8.0). A change in `lambda/shared/`
-  touches all six. process-players' `npm run lint` lints `lambda/shared/` and its `npx vitest run` runs
-  `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
+  `vitest.config.mts` (all four). A change in `lambda/shared/` touches all four. process-players' `npm run lint` lints
+  `lambda/shared/` and its `npx vitest run` runs `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
 - Repo root: `npm run prettier:ci`
 
 ## Review rules
@@ -85,8 +85,9 @@ What `conventions-reviewer` checks beyond the rules above. It reads this section
 agent.
 
 - Read [INFRA.md](INFRA.md) when it touches AWS configuration or infra docs, [DEPLOY.md](DEPLOY.md) when it changes how
-  a Lambda is deployed, and [DATA-MODEL.md](../../../DATA-MODEL.md) when it changes a Mongo write, a query's fields or
-  an index (its rows must match the change).
+  a Lambda is deployed, and osrs-tracker-api's
+  [DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md) when it changes a scrape
+  result message or how queue-players reads the subscriptions table (it needs an issue in osrs-tracker-api).
 - A missing `DRY_RUN` guard may live in a helper in the Lambda's `src/utils/` or in `lambda/shared/src/`: check there
   before flagging.
 - Rules that span files, checked against the whole diff: a change and its `CHANGELOG.md` entry, except where `CLAUDE.md`

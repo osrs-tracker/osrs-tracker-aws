@@ -29,20 +29,17 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 
 ## Schedules and async invokes
 
-- EventBridge `Hourly` triggers queue-players and refresh-items; `daily` (00:00 UTC) triggers clean-hiscores;
-  `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers record-player-count. The SNS topic
-  `osrs-tracker-alerts` triggers alarm-to-discord (see "CloudWatch alarms").
+- EventBridge `Hourly` triggers queue-players; `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers
+  record-player-count. The SNS topic `osrs-tracker-alerts` triggers alarm-to-discord (see "CloudWatch alarms").
 - Each function's limits and async retries (all arm64, nodejs24.x). Retries are turned off with
   `put-function-event-invoke-config --maximum-retry-attempts 0`; without that config Lambda retries twice.
 
   | Function            | Timeout | Memory | Async retries                                                                                                                                                 |
   | ------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
   | alarm-to-discord    | 10 s    | 256 MB | default (2): it throws when a message isn't an alarm or Discord can't be reached; a duplicate alert beats a lost one                                          |
-  | clean-hiscores      | 60 s    | 256 MB | 0: a retry would send the "No hiscores scraped" alert again, and the next night's run catches up a missed clean-up                                            |
   | process-players     | 60 s    | 256 MB | 2, max event age 1 h, on failure to `osrs-tracker_players-to-scrape-dead`: it throws only when there's nothing to send or the send fails. Never 0 (see below) |
   | queue-players       | 30 s    | 256 MB | 0: a retry after its first invoke would queue the hour's players again (a second snapshot that day)                                                           |
   | record-player-count | 30 s    | 256 MB | 0: a missed sample stays missed, and a retry would send the same alert again                                                                                  |
-  | refresh-items       | 30 s    | 256 MB | default (2): its upserts are idempotent                                                                                                                       |
 
 - queue-players invokes process-players asynchronously (`InvocationType: 'Event'`), one event
   `{ usernames, scrapingOffset }` per `PLAYERS_PER_EVENT` players. Lambda's own event queue holds the events: nothing
@@ -116,7 +113,6 @@ first (logs are kept 7 days).
 
 | Alert                                           | Means                                                                                                                                                                                                   | Do                                                                                                                        |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| clean-hiscores `No hiscores scraped`            | No player has an entry from the last 2 days: scraping stopped (EventBridge `Hourly`, queue-players or process-players), or the ingester isn't applying the results queue.                               | Check the latest queue-players and process-players runs and the dead queue.                                               |
 | queue-players `No subscriptions`                | `osrs-tracker_subscriptions` is empty, so nothing was queued this hour. The sync never empties it (its delete guard): someone emptied or replaced it.                                                   | Read the ingester's `Subscriptions` logs on the cluster; its next sync (every 15 minutes) refills the table from MongoDB. |
 | queue-players `Failed to queue players`         | Lambda refused async invokes of process-players: those players miss this hour's scrape.                                                                                                                 | Read the logged errors (throttling, permissions); they're scraped again the next day.                                     |
 | process-players `No players were updated`       | Every fetch in a requeued event failed (usually a hiscores or proxy outage). Lambda retries, then the dead queue.                                                                                       | Check the proxy and Jagex's hiscores; then handle the dead queue as above.                                                |
@@ -124,16 +120,17 @@ first (logs are kept 7 days).
 | process-players `Failed to queue retries`       | Lambda refused the retry events for failed players: they miss today.                                                                                                                                    | Read the logged errors.                                                                                                   |
 | record-player-count `Player count not recorded` | Jagex's world list failed, didn't parse (a format change) or had no worlds or players, or the results queue didn't take the sample: no sample for those 10 minutes. Repeats every run until it's fixed. | Read the error in the alert. A format change needs `parseWorldList` updated against a fresh response.                     |
 
-The ingester's own alerts, such as `Paused scraping`, come from osrs-tracker-api since #166.
+The ingester's own alerts, such as `Paused scraping` (since #166) and `No hiscores scraped` (clean-hiscores' until
+#167), come from osrs-tracker-api.
 
 ### CloudWatch alarms
 
 Each function has an alarm `osrs-tracker_<function>-errors` on its `AWS/Lambda` `Errors` (sum ≥ 1, missing data not
 breaching) that notifies the SNS topic `osrs-tracker-alerts` on going into `ALARM` and back to `OK`. It catches what the
-Discord alerts can't: any refresh-items failure (it has no Discord alert), an error before a handler runs (the env check
-at cold start), and a timeout or out-of-memory. The period matches the function's schedule (record-player-count 10
-minutes, clean-hiscores a day, the others an hour), so the alarm stays in `ALARM` until a period passes without errors
-and notifies once per failure, also when Lambda retries a failing process-players event.
+Discord alerts can't: an error before a handler runs (the env check at cold start), and a timeout or out-of-memory. The
+period matches the function's schedule (record-player-count 10 minutes, the others an hour), so the alarm stays in
+`ALARM` until a period passes without errors and notifies once per failure, also when Lambda retries a failing
+process-players event.
 
 `osrs-tracker_process-players-failed-events` watches process-players' on-failure destination: the `AWS/SQS`
 `ApproximateNumberOfMessagesVisible` of `osrs-tracker_players-to-scrape-dead`, 1 or more (maximum over 5 minutes,
