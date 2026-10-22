@@ -11,7 +11,9 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   since osrs-tracker/osrs-tracker-api#205, with its own freshness alerts, and the `No hiscores scraped` alert moves
   there. Both Lambdas are gone from the workspace, with their `date-fns` and `@aws-sdk/credential-providers`
   dependencies and the `mongodb-memory-server` devDependency only their tests used (and the `skipLibCheck` it needed).
-  `DATA-MODEL.md` now points to osrs-tracker-api's copy. `infra/snapshot.sh` no longer reads the `daily` rule.
+  `DATA-MODEL.md` now points to osrs-tracker-api's copy. `infra/snapshot.sh` no longer reads the `daily` rule. On AWS,
+  refresh-items is off the `Hourly` rule and the `daily` rule is deleted, as are both functions, their error alarms and
+  their log groups; `infra/aws-settings.json` updated.
 
 - process-players and record-player-count stop writing MongoDB (issue #166, roadmap #162): the scrape results queue is
   now their only output, and the ingester on fremen-server (osrs-tracker/osrs-tracker-api#203) writes the hiscore
