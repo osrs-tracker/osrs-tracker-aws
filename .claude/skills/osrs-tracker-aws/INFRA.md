@@ -101,10 +101,18 @@ Set up for roadmap #162 (MongoDB moves to fremen-server) in #163. queue-players 
 
   Its one access key is in the cluster's `osrs-tracker-ingester` Secret (FreekMencke/fremen-cluster#17).
 
-- The Lambdas' shared role `AWS_Lambda` has two inline policies from this work (#168 splits the role):
-  - `osrs-tracker_process-players-async`: invoke process-players, and send to its on-failure destination (#161);
-  - `osrs-tracker_results-and-subscriptions`: SendMessage on the results queue (#165) and Scan on the table (#164).
-- The `claude` profile can't read IAM, so `infra/aws-settings.json` shows neither the user nor the role's policies.
+- Each Lambda has its own execution role, `osrs-tracker_<function>-role` (#168 split the shared `AWS_Lambda`), with the
+  managed `AWSLambdaBasicExecutionRole` for its logs and one inline policy, `osrs-tracker_<function>`, for the rest:
+  - queue-players: Scan on the table, invoke process-players;
+  - process-players: SendMessage on the results queue and on its on-failure destination
+    `osrs-tracker_players-to-scrape-dead`, invoke itself (its retry events);
+  - record-player-count: SendMessage on the results queue;
+  - alarm-to-discord: logs only (no inline policy).
+
+  A new AWS call in a Lambda needs its permission added to that Lambda's inline policy, by the maintainer.
+
+- The `claude` profile can't read IAM, so `infra/aws-settings.json` shows each Lambda's role name but neither the
+  ingester's user nor the roles' policies.
 
 ## When an alert fires
 

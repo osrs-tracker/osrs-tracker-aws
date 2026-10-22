@@ -322,7 +322,7 @@
       "memoryMB": 256,
       "packageType": "Zip",
       "reservedConcurrency": 5,
-      "role": "AWS_Lambda",
+      "role": "osrs-tracker_process-players-role",
       "runtime": "nodejs24.x",
       "timeoutSeconds": 60,
       "tracing": "PassThrough"
@@ -349,7 +349,7 @@
       "memoryMB": 256,
       "packageType": "Zip",
       "reservedConcurrency": null,
-      "role": "AWS_Lambda",
+      "role": "osrs-tracker_queue-players-role",
       "runtime": "nodejs24.x",
       "timeoutSeconds": 30,
       "tracing": "PassThrough"
@@ -374,7 +374,7 @@
       "memoryMB": 256,
       "packageType": "Zip",
       "reservedConcurrency": null,
-      "role": "AWS_Lambda",
+      "role": "osrs-tracker_record-player-count-role",
       "runtime": "nodejs24.x",
       "timeoutSeconds": 30,
       "tracing": "PassThrough"
