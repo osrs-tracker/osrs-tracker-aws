@@ -37,7 +37,7 @@ Keep detail there, not in this file.
   queue-players reads the subscriptions table needs an issue there.
 - Every change except a doc-only one gets a changelog entry: Lambdas, infra, CI and tooling (`.claude/hooks/`,
   `.claude/settings.json`, scripts such as `.claude/skills/verify/verify.sh`) in the root `CHANGELOG.md` under today's
-  `## YYYY-MM-DD`. Doc-only means `docs/`, `README.md` files (also a Lambda's), `CLAUDE.md`, the Markdown files in
+  `## YYYY-MM-DD`. Doc-only means `README.md` files (also a Lambda's), `CLAUDE.md`, the Markdown files in
   `.claude/skills/` and `.claude/agents/`, and `DATA-MODEL.md`. A dependency bump gets an entry only when it changes
   behaviour (a new feature used, a fix that matters, a breaking change handled).
 - Doc-only changes go straight to `main`; for anything else, ask: `main` or a PR (unless releasing). Never

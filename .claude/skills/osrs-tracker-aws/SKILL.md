@@ -8,9 +8,10 @@ description:
 
 # osrs-tracker-aws
 
-Scheduled Lambdas, plus process-players, which queue-players invokes (`lambda/<function>/`, one npm workspace at the
-repo root) that scrape OSRS Tracker's player data into a queue for osrs-tracker-api's ingester, which applies it to
-MongoDB. The `@osrs-tracker/*` npm packages they install live in `../osrs-tracker-packages`
+Four Lambdas (`lambda/<function>/`, one npm workspace at the repo root). queue-players (hourly) invokes process-players,
+which with record-player-count (every 10 minutes) scrapes OSRS Tracker's player data into a queue for osrs-tracker-api's
+ingester, which applies it to MongoDB; alarm-to-discord posts the CloudWatch alarms to Discord. The `@osrs-tracker/*`
+npm packages they install live in `../osrs-tracker-packages`
 ([osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages)): a package change (a new hiscores skill
 or activity, a model field) is a PR and a publish there, then a version bump here. That repo, `../osrs-tracker-web` and
 `../osrs-tracker-api` have their own skills.
@@ -84,7 +85,10 @@ agent.
 - Read [INFRA.md](INFRA.md) when it touches AWS configuration or infra docs, [DEPLOY.md](DEPLOY.md) when it changes how
   a Lambda is deployed, and osrs-tracker-api's
   [DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md) when it changes a scrape
-  result message or how queue-players reads the subscriptions table (it needs an issue in osrs-tracker-api).
+  result message or how queue-players reads the subscriptions table (it needs an issue in osrs-tracker-api). The
+  reviewer can't fetch URLs: read the local copy, `osrs-tracker-api/DATA-MODEL.md` next to the main checkout
+  (`../osrs-tracker-api/` from it, `../../../../osrs-tracker-api/` from a worktree in `.claude/worktrees/`); without
+  one, make it a **check** item.
 - A missing `DRY_RUN` guard may live in a helper in the Lambda's `src/utils/` or in `lambda/shared/src/`: check there
   before flagging.
 - Rules that span files, checked against the whole diff: a change and its `CHANGELOG.md` entry, except where `CLAUDE.md`
@@ -125,7 +129,8 @@ CI is the gate (builds needed for a deploy still run).
   skips every rule, so never use it while a check fails or is pending (osrs-tracker/osrs-tracker-packages#11).
 - Deploying from a PR branch ships unmerged code: tell the user, and don't deploy from `main` until it's merged. Commit
   and push in the same session as any deploy.
-- Conventional commits. Scopes: `lambda` or `osrs-tracker_<function>`, `ci(actions)`, `docs(skill)`.
+- Conventional commits. Scopes: `lambda` or `osrs-tracker_<function>`, `infra` (snapshots), `ci(actions)`,
+  `docs(skill)`, `docs(changelog)`.
 - **Changelog entries**: which changes get one, and where, is in `CLAUDE.md` (deploys count). Root days are
   `## YYYY-MM-DD`, newest first. Say what changed and why. Busy days get `###` subtitles by area ("Behind the scenes"
   last), not repeated in their entries. Extend an existing entry rather than add a near-duplicate. When adding an entry,

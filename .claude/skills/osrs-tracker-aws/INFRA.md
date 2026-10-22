@@ -14,6 +14,11 @@ running the script, `git diff infra/` shows drift from the console.
 3. Re-read the resource to confirm, run `infra/snapshot.sh`, and commit `infra/aws-settings.json` with a changelog entry
    (and this file, if a value it lists changed).
 
+The `claude` profile can change only the `osrs-tracker_*` Lambdas (code, configuration, async invoke config,
+concurrency), the EventBridge rules and the Lambdas' log retention. Anything else (the alarms, `set-alarm-state`
+included, the SNS topic, the SQS queues, the DynamoDB table, the API Gateway proxy, IAM) is denied: give the maintainer
+the exact command to run instead.
+
 `aws lambda update-function-configuration --environment` replaces the whole env map: merge with the current values in a
 temp JSON file outside the repo, never print the values, and delete the file afterwards.
 
@@ -179,6 +184,7 @@ The topic has two subscriptions:
   response (a revoked webhook, rate limiting) is only logged, so it raises no alarm.
 
 An error alarm means: read that function's latest log stream (a Discord alert for the same run may say more). Test one
-with `aws cloudwatch set-alarm-state --alarm-name <alarm> --state-value ALARM --state-reason test`: a red Discord alert
-arrives, and on its next evaluation the alarm returns to `OK` with a green one. A real alarm returns to `OK` after a
-full period without errors: for the scheduled functions, when their next run passes.
+with `aws cloudwatch set-alarm-state --alarm-name <alarm> --state-value ALARM --state-reason test` (the maintainer runs
+it; the `claude` profile can't): a red Discord alert arrives, and on its next evaluation the alarm returns to `OK` with
+a green one. A real alarm returns to `OK` after a full period without errors: for the scheduled functions, when their
+next run passes.

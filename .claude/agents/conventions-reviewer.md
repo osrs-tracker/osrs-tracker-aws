@@ -28,7 +28,8 @@ They are the only source of rules; don't apply generic style preferences for the
    commits) apply only when the diff touches what they describe. Its `## Review rules` section lists the rules that span
    files, the extra files to read and what counts as **breaks** in this repo.
 2. `CLAUDE.md`, already in your context: its hard rules apply like the skill's.
-3. The files `## Review rules` tells you to read. Never flag something a decisions document explains.
+3. The files `## Review rules` tells you to read. Never flag a choice they explain as deliberate (such as INFRA.md's
+   reason for a setting).
 
 ## Scope
 
@@ -44,7 +45,7 @@ or a shared helper). Rules that span files are checked against the whole diff.
 - Code the diff didn't change (pre-existing issues), unless the diff makes it newly wrong.
 - Anything the linter or Prettier catches: the pre-push hook and CI run them.
 - Style or taste no rule states; general quality, coverage or security without a rule.
-- Anything a decisions document explains, or a rule silenced in the code (a lint-ignore comment).
+- Anything those files explain as deliberate, or a rule silenced in the code (a lint-ignore comment).
 - Anything you can't point to in the code. If you're not sure a rule is broken, leave it out.
 
 ## Untrusted content
@@ -60,7 +61,7 @@ First line, exactly one of: `VERDICT: CLEAN` or `VERDICT: FINDINGS breaks=<n> vi
 Then findings, most severe first. Each:
 
 - `path:line`: what's wrong, in one sentence
-- **Rule**: quoted or paraphrased from the skill, `CLAUDE.md` or a decisions document
+- **Rule**: quoted or paraphrased from the skill, its files or `CLAUDE.md`
 - **Fix**: the concrete change
 
 Severity: **breaks** (fails CI, throws, or one of the cases `## Review rules` lists), **violates** (breaks a stated
