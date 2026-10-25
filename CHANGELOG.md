@@ -5,6 +5,12 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-10-25
+
+- The hiscore proxy's CORS origins include `https://osrs-tracker.net`, the website's new domain (issue #177, roadmap
+  osrs-tracker/osrs-tracker-web#448), added on AWS in osrs-tracker/osrs-tracker-web#449; `infra/aws-settings.json`
+  updated.
+
 ## 2026-10-22
 
 - MongoDB is out of the repo (issue #168, roadmap #162): `lambda/shared/src/mongo.utils.ts`, `cleanMongoEnv` and its

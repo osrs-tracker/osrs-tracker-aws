@@ -221,7 +221,8 @@
         ],
         "AllowOrigins": [
           "http://localhost:4200",
-          "https://osrs-tracker.freekmencke.com"
+          "https://osrs-tracker.freekmencke.com",
+          "https://osrs-tracker.net"
         ],
         "ExposeHeaders": [
           "*"

@@ -28,7 +28,7 @@ it and wait for approval like any other.
 ## API Gateway hiscore proxy
 
 `runescape-api.freekmencke.com`: `ANY /rs/{proxy+}` → `https://secure.runescape.com/{proxy}`, CORS for the web app's
-origin and `localhost:4200`, and `X-Robots-Tag: noindex` on its 200 responses. Used by the web app (browser),
+origins and `localhost:4200`, and `X-Robots-Tag: noindex` on its 200 responses. Used by the web app (browser),
 osrs-tracker-api and process-players, so **check any route, header or CORS change from the web and API sides too**. No
 throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch alarms").
 
