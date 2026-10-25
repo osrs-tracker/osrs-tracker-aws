@@ -1,7 +1,7 @@
 # OSRS Tracker AWS &middot; [![GitHub license](https://img.shields.io/github/license/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/blob/main/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/osrs-tracker/osrs-tracker-aws.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/issues) &middot; [![CI](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/main.yml/badge.svg)](https://github.com/osrs-tracker/osrs-tracker-aws/actions/workflows/main.yml)
 
-This repository holds the background jobs behind [OSRS Tracker](https://osrs-tracker.freekmencke.com), a website for
-tracking item prices and player progress in Old School RuneScape.
+This repository holds the background jobs behind [OSRS Tracker](https://osrs-tracker.net), a website for tracking item
+prices and player progress in Old School RuneScape.
 
 ## Background jobs
 
@@ -24,10 +24,9 @@ install them from npm.
 
 The jobs collect player data: process-players and record-player-count send their results to a queue, which the API's
 ingester applies to its MongoDB database. The ingester also refreshes the item list and cleans up old hiscores. The
-[website](https://osrs-tracker.freekmencke.com) ([osrs-tracker-web](https://github.com/osrs-tracker/osrs-tracker-web))
-and the [API](https://github.com/osrs-tracker/osrs-tracker-api) read that data to show prices and player progress.
-Hiscores are fetched from Jagex through a small proxy (`runescape-api.freekmencke.com`), which the website and the API
-use as well.
+[website](https://osrs-tracker.net) ([osrs-tracker-web](https://github.com/osrs-tracker/osrs-tracker-web)) and the
+[API](https://github.com/osrs-tracker/osrs-tracker-api) read that data to show prices and player progress. Hiscores are
+fetched from Jagex through a small proxy (`runescape-api.freekmencke.com`), which the website and the API use as well.
 
 No job here writes to the database. osrs-tracker-api's
 [DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md) describes the collections, who
