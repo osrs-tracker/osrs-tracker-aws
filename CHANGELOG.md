@@ -5,6 +5,14 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-10-26
+
+- CI checks for unused and copied code: knip (unused files, exports and dependencies, `knip.jsonc`) and jscpd
+  (copy-pasted code in `lambda/`, failing over 1% duplicated lines, `.jscpd.json`) run in the root job, now "Global
+  checks", and in the verify skill. oxlint's `import/no-cycle` fails a Lambda's lint on a circular import. knip's first
+  run removed process-players' unused `map.utils.ts` and turned the `aws-lambda` imports into `import type` (the package
+  only has types); the bundles don't change.
+
 ## 2026-10-25
 
 - The hiscore proxy's CORS origins include `https://osrs-tracker.net`, the website's new domain (issue #177, roadmap

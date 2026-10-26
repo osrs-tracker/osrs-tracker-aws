@@ -1,5 +1,5 @@
 import { HiscoreResult } from '@osrs-tracker/hiscores';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { invokeAsync } from '@lambda/shared/lambda.utils';
 import { sendScrapeResult } from '@lambda/shared/sqs.utils';

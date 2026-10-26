@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda/handler';
+import type { Context } from 'aws-lambda/handler';
 import { discordAlertNeverRejects } from '@lambda/shared/discord-alert';
 import { env } from '../env';
 

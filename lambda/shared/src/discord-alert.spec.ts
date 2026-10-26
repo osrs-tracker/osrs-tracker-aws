@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda/handler';
+import type { Context } from 'aws-lambda/handler';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { discordAlert, discordAlertNeverRejects } from './discord-alert';
 import { USER_AGENT } from './user-agent';

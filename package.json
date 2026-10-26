@@ -19,13 +19,17 @@
   ],
   "scripts": {
     "prettier": "prettier --write .",
-    "prettier:ci": "prettier --check ."
+    "prettier:ci": "prettier --check .",
+    "knip": "knip",
+    "jscpd": "jscpd"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.164",
     "@types/node": "^24.19.1",
     "bestzip": "^4.0.3",
     "esbuild": "^0.28.2",
+    "jscpd": "^5.4.2",
+    "knip": "^6.43.0",
     "oxlint": "^1.88.0",
     "prettier": "^3.9.9",
     "typescript": "^7.0.2",

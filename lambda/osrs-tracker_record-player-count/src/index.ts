@@ -1,6 +1,6 @@
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { fetchWorldList, parseWorldList } from '@osrs-tracker/hiscores';
-import { Context, ScheduledEvent } from 'aws-lambda';
+import type { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlertNeverRejects } from '@lambda/shared/discord-alert';
 import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { USER_AGENT } from '@lambda/shared/user-agent';

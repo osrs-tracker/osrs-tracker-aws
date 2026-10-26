@@ -2,7 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { LambdaClient } from '@aws-sdk/client-lambda';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { PlayerScrapeMessageBody } from '@osrs-tracker/models';
-import { Context, ScheduledEvent } from 'aws-lambda';
+import type { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { invokeAsync } from '@lambda/shared/lambda.utils';
 import { logCommit } from '@lambda/shared/commit';

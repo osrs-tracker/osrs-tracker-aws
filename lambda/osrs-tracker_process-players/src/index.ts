@@ -1,6 +1,6 @@
 import { LambdaClient } from '@aws-sdk/client-lambda';
 import { SQSClient } from '@aws-sdk/client-sqs';
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { logCommit } from '@lambda/shared/commit';
 import { afterWrites, AwsClients } from './utils/after-writes';
 import { discordAlert } from './utils/discord-alert';

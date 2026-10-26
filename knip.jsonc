@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  // Unused files, dependencies and exports. Each Lambda's entry is its handler, src/index.ts
+  "workspaces": {
+    ".": {},
+    "lambda/osrs-tracker_*": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+    },
+    "lambda/shared": {
+      "project": ["src/**/*.ts"],
+    },
+  },
+}

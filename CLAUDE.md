@@ -14,9 +14,10 @@ Keep detail there, not in this file.
 
 - Verify a Lambda (from its folder): `npm run lint && npx tsc --noEmit -p . && npm run build`, plus `npx vitest run`
   where it has a `vitest.config.mts` (`npm test` is watch mode).
-- Repo root: `npm run prettier:ci`. The `verify` skill's `.claude/skills/verify/verify.sh` picks the folders a staged
-  change touches (`--all-changes` adds unstaged ones) and runs all of these checks at once, in one call; Claude Code
-  runs it before each commit.
+- Repo root: `npm run prettier:ci`, `npm run knip` (unused code, `knip.jsonc`), `npm run jscpd` (copy-pasted code,
+  `.jscpd.json`). The `verify` skill's `.claude/skills/verify/verify.sh` picks the folders a staged change touches
+  (`--all-changes` adds unstaged ones) and runs all of these checks at once, in one call; Claude Code runs it before
+  each commit.
 - Run a Lambda locally: `npm run invoke:dry` (needs `.env` from `.env.example`). Reads and fetches are real; writes are
   only logged. There is no staging database.
 - Size per dependency in a bundle:

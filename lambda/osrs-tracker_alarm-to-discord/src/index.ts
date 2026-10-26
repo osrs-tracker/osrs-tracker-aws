@@ -1,4 +1,4 @@
-import { Context, SNSEvent } from 'aws-lambda';
+import type { Context, SNSEvent } from 'aws-lambda';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { logCommit } from '@lambda/shared/commit';
 import { alarmAlert, parseAlarm } from './utils/alarm.utils';
