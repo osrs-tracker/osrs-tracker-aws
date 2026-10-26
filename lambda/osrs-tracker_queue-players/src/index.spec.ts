@@ -1,4 +1,4 @@
-import { Context, ScheduledEvent } from 'aws-lambda';
+import type { Context, ScheduledEvent } from 'aws-lambda';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { invokeAsync } from '@lambda/shared/lambda.utils';

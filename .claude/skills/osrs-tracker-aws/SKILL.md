@@ -75,7 +75,9 @@ repo-specific review rules go in `## Review rules`.
   checks the shared files that Lambda imports, and CI runs it), plus `npx vitest run` in a Lambda with a
   `vitest.config.mts` (all four). A change in `lambda/shared/` touches all four. process-players' `npm run lint` lints
   `lambda/shared/` and its `npx vitest run` runs `lambda/shared/`'s specs; the root `npm run prettier:ci` formats it.
-- Repo root: `npm run prettier:ci`
+- Repo root: `npm run prettier:ci`, `npm run knip` (unused files, exports and dependencies) and `npm run jscpd`
+  (copy-pasted code in `lambda/`, over 1% of its lines fails). `import/no-cycle` in `lambda/shared/.oxlintrc.json` fails
+  a Lambda's lint on a circular import.
 
 ## Review rules
 

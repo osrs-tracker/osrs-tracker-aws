@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Runs the verify checks for the Lambdas a change touches, plus the root Prettier check, all at once (none
-# waits for or stops at another's failure). Then prints each failed check's log and a summary line per check. Exits 1
-# when any check failed. Run from the checkout's root.
+# Runs the verify checks for the Lambdas a change touches, plus the root Prettier, knip and jscpd checks, all at once
+# (none waits for or stops at another's failure). Then prints each failed check's log and a summary line per check.
+# Exits 1 when any check failed. Run from the checkout's root.
 #
 #   verify.sh                 checks what `git diff --cached` touches (before a commit)
 #   verify.sh --all-changes   adds unstaged changes (verifying without a commit)
@@ -26,6 +26,9 @@ names=() dirs=() commands=()
 add() { names+=("$1") dirs+=("$2") commands+=("$3"); }
 
 add prettier . 'npm run prettier:ci'
+# Whole-workspace checks, as CI's root job: every change can add an unused export or a copy of another Lambda's code
+add knip . 'npm run knip'
+add jscpd . 'npm run jscpd'
 
 for lambda in "${lambdas[@]}"; do
   # every Lambda bundles lambda/shared, extends lambda/tsconfig.lambda.json and installs from the root workspace, as in

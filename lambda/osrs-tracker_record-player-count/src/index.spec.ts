@@ -1,5 +1,5 @@
 import { fetchWorldList, parseWorldList, WorldListCounts } from '@osrs-tracker/hiscores';
-import { Context, ScheduledEvent } from 'aws-lambda';
+import type { Context, ScheduledEvent } from 'aws-lambda';
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
 import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { handler } from './index';

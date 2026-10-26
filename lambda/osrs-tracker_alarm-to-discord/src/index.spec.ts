@@ -1,4 +1,4 @@
-import { Context, SNSEvent } from 'aws-lambda';
+import type { Context, SNSEvent } from 'aws-lambda';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { logDryRun } from '@lambda/shared/dry-run.utils';
 import { AlarmNotification } from './utils/alarm.utils';

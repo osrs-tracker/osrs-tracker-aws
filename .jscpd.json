@@ -1,0 +1,7 @@
+{
+  "path": ["lambda"],
+  "format": ["typescript", "javascript"],
+  "ignore": ["**/*.spec.ts"],
+  "threshold": 1,
+  "reporters": ["console"]
+}

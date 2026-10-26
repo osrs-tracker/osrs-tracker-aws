@@ -6,6 +6,8 @@
 // TypeScript itself, with no `typescript` dependency. Only the rules the ESLint config had, so the way back changes
 // nothing: oxlint's default `correctness` category is off, and ESLint's deprecated `no-return-await` has no oxlint
 // equivalent.
+// The one rule ESLint's config didn't have is `import/no-cycle` (circular imports): on the way back to ESLint, it's
+// eslint-plugin-import-x's `import-x/no-cycle`.
 // Formatting is Prettier's (the root .prettierrc.json): no rule here may overlap it. oxlint skips what .gitignore lists
 // (dist/, node_modules).
 {
@@ -13,11 +15,13 @@
   "categories": {
     "correctness": "off"
   },
+  "plugins": ["import"],
   "env": {
     "node": true,
     "es2024": true
   },
   "rules": {
+    "import/no-cycle": "error",
     "no-redeclare": "error",
     "prefer-const": "error"
   }

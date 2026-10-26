@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda/handler';
+import type { Context } from 'aws-lambda/handler';
 import { DRY_RUN, logDryRun } from './dry-run.utils';
 import { USER_AGENT } from './user-agent';
 
