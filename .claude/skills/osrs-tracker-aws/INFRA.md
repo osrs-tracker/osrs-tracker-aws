@@ -15,9 +15,10 @@ running the script, `git diff infra/` shows drift from the console.
    (and this file, if a value it lists changed).
 
 The `claude` profile can change only the `osrs-tracker_*` Lambdas (code, configuration, async invoke config,
-concurrency), the EventBridge rules and the Lambdas' log retention. Anything else (the alarms, `set-alarm-state`
-included, the SNS topic, the SQS queues, the DynamoDB table, the API Gateway proxy, IAM) is denied: give the maintainer
-the exact command to run instead.
+concurrency, and invoking them: a live invoke does real writes, so it needs approval like any other change), the
+EventBridge rules and the Lambdas' log retention. Anything else (the alarms, `set-alarm-state` included, the SNS topic,
+the SQS queues, the DynamoDB table, the API Gateway proxy, IAM) is denied: give the maintainer the exact command to run
+instead.
 
 `aws lambda update-function-configuration --environment` replaces the whole env map: merge with the current values in a
 temp JSON file outside the repo, never print the values, and delete the file afterwards.

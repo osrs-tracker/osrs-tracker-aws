@@ -58,10 +58,12 @@ Keep detail there, not in this file.
   ESLint, while the repo is on TypeScript 7, which typescript-eslint doesn't support as of 2026-10-18). A change there
   touches all four Lambdas.
 - `DATA-MODEL.md`: a pointer to osrs-tracker-api's copy (osrs-tracker/osrs-tracker-api#205).
-- `.github/workflows/main.yml`: on pushes to `main` and on PRs, CI checks only the folders changed (all of them when
-  `.github/` changes); its `CI` job is a required check, with `zizmor.yml`'s `zizmor` (audits the workflows;
-  `.github/zizmor.yml` says what it allows). `.github/actions/setup-deps` caches the workspace's `node_modules` (the
-  root's, plus any a Lambda gets of its own) by the root `package-lock.json`.
+- `.github/workflows/main.yml`: on pushes to `main` and on PRs, CI checks only the Lambda folders changed (all of them
+  when `.github/`, `lambda/shared/`, `lambda/tsconfig.lambda.json`, `package.json` or `package-lock.json` changes), and
+  always runs the root checks (Prettier, knip, jscpd) and the Markdown link check (lychee); its `CI` job is a required
+  check, with `zizmor.yml`'s `zizmor` (audits the workflows; `.github/zizmor.yml` says what it allows).
+  `.github/actions/setup-deps` caches the workspace's `node_modules` (the root's, plus any a Lambda gets of its own) by
+  the root `package-lock.json`.
 - `.claude/agents/conventions-reviewer.md` reviews diffs against the skill and this file;
   `.claude/hooks/read-only-bash.sh` keeps it to git, gh and grep reads. `.claude/settings.json` runs Prettier on every
   file Claude edits, and `.claude/hooks/pre-push-check.sh` blocks `git push` (also `git -C <path> push`) when Prettier
