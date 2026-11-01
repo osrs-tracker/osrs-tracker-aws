@@ -5,6 +5,13 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-11-01
+
+- `minimatch` moves to 11.0.3 for GHSA-g3hv-75wg-m249 (a dev-only DoS, reached through `bestzip`, which zips each Lambda
+  for a deploy), using `overrides` because the latest `bestzip` and `readdir-glob` still ask for minimatch 10.
+  `bestzip`'s `glob` moves to 14 with it: glob 13 tests pattern parts with `instanceof RegExp`, and minimatch 11's are
+  `Matcher` objects. Drop both overrides once those packages move up. The deployed bundles don't change.
+
 ## 2026-10-26
 
 - CI checks for unused and copied code: knip (unused files, exports and dependencies, `knip.jsonc`) and jscpd
