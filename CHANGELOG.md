@@ -5,6 +5,12 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-11-02
+
+- process-players stays at reserved concurrency 10, up from 5 (changed live on 2026-10-30, issue #181): the 00:00 UTC
+  run now drains in roughly 5 to 10 minutes instead of 15. Three nights showed no dropped events, errors, HTTP 429 or
+  503, or dead-letter messages; one HTTP 502 was retried and succeeded. `infra/aws-settings.json` updated.
+
 ## 2026-11-01
 
 - `minimatch` moves to 11.0.3 for GHSA-g3hv-75wg-m249 (a dev-only DoS, reached through `bestzip`, which zips each Lambda

@@ -322,7 +322,7 @@
       "logRetentionDays": 7,
       "memoryMB": 256,
       "packageType": "Zip",
-      "reservedConcurrency": 5,
+      "reservedConcurrency": 10,
       "role": "osrs-tracker_process-players-role",
       "runtime": "nodejs24.x",
       "timeoutSeconds": 60,

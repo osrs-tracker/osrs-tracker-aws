@@ -50,10 +50,12 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 - queue-players invokes process-players asynchronously (`InvocationType: 'Event'`), one event
   `{ usernames, scrapingOffset }` per `PLAYERS_PER_EVENT` players. Lambda's own event queue holds the events: nothing
   polls, and an SQS trigger's empty receives are gone (#161).
-- process-players has **reserved concurrency 5**, to spare the hiscore proxy and Jagex's hiscores bursts; don't drop it.
-  Events past 5 at once are throttled and wait in Lambda's queue, retried with backoff (1 s up to 5 min apart) until the
-  max event age, not failed. So the 00:00 UTC run (offset 0, about 54 events) takes roughly 10 to 20 minutes to drain,
-  against 3.5 with SQS. That's expected, not a fault.
+- process-players has **reserved concurrency 10**, to spare the hiscore proxy and Jagex's hiscores bursts; don't drop
+  it. It's the only overall limit on how fast process-players calls Jagex, at a peak of about 5.3 requests a second.
+  Jagex publishes no limit and there's no data above that, so going higher needs its own measurements (#181). Events
+  past 10 at once are throttled and wait in Lambda's queue, retried with backoff (1 s up to 5 min apart) until the max
+  event age, not failed. So the 00:00 UTC run (offset 0, about 56 events) takes roughly 5 to 10 minutes to drain, with
+  about 300 throttles, against 3.5 minutes with SQS. That's expected, not a fault.
 - Its async retries handle its two throws, when every scrape in an event failed (usually a hiscores or proxy outage) or
   the results queue didn't take its message: Lambda retries the event 1 and then 2 minutes later. Retries at 0 would
   drop those events at once.
