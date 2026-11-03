@@ -36,6 +36,9 @@ Keep detail there, not in this file.
   `INFRA.md`: show the exact command and wait for approval.
 - The data model lives in osrs-tracker-api's `DATA-MODEL.md`: a change to a scrape result message or to how
   queue-players reads the subscriptions table needs an issue there.
+- Adding, removing or renaming a job that feeds the cluster, or changing how its results reach it, makes the map on
+  freekmencke.com stale: open an issue in `FreekMencke/freek-mencke-web`
+  (`src/app/home/fremen-server/cluster-parts.ts`). That repo is public, so no IDs.
 - Every change except a doc-only one gets a changelog entry: Lambdas, infra, CI and tooling (`.claude/hooks/`,
   `.claude/settings.json`, scripts such as `.claude/skills/verify/verify.sh`) in the root `CHANGELOG.md` under today's
   `## YYYY-MM-DD`. Doc-only means `README.md` files (also a Lambda's), `CLAUDE.md`, the Markdown files in
