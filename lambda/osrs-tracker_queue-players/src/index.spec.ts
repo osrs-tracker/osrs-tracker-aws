@@ -50,6 +50,21 @@ describe('handler', () => {
     expect(discordAlert).not.toHaveBeenCalled();
   });
 
+  it("sends a Hardcore main's hiscore table, in events apart from the main table's", async () => {
+    vi.mocked(scanSubscriptions).mockResolvedValue([
+      { username: 'alice', scrapingOffsets: new Set([3]) },
+      { username: 'bob', scrapingOffsets: new Set([3]), table: 'hiscore_oldschool_hardcore_mains' },
+      { username: 'carol', scrapingOffsets: new Set([3]) },
+    ]);
+
+    await run();
+
+    expect(payloads()).toEqual([
+      { usernames: ['alice', 'carol'], scrapingOffset: 3 },
+      { usernames: ['bob'], scrapingOffset: 3, table: 'hiscore_oldschool_hardcore_mains' },
+    ]);
+  });
+
   it('invokes nothing when no player has the offset', async () => {
     players(3);
 

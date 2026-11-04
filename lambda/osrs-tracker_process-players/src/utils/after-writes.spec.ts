@@ -6,6 +6,7 @@ import { invokeAsync } from '@lambda/shared/lambda.utils';
 import { sendScrapeResult } from '@lambda/shared/sqs.utils';
 import { afterWrites, AwsClients, MAX_RETRIES, ScrapeRun } from './after-writes';
 import { discordAlert } from './discord-alert';
+import { ScrapeEvent } from './scrape-message';
 
 // the outcomes it shares with the handler (failed sends, refused retries) are in index.spec.ts
 vi.mock('@lambda/shared/lambda.utils', () => ({ invokeAsync: vi.fn() }));
@@ -98,6 +99,27 @@ describe('afterWrites', () => {
         { usernames: players, scrapingOffset: -4, retry: 1 },
       ]),
     );
+  });
+
+  it("keeps a Hardcore main event's table on the requeue, but not in the results message", async () => {
+    const event: ScrapeEvent = { usernames: [], scrapingOffset: 2, table: 'hiscore_oldschool_hardcore_mains' };
+
+    await afterWrites(clients, run({ event, failedUsernames: ['alice'], notFoundUsernames: ['bob'] }), context);
+
+    expect(vi.mocked(sendScrapeResult).mock.calls[0][2]).toStrictEqual({
+      v: 1,
+      type: 'hiscores',
+      scrapedAt: '2026-10-21T13:00:02.000Z',
+      scrapingOffset: 2,
+      found: [],
+      notFound: ['bob'],
+    });
+    expect(invokeAsync).toHaveBeenCalledExactlyOnceWith(lambdaClient, context.functionName, {
+      usernames: ['alice'],
+      scrapingOffset: 2,
+      table: 'hiscore_oldschool_hardcore_mains',
+      retry: 1,
+    });
   });
 
   it.each([...Array(MAX_RETRIES).keys()])('requeues without an alert at retry %i', async (retry) => {

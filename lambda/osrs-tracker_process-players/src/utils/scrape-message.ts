@@ -23,10 +23,10 @@ export interface ScrapedMessage {
 }
 
 /**
- * Scrapes an event's players with staggered requests and sorts them into found, failed and not found. Never rejects: a
- * failure only moves the player it concerns to `failedUsernames`.
+ * Scrapes an event's players from its hiscore table with staggered requests and sorts them into found, failed and not
+ * found. Never rejects: a failure only moves the player it concerns to `failedUsernames`.
  */
-export async function scrapeMessage({ usernames }: PlayerScrapeMessageBody): Promise<ScrapedMessage> {
+export async function scrapeMessage({ usernames, table }: PlayerScrapeMessageBody): Promise<ScrapedMessage> {
   const scraped: ScrapedMessage = { scrapedAt: new Date(), found: [], failedUsernames: [], notFoundUsernames: [] };
 
   // scrape each username with staggered delays and wait for all to finish
@@ -35,7 +35,7 @@ export async function scrapeMessage({ usernames }: PlayerScrapeMessageBody): Pro
       // Add 2000ms (2 second) delay for each subsequent request to avoid 503 errors
       if (index > 0) await sleep(index * 2000);
 
-      const result = await fetchHiscore(username);
+      const result = await fetchHiscore(username, table);
       if (result.status === 'notFound') scraped.notFoundUsernames.push(username);
       else if (result.status === 'failed') scraped.failedUsernames.push(username);
       else scraped.found.push({ username, hiscore: result.hiscore, layout: result.layout });
