@@ -14,7 +14,9 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   table it came from. Until osrs-tracker-api's sync writes `table` (osrs-tracker/osrs-tracker-api#247, which also
   documents it in its DATA-MODEL.md), every player is still scraped from the main table. `@osrs-tracker/models` moves to
   3.4.0 and `@osrs-tracker/hiscores` to 6.1.0, which add the table; the Lambdas' TypeScript `lib` moves to ES2024 for
-  `Map.groupBy` (Node 24 has it). process-players' `invoke:dry` takes `--table=`.
+  `Map.groupBy` (Node 24 has it). process-players' `invoke:dry` takes `--table=`. Deployed the same day: queue-players
+  as version 27 and process-players as version 56, commit 7dc82fd. record-player-count only takes the package bumps, so
+  it isn't redeployed.
 
 ## 2026-11-02
 
