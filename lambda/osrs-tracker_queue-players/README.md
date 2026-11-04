@@ -3,8 +3,10 @@
 Runs every hour (EventBridge `Hourly`). Works out the scraping offset for that hour (-12 to +11 hours from UTC
 midnight), scans the DynamoDB table `SUBSCRIPTIONS_TABLE` for every player whose `scrapingOffsets` contain it, and
 invokes process-players (`PROCESS_PLAYERS_FUNCTION`) asynchronously with their usernames, one event of
-`PLAYERS_PER_EVENT` usernames at a time. Events Lambda refuses are reported on Discord, and so is an empty table
-(nothing is queued then).
+`PLAYERS_PER_EVENT` usernames at a time: `{ usernames, scrapingOffset, table? }`. Each event holds one hiscore table's
+players, from the subscription's `table` (set only for Hardcore Worlds characters, `hiscore_oldschool_hardcore_mains`;
+left out for the main table). Events Lambda refuses are reported on Discord, and so is an empty table (nothing is queued
+then).
 
 The table is a copy of MongoDB's `players.scrapingOffsets`, written only by osrs-tracker-api's ingester every 15
 minutes, so scraping goes on while MongoDB is unreachable. queue-players only reads it and has no database access.

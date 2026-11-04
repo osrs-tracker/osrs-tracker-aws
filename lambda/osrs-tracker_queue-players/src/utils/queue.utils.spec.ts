@@ -1,6 +1,6 @@
 import { PlayerSubscription } from '@osrs-tracker/models';
 import { describe, expect, it } from 'vitest';
-import { chunks, scrapingOffsetForHour, usernamesForOffset } from './queue.utils';
+import { chunks, scrapeEvents, scrapingOffsetForHour, subscriptionsForOffset } from './queue.utils';
 
 describe('scrapingOffsetForHour', () => {
   it.each([
@@ -13,7 +13,7 @@ describe('scrapingOffsetForHour', () => {
   });
 });
 
-describe('usernamesForOffset', () => {
+describe('subscriptionsForOffset', () => {
   const subscription = (username: string, ...offsets: number[]): PlayerSubscription => ({
     username,
     scrapingOffsets: new Set(offsets),
@@ -24,17 +24,47 @@ describe('usernamesForOffset', () => {
     subscription('carol', 12),
     subscription('dave', -1),
   ];
+  const usernames = (offset: number) => subscriptionsForOffset(subscriptions, offset).map(({ username }) => username);
 
   it('keeps the players subscribed to the offset', () => {
-    expect(usernamesForOffset(subscriptions, 3)).toEqual(['alice', 'bob']);
+    expect(usernames(3)).toEqual(['alice', 'bob']);
   });
 
   it('includes offset 12 at -12', () => {
-    expect(usernamesForOffset(subscriptions, -12)).toEqual(['bob', 'carol']);
+    expect(usernames(-12)).toEqual(['bob', 'carol']);
   });
 
   it('returns nothing when no player has the offset', () => {
-    expect(usernamesForOffset(subscriptions, 5)).toEqual([]);
+    expect(usernames(5)).toEqual([]);
+  });
+});
+
+describe('scrapeEvents', () => {
+  const main = (username: string): PlayerSubscription => ({ username, scrapingOffsets: new Set([3]) });
+  const hardcore = (username: string): PlayerSubscription => ({
+    ...main(username),
+    table: 'hiscore_oldschool_hardcore_mains',
+  });
+
+  it('yields nothing without subscriptions', () => {
+    expect(scrapeEvents([], 3, 2)).toEqual([]);
+  });
+
+  it('leaves the table out for main-table players', () => {
+    expect(scrapeEvents([main('alice'), main('bob'), main('carol')], 3, 2)).toEqual([
+      { usernames: ['alice', 'bob'], scrapingOffset: 3 },
+      { usernames: ['carol'], scrapingOffset: 3 },
+    ]);
+  });
+
+  it('chunks each table into its own events, never mixing them', () => {
+    const subscriptions = [main('alice'), hardcore('bob'), main('carol'), hardcore('dave'), hardcore('erin')];
+
+    expect(scrapeEvents(subscriptions, 3, 2)).toEqual([
+      { usernames: ['alice', 'carol'], scrapingOffset: 3 },
+      { usernames: ['bob', 'dave'], scrapingOffset: 3, table: 'hiscore_oldschool_hardcore_mains' },
+      { usernames: ['erin'], scrapingOffset: 3, table: 'hiscore_oldschool_hardcore_mains' },
+    ]);
   });
 });
 

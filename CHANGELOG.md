@@ -5,6 +5,16 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-11-04
+
+- Hardcore Worlds characters are scraped from their own hiscore table, `hiscore_oldschool_hardcore_mains`
+  (osrs-tracker/osrs-tracker-web#496): their main-table entry is a frozen stub. queue-players groups each offset's
+  players by the subscription's new `table` and sends it in their events; process-players fetches that table and keeps
+  it on requeued events. The scrape results message doesn't change: the ingester stores one series per player, whichever
+  table it came from. Until osrs-tracker-api's sync writes `table`, every player is still scraped from the main table.
+  `@osrs-tracker/models` moves to 3.4.0 and `@osrs-tracker/hiscores` to 6.1.0, which add the table; the Lambdas'
+  TypeScript `lib` moves to ES2024 for `Map.groupBy` (Node 24 has it). process-players' `invoke:dry` takes `--table=`.
+
 ## 2026-11-02
 
 - process-players stays at reserved concurrency 10, up from 5 (changed live on 2026-10-30, issue #181): the 00:00 UTC

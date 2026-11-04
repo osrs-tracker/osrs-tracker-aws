@@ -27,6 +27,16 @@ describe('scrapeMessage', () => {
     expect(fetchHiscore).toHaveBeenCalledTimes(3);
   });
 
+  it("fetches from the event's table, the main table when it has none", async () => {
+    await scrapeMessage({ usernames: ['alice'], scrapingOffset: 0 });
+    await scrapeMessage({ usernames: ['bob'], scrapingOffset: 0, table: 'hiscore_oldschool_hardcore_mains' });
+
+    expect(vi.mocked(fetchHiscore).mock.calls).toEqual([
+      ['alice', undefined],
+      ['bob', 'hiscore_oldschool_hardcore_mains'],
+    ]);
+  });
+
   it('keeps the found hiscores as fetched and sorts the others into failed and not found', async () => {
     vi.mocked(fetchHiscore).mockImplementation(async (username) => {
       if (username === 'bob') return { status: 'notFound', httpStatus: 404 };

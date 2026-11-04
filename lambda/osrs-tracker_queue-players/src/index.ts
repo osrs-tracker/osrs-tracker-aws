@@ -1,13 +1,12 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { LambdaClient } from '@aws-sdk/client-lambda';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { PlayerScrapeMessageBody } from '@osrs-tracker/models';
 import type { Context, ScheduledEvent } from 'aws-lambda';
 import { discordAlert } from '@lambda/shared/discord-alert';
 import { invokeAsync } from '@lambda/shared/lambda.utils';
 import { logCommit } from '@lambda/shared/commit';
 import { scanSubscriptions } from './utils/subscriptions.utils';
-import { chunks, scrapingOffsetForHour, usernamesForOffset } from './utils/queue.utils';
+import { scrapeEvents, scrapingOffsetForHour, subscriptionsForOffset } from './utils/queue.utils';
 import { env } from './env';
 
 logCommit();
@@ -32,19 +31,18 @@ export const handler = async (event: ScheduledEvent, context: Context) => {
     return context.logStreamName;
   }
 
-  const usernames = usernamesForOffset(subscriptions, scrapingOffset);
+  const due = subscriptionsForOffset(subscriptions, scrapingOffset);
 
-  // one per process-players event. `invokeAsync` never rejects
-  const invocations = chunks(usernames, env.PLAYERS_PER_EVENT).map((chunk) => {
-    const payload: PlayerScrapeMessageBody = { usernames: chunk, scrapingOffset };
-    return invokeAsync(lambdaClient, env.PROCESS_PLAYERS_FUNCTION, payload);
-  });
+  // `invokeAsync` never rejects
+  const invocations = scrapeEvents(due, scrapingOffset, env.PLAYERS_PER_EVENT).map((payload) =>
+    invokeAsync(lambdaClient, env.PROCESS_PLAYERS_FUNCTION, payload),
+  );
 
   // events Lambda didn't accept, each logged by `invokeAsync`
   const errors = (await Promise.all(invocations)).filter((accepted) => !accepted).length;
 
   console.log('RESULT: ', {
-    usernamesProcessed: usernames.length,
+    usernamesProcessed: due.length,
     eventsCreated: invocations.length,
     errors,
   });

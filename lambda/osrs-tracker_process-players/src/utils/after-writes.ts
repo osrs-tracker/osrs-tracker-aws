@@ -19,7 +19,7 @@ export interface AwsClients {
 
 /** What the handler's scrape of the event left to finish. */
 export interface ScrapeRun extends ScrapedMessage {
-  /** the event scraped: the requeue keeps its offset and counts its retry */
+  /** the event scraped: the requeue keeps its offset and table and counts its retry */
   event: ScrapeEvent;
 }
 
@@ -49,11 +49,7 @@ export async function afterWrites(clients: AwsClients, run: ScrapeRun, context: 
 
   const unqueuedUsernames = givingUp
     ? []
-    : await requeue(clients.lambda, context.functionName, {
-        usernames: failedUsernames,
-        scrapingOffset: event.scrapingOffset,
-        retry: retry + 1,
-      });
+    : await requeue(clients.lambda, context.functionName, { ...event, usernames: failedUsernames, retry: retry + 1 });
 
   console.log(
     `Sent the hiscores of ${found.length} players to the scrape results queue.`,
@@ -74,7 +70,7 @@ export async function afterWrites(clients: AwsClients, run: ScrapeRun, context: 
 
 /**
  * Invokes this function (`functionName`) again, asynchronously, with `failed`'s usernames split into events of
- * `PLAYERS_PER_EVENT` (each with its offset and retry count), and returns the usernames whose event Lambda didn't
+ * `PLAYERS_PER_EVENT` (each with its offset, table and retry count), and returns the usernames whose event Lambda didn't
  * accept, so their retry is lost.
  */
 async function requeue(lambdaClient: LambdaClient, functionName: string, failed: ScrapeEvent): Promise<string[]> {
