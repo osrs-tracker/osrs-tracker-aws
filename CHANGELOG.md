@@ -12,6 +12,7 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
   (osrs-tracker/osrs-tracker-web#540, osrs-tracker/osrs-tracker-aws#189). Samples taken before this release have no
   `hardcore` and can't be split afterwards. The message keeps `v: 1`: the ingester stores every field as it is.
   `@osrs-tracker/hiscores` moves to 6.2.0, whose `parseWorldList` counts it, and `@osrs-tracker/models` to 3.6.0.
+  Deployed as version 7, commit 994ce38; the first sample with `hardcore` is from 16:45 UTC.
 
 ## 2026-11-04
 
