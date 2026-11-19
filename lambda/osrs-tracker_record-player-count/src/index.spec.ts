@@ -21,6 +21,7 @@ const counts: WorldListCounts = {
   total: 100_000,
   members: 80_000,
   f2p: 20_000,
+  hardcore: 7_000,
   worlds: 180,
   byLocation: { '0': 60_000, '1': 40_000 },
 };
@@ -52,8 +53,9 @@ describe('record-player-count handler', () => {
     expect(sendScrapeResult).toHaveBeenCalledExactlyOnceWith(
       expect.anything(),
       'https://sqs.invalid/osrs-tracker_scrape-results.fifo',
-      { v: 1, type: 'playerCount', playerCount: { ...counts, date: '2026-10-14T10:00:00.000Z' } },
+      { v: 1, type: 'playerCount', playerCount: { ...counts, hardcore: 7_000, date: '2026-10-14T10:00:00.000Z' } },
     );
+    expect(console.info).toHaveBeenCalledWith(expect.stringContaining('7000 on Hardcore Worlds'));
     expect(discord).not.toHaveBeenCalled();
   });
 

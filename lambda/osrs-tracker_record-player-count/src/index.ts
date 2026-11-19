@@ -33,7 +33,7 @@ export const handler = async (_event: ScheduledEvent, context: Context) => {
     });
 
     console.info(
-      `Sent ${counts.total} players (${counts.members} members, ${counts.f2p} F2P) on ${counts.worlds} worlds to the scrape results queue.`,
+      `Sent ${counts.total} players (${counts.members} members, ${counts.f2p} F2P, ${counts.hardcore} on Hardcore Worlds) on ${counts.worlds} worlds to the scrape results queue.`,
     );
   } catch (e) {
     // never rejects, so the run fails with the original error, not the alert's

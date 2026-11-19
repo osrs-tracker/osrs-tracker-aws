@@ -3,10 +3,11 @@
 Runs every 10 minutes (EventBridge `osrs-tracker_record-player-count`, `rate(10 minutes)`). Fetches Jagex's world list
 (`https://www.runescape.com/g=oldscape/slr.ws?order=LPWM`, the one the client's World Select uses), sums the players on
 every world, and sends one `PlayerCount` (`@osrs-tracker/models`) as a `playerCount` message to the scrape results queue
-(`osrs-tracker_scrape-results.fifo`, group `playerCount`): `date` (an ISO string), `total`, `members`, `f2p`, `worlds`
-and `byLocation` (players per raw location code). It has no database: the ingester on fremen-server (osrs-tracker-api)
-stores the sample in `playerCounts` and recomputes the day's averages in `playerCountsDaily` (#166); it creates both
-collections' indexes from osrs-tracker/osrs-tracker-api#205 on. Details in osrs-tracker-api's
+(`osrs-tracker_scrape-results.fifo`, group `playerCount`): `date` (an ISO string), `total`, `members`, `f2p`, `hardcore`
+(the players on Hardcore Worlds, already counted in `members` and `f2p`), `worlds` and `byLocation` (players per raw
+location code). It has no database: the ingester on fremen-server (osrs-tracker-api) stores the sample in `playerCounts`
+and recomputes the day's averages in `playerCountsDaily` (#166); it creates both collections' indexes from
+osrs-tracker/osrs-tracker-api#205 on. Details in osrs-tracker-api's
 [DATA-MODEL.md](https://github.com/osrs-tracker/osrs-tracker-api/blob/main/DATA-MODEL.md).
 
 The world list is an undocumented big-endian binary format; its client and parser (`fetchWorldList`, `parseWorldList`)
