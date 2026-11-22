@@ -102,4 +102,16 @@ describe('record-player-count handler', () => {
     });
     expect(sendScrapeResult).toHaveBeenCalledTimes(sent ? 1 : 0);
   });
+
+  it("adds the error's cause to the alert", async () => {
+    const error = new TypeError('fetch failed', { cause: new Error('Connect Timeout Error') });
+    vi.mocked(fetchWorldList).mockRejectedValue(error);
+
+    await expect(handler(event, context)).rejects.toBe(error);
+
+    const [, init] = discord.mock.calls[0];
+    expect(JSON.parse(String(init?.body)).embeds[0].description).toBe(
+      'TypeError: fetch failed (cause: Error: Connect Timeout Error)',
+    );
+  });
 });

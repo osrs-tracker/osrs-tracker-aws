@@ -5,6 +5,12 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-11-22
+
+- record-player-count's `Player count not recorded` alert adds the error's cause: a failed world list fetch said only
+  `TypeError: fetch failed` (twice on 2026-11-22), while undici puts the reason, such as a connect timeout or a reset
+  connection, in `cause`. Deployed as version 8, commit f27c9b8.
+
 ## 2026-11-19
 
 - record-player-count sends `hardcore` with every sample: the players on Hardcore Worlds (world type flag `0x800`),

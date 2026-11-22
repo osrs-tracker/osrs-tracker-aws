@@ -37,7 +37,9 @@ export const handler = async (_event: ScheduledEvent, context: Context) => {
     );
   } catch (e) {
     // never rejects, so the run fails with the original error, not the alert's
-    await discordAlertNeverRejects(env.WEBHOOK_URL, 'Player count not recorded', String(e), context);
+    // undici's `fetch failed` says why only in its cause (a connect timeout, a reset)
+    const message = e instanceof Error && e.cause ? `${e} (cause: ${String(e.cause)})` : String(e);
+    await discordAlertNeverRejects(env.WEBHOOK_URL, 'Player count not recorded', message, context);
     throw e;
   }
 
