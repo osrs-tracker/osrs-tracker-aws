@@ -9,7 +9,7 @@ is logged on purpose, because sessions read this as the repo's history; doc-only
 
 - record-player-count's `Player count not recorded` alert adds the error's cause: a failed world list fetch said only
   `TypeError: fetch failed` (twice on 2026-11-22), while undici puts the reason, such as a connect timeout or a reset
-  connection, in `cause`.
+  connection, in `cause`. Deployed as version 8, commit f27c9b8.
 
 ## 2026-11-19
 
