@@ -1,6 +1,6 @@
 # osrs-tracker-aws
 
-Four AWS Lambdas (`lambda/<function>/`, Node 24, one npm workspace at the repo root): queue-players, process-players and
+Four AWS Lambdas (`lambda/<function>/`, Node 26, one npm workspace at the repo root): queue-players, process-players and
 record-player-count scrape OSRS Tracker's player data into a queue, alarm-to-discord posts the CloudWatch alarms to
 Discord. Sibling repos: `../osrs-tracker-api` (its ingester applies the queue to MongoDB and runs the item and clean-up
 jobs), `../osrs-tracker-web` and `../osrs-tracker-packages` (the `@osrs-tracker/*` npm packages the Lambdas install from

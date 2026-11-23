@@ -23,7 +23,7 @@ instead.
 `aws lambda update-function-configuration --environment` replaces the whole env map: merge with the current values in a
 temp JSON file outside the repo, never print the values, and delete the file afterwards.
 
-Each Lambda's `npm run update:runtime` (`update-function-configuration --runtime nodejs24.x`) is such a change too: show
+Each Lambda's `npm run update:runtime` (`update-function-configuration --runtime nodejs26.x`) is such a change too: show
 it and wait for approval like any other.
 
 ## API Gateway hiscore proxy
@@ -37,7 +37,7 @@ throttling: a CloudWatch alarm on its request count stands in (see "CloudWatch a
 
 - EventBridge `Hourly` triggers queue-players; `osrs-tracker_record-player-count` (`rate(10 minutes)`) triggers
   record-player-count. The SNS topic `osrs-tracker-alerts` triggers alarm-to-discord (see "CloudWatch alarms").
-- Each function's limits and async retries (all arm64, nodejs24.x). Retries are turned off with
+- Each function's limits and async retries (all arm64, nodejs26.x). Retries are turned off with
   `put-function-event-invoke-config --maximum-retry-attempts 0`; without that config Lambda retries twice.
 
   | Function            | Timeout | Memory | Async retries                                                                                                                                                 |

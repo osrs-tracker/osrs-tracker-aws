@@ -9,7 +9,7 @@
     "predeploy": "npm run build && cd dist && bestzip ../dist.zip * && cd ..",
     "deploy": "aws lambda update-function-code --function-name osrs-tracker_alarm-to-discord --zip-file fileb://dist.zip --publish",
     "postdeploy": "rm ./dist.zip",
-    "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_alarm-to-discord --runtime nodejs24.x",
+    "update:runtime": "aws lambda update-function-configuration --function-name osrs-tracker_alarm-to-discord --runtime nodejs26.x",
     "lint": "oxlint -c ../shared/.oxlintrc.json",
     "invoke:dry": "node ../shared/build/esbuild.js --dev && DRY_RUN=true node --env-file=.env ./build/invoke.js",
     "test": "vitest"
@@ -20,6 +20,6 @@
     "envalid": "^8.2.0"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   }
 }

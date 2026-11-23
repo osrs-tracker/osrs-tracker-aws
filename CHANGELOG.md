@@ -5,6 +5,12 @@ own `CHANGELOG.md`, which moved with them to
 [osrs-tracker-packages](https://github.com/osrs-tracker/osrs-tracker-packages) on 2026-10-18. Housekeeping (tooling, CI)
 is logged on purpose, because sessions read this as the repo's history; doc-only changes are not.
 
+## 2026-11-23
+
+- The four Lambdas and CI move to Node 26 LTS (`nodejs26.x`, GA on Lambda; osrs-tracker/osrs-tracker-aws#180):
+  `engines`, the `update:runtime` scripts, `infra/aws-settings.json`, the CI `node-version` and `@types/node` ^26. The
+  runtime change on the functions is deployed separately.
+
 ## 2026-11-22
 
 - record-player-count's `Player count not recorded` alert adds the error's cause: a failed world list fetch said only
