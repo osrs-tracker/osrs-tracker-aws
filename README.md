@@ -45,7 +45,7 @@ npm run invoke:dry
 ```
 
 This runs the job once with `DRY_RUN=true`. It still reads data and calls the external APIs, but every write (to the
-results queue, Lambda or Discord) is only logged. You need Node 24.
+results queue, Lambda or Discord) is only logged. You need Node 26.
 
 What goes in `.env` (each job's `.env.example` lists the ones it needs):
 
@@ -60,7 +60,7 @@ What goes in `.env` (each job's `.env.example` lists the ones it needs):
 
 ## Built with
 
-TypeScript, AWS Lambda on Node 24, Amazon EventBridge, Amazon SQS, Amazon DynamoDB, and Amazon CloudWatch and SNS.
+TypeScript, AWS Lambda on Node 26, Amazon EventBridge, Amazon SQS, Amazon DynamoDB, and Amazon CloudWatch and SNS.
 
 ## Development
 

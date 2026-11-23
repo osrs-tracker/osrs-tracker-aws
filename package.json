@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.164",
-    "@types/node": "^24.19.1",
+    "@types/node": "^26.6.6",
     "bestzip": "^4.0.3",
     "esbuild": "^0.28.2",
     "jscpd": "^5.4.2",
@@ -44,7 +44,7 @@
     }
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "allowScripts": {
     "esbuild@0.28.2": true
